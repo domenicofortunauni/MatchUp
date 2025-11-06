@@ -1,6 +1,6 @@
-# matchup
+# MatchUp
 
-A new Flutter project.
+Progetto Flutter per il corso di Ambienti e programmazione mobile 2025
 
 ## Getting Started
 
