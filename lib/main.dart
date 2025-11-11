@@ -1,4 +1,4 @@
-import 'package:matchup/UI/pages/Home.dart';
+import 'package:matchup/UI/pages/Layout.dart';
 import 'package:matchup/model/utils/Constants.dart';
 import 'package:flutter/material.dart';
 
@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
-      home: Home(title: "MatchUP"),
+      home: Layout(title: "MatchUP"),
     );
   }
 }
