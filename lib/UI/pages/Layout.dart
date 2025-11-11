@@ -26,18 +26,22 @@ class _LayoutState extends State<Layout> {
         length: 5,
         child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          backgroundColor: Colors.green,
           title: Text(widget.title),
         ),
           bottomNavigationBar: Material(
-              color: Theme.of(context).colorScheme.inversePrimary,
+              color: Colors.green,
               child: TabBar(
+                labelColor: Colors.white, // colore testo selezionato
+                unselectedLabelColor: Colors.white70, // testo non selezionato
+                indicatorColor: Colors.white, // sottolineatura dell’elemento attivo
+                labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                 tabs: [
-                  Tab(text: AppLocalizations.of(context)?.translate("News"), icon: Icon(Icons.newspaper_outlined)),
-                  Tab(text: AppLocalizations.of(context)?.translate("Chat"), icon: Icon(Icons.chat_outlined)),
-                  Tab(text: AppLocalizations.of(context)?.translate("Home"), icon: Icon(Icons.home_rounded)),
-                  Tab(text: AppLocalizations.of(context)?.translate("Sfida"), icon: Icon(Icons.sports_tennis_outlined)),
-                  Tab(text: AppLocalizations.of(context)?.translate("Prenota"), icon: Icon(Icons.calendar_month_outlined)),
+                  Tab(text: AppLocalizations.of(context)?.translate("News") ?? "News", icon: Icon(Icons.newspaper_outlined)),
+                  Tab(text: AppLocalizations.of(context)?.translate("Chat") ?? "Chat", icon: Icon(Icons.chat_outlined)),
+                  Tab(text: AppLocalizations.of(context)?.translate("Home") ?? "Home", icon: Icon(Icons.home_rounded)),
+                  Tab(text: AppLocalizations.of(context)?.translate("Sfida") ?? "Sfida", icon: Icon(Icons.sports_tennis_outlined)),
+                  Tab(text: AppLocalizations.of(context)?.translate("Prenota") ?? "Prenota", icon: Icon(Icons.calendar_month_outlined)),
                 ],
               ),
           ),
