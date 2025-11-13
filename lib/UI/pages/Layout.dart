@@ -26,11 +26,11 @@ class _LayoutState extends State<Layout> {
         length: 5,
         child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.green,
           title: Text(widget.title),
+          backgroundColor: Theme.of(context).colorScheme.primary
         ),
           bottomNavigationBar: Material(
-              color: Colors.green,
+              color: Theme.of(context).colorScheme.primary,
               child: TabBar(
                 labelColor: Colors.white, // colore testo selezionato
                 unselectedLabelColor: Colors.white70, // testo non selezionato

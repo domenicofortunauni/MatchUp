@@ -16,6 +16,7 @@ class _HomeState extends State<Home> {
     ];
 
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
