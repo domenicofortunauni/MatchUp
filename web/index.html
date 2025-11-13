@@ -29,6 +29,15 @@
 
   <title>matchup</title>
   <link rel="manifest" href="manifest.json">
+  
+  
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+  
+  
+
+
+  
+  
   <style id="splash-screen-style">
     html {
       height: 100%
@@ -37,17 +46,19 @@
     body {
       margin: 0;
       min-height: 100%;
-      background-color: #00C853;
+      background-color: #FFFFFF;
           background-size: 100% 100%;
     }
 
     .center {
-      margin: 0;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      -ms-transform: translate(-50%, -50%);
-      transform: translate(-50%, -50%);
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        width: 25vw;        /* 25% della larghezza viewport */
+        max-width: 200px;   /* dimensione massima */
+        height: auto;
     }
 
     .contain {
@@ -94,7 +105,6 @@
       document.body.style.background = "transparent";
     }
   </script>
-  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
 </head>
 <body>
   <picture id="splash">
@@ -102,6 +112,10 @@
       <source srcset="splash/img/dark-1x.png 1x, splash/img/dark-2x.png 2x, splash/img/dark-3x.png 3x, splash/img/dark-4x.png 4x" media="(prefers-color-scheme: dark)">
       <img class="center" aria-hidden="true" src="splash/img/light-1x.png" alt="">
   </picture>
+  
+
+  
+  
   <script src="flutter_bootstrap.js" async=""></script>
 
 

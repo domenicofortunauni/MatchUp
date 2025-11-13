@@ -44,7 +44,7 @@ dev_dependencies:
 
 flutter_native_splash:
   image: assets/images/app_icon.png
-  color: "#00C853"
+  color: "#FFFFFF"
 
 flutter_launcher_icons:
   android: true

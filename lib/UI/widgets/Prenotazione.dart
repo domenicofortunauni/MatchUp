@@ -53,9 +53,7 @@ class PrenotazioniWidget extends StatelessWidget {
                   p.stato,
                   style: const TextStyle(color: Colors.white),
                 ),
-                backgroundColor: p.stato == "Confermato"
-                    ? Colors.green
-                    : Colors.redAccent,
+                backgroundColor: p.stato == "Confermato" ? Colors.green : Colors.redAccent,
               ),
               onTap: () {
                 // esempio di azione
