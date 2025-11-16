@@ -43,9 +43,10 @@ dev_dependencies:
   flutter_native_splash: ^2.4.1
 
 flutter_native_splash:
-  image: assets/images/app_icon.png
-  color: "#FFFFFF"
-
+  color: "#ffffff"
+  image: assets/images/app_icon_splash.png
+  android: true
+  ios: true
 flutter_launcher_icons:
   android: true
   ios: true
@@ -65,6 +66,7 @@ flutter_launcher_icons:
 flutter:
   assets:
     - assets/images/app_icon.png
+    - assets/images/app_icon_splash.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

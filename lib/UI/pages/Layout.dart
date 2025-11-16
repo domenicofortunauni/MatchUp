@@ -25,16 +25,24 @@ class _LayoutState extends State<Layout> {
     return DefaultTabController(
         length: 5,
         child: Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-          backgroundColor: Theme.of(context).colorScheme.primary
-        ),
-          bottomNavigationBar: Material(
+          extendBody: true,
+          appBar: AppBar(title: Text(widget.title),
+              backgroundColor: Theme.of(context).colorScheme.primary
+          ),
+          bottomNavigationBar: Padding(
+          padding:  const EdgeInsets.fromLTRB(10, 0, 10, 12),
+          child: Material(
+              shadowColor: Colors.transparent,
+              borderRadius: BorderRadius.circular(45),
               color: Theme.of(context).colorScheme.primary,
               child: TabBar(
-                labelColor: Colors.white, // colore testo selezionato
-                unselectedLabelColor: Colors.white70, // testo non selezionato
-                indicatorColor: Colors.white, // sottolineatura dell’elemento attivo
+                dividerColor: Colors.transparent, //serve a rimuovere una strana linea grigia che usciva
+                labelColor: Colors.white70, // colore del testo e dell'icona quando selezionato
+                unselectedLabelColor: Colors.white, // tutto il testo non selezionato
+                indicator: BoxDecoration(
+                  color: Colors.grey, // colore della pagina selezionata dalla tab
+                  borderRadius: BorderRadius.circular(12), // arrotondato
+                ),
                 labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                 tabs: [
                   Tab(text: AppLocalizations.of(context)?.translate("News") ?? "News", icon: Icon(Icons.newspaper_outlined)),
@@ -44,6 +52,7 @@ class _LayoutState extends State<Layout> {
                   Tab(text: AppLocalizations.of(context)?.translate("Prenota") ?? "Prenota", icon: Icon(Icons.calendar_month_outlined)),
                 ],
               ),
+          ),
           ),
           body: TabBarView(
           children: [
@@ -55,6 +64,7 @@ class _LayoutState extends State<Layout> {
           ],
         ),
         )
+
     );
   }
 }
