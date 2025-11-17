@@ -36,6 +36,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   freezed: ^3.2.3
 
+  intl: ^0.18.1 # O la versione più recente
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

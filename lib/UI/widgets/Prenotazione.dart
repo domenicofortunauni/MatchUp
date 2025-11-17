@@ -23,6 +23,8 @@ class PrenotazioniWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     if(prenotazioni.isNotEmpty){
       return ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
         itemCount: prenotazioni.length,
         padding: const EdgeInsets.all(12),
         itemBuilder: (context, index) {

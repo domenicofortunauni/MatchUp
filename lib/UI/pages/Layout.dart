@@ -37,10 +37,13 @@ class _LayoutState extends State<Layout> {
               color: Theme.of(context).colorScheme.primary,
               child: TabBar(
                 dividerColor: Colors.transparent, //serve a rimuovere una strana linea grigia che usciva
-                labelColor: Colors.white70, // colore del testo e dell'icona quando selezionato
-                unselectedLabelColor: Colors.white, // tutto il testo non selezionato
-                indicator: BoxDecoration(
-                  color: Colors.grey, // colore della pagina selezionata dalla tab
+                labelColor: Colors.white, // colore del testo e dell'icona quando selezionato
+                unselectedLabelColor: Colors.white70, // tutto il testo non selezionato
+                indicator: UnderlineTabIndicator(
+                  borderSide: BorderSide(
+                    width: 7.0,
+                    color: Color (0xFF1B5E20), // colore della pagina selezionata dalla tab
+                  ),
                   borderRadius: BorderRadius.circular(12), // arrotondato
                 ),
                 labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
