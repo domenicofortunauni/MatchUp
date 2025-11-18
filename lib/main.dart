@@ -1,3 +1,5 @@
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 import 'package:matchup/UI/pages/Layout.dart';
 import 'package:matchup/model/utils/Constants.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +16,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: Constants.AppName,
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate
+      ],
       theme: ThemeData(
         primaryColor: Color(0xFF3E963D),
         colorScheme: ColorScheme.fromSeed(
