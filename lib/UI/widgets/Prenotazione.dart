@@ -60,7 +60,12 @@ class PrenotazioniWidget extends StatelessWidget {
               onTap: () {
                 // esempio di azione
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Prenotazione di ${p.campo}')),
+                  SnackBar(content: Text('Prenotazione di ${p.campo}', style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface)),
+                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  behavior: SnackBarBehavior.floating,
+                    margin: const EdgeInsets.fromLTRB(10, 0, 10, 5),
+                  ),
                 );
               },
             ),

@@ -25,10 +25,10 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       darkTheme: ThemeData(
-        primaryColor: Color(0xFF094056),
+        primaryColor: Colors.blue[900],
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Color(0xFF094056),
-          primary: Color(0xFF094056),
+          seedColor: Colors.blue[900]!,
+          primary: Colors.blue[900],
           brightness: Brightness.dark,
           surface: Colors.black
         ),
