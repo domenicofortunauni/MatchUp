@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 import 'package:matchup/UI/behaviors/gnews_service.dart';
-import '../widgets/NewsCard.dart';
+import 'package:matchup/UI/widgets/NewsCard.dart';
 
 class News extends StatelessWidget {
   const News({super.key});

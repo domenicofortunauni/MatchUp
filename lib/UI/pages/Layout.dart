@@ -3,25 +3,18 @@ import '../behaviors/AppLocalizations.dart';
 import 'Home.dart';
 import 'News.dart';
 import 'package:matchup/UI/pages/Login.dart';
+import '../../main.dart'; // <== Prova questo!
 
 class Layout extends StatefulWidget {
   final String title;
 
-
-  Layout({required this.title}) : super();
+  Layout({required this.title, super.key});
 
   @override
-  _LayoutState createState() => _LayoutState(title);
+  _LayoutState createState() => _LayoutState();
 }
 
 class _LayoutState extends State<Layout> {
-  late String title;
-
-
-  _LayoutState(String title) {
-    this.title = title;
-  }
-
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -29,17 +22,11 @@ class _LayoutState extends State<Layout> {
         initialIndex: 2,
         child: Scaffold(
           extendBody: true,
+          drawer: _buildSettingsDrawer(context),
           appBar: AppBar(
               title: Text(widget.title,textAlign: TextAlign.center),
               centerTitle: true, // importante per centrare il titolo in Android/iOS
               backgroundColor: Theme.of(context).colorScheme.primary,
-             //Parte sinistra della app bar
-              leading: IconButton(
-              icon: Icon(Icons.menu),
-              onPressed: () {
-              // TODO: Menù con selezione tema, lingua, impostazioni app
-              },
-          ),
             //parte destra app bar
             actions: [
               IconButton(
@@ -88,11 +75,79 @@ class _LayoutState extends State<Layout> {
             News(),
             Home(),
             Home(),
-            Home(),
+            Sfide(),
             Home(),
           ],
         ),
         )
+    );
+  }
+
+  Widget _buildSettingsDrawer(BuildContext context) {
+    // Recupera l'istanza dello stato globale di MyApp
+    final appState = MyApp.of(context);
+    // Recupera il codice della lingua corrente per il checkmark
+    final currentLang = appState?.currentLocale.languageCode ?? 'it';
+
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            child: const Text(
+              'Impostazioni',
+              style: TextStyle(color: Colors.white, fontSize: 24),
+            ),
+          ),
+
+          // --- Sezione Lingua ---
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text('Lingua', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          ),
+
+          _buildLanguageTile(context, 'Italiano', 'it', appState, currentLang),
+          _buildLanguageTile(context, 'English', 'en', appState, currentLang),
+          _buildLanguageTile(context, 'Français', 'fr', appState, currentLang),
+
+          const Divider(),
+
+          // --- Sezione Tema ---
+          ListTile(
+            leading: const Icon(Icons.brightness_6),
+            title: const Text('Cambia Tema'),
+            onTap: () {
+              // TODO: Aggiungi qui la logica per cambiare tema (Light/Dark)
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLanguageTile(
+      BuildContext context,
+      String name,
+      String code,
+      MyAppState? appState,
+      String currentLang
+      ) {
+    return ListTile(
+      leading: const Icon(Icons.language),
+      title: Text(name),
+      onTap: () {
+        // Chiama setLocale solo se appState esiste
+        if (appState != null) {
+          appState.setLocale(Locale(code));
+        }
+        Navigator.pop(context); // Chiude il Drawer
+      },
+      // Mostra il checkmark sulla lingua attualmente selezionata
+      trailing: currentLang == code ? const Icon(Icons.check) : null,
     );
   }
 }
