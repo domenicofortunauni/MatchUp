@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../behaviors/AppLocalizations.dart';
 import 'Home.dart';
+import 'News.dart';
 
 class Layout extends StatefulWidget {
   final String title;
@@ -79,7 +80,7 @@ class _LayoutState extends State<Layout> {
           ),
           body: TabBarView(
           children: [
-            Home(),
+            News(),
             Home(),
             Home(),
             Home(),
