@@ -4,7 +4,7 @@ import 'Home.dart';
 import 'Sfide.dart';
 import 'News.dart';
 import 'package:matchup/UI/pages/Login.dart';
-import '../../main.dart'; // <== Prova questo!
+import '../../main.dart';
 
 class Layout extends StatefulWidget {
   final String title;

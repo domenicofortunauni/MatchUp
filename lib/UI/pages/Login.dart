@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matchup/UI/pages/Layout.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
+import 'package:matchup/main.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -11,14 +12,13 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>();
-
   final _nomeController = TextEditingController();
   final _cognomeController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  bool _isLogin = true; // true = Modalità Login, false = Modalità Registrazione
+  bool _isLogin = true;
   bool _isPasswordVisible = false;
   bool _isLoading = false;
 
@@ -35,13 +35,10 @@ class _LoginState extends State<Login> {
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-
-      // Simuliamo l'attesa (Login o Registrazione)
       await Future.delayed(const Duration(seconds: 2));
 
       if (mounted) {
         setState(() => _isLoading = false);
-
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => Layout(title: "MatchUP")),
@@ -50,7 +47,6 @@ class _LoginState extends State<Login> {
     }
   }
 
-  // Funzione per cambiare modalità
   void _toggleMode() {
     setState(() {
       _isLogin = !_isLogin;
@@ -62,8 +58,17 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final inputFillColor = isDark ? Colors.grey[900] : Colors.grey[100];
+    final primaryColor = Theme.of(context).colorScheme.primary;
 
     return Scaffold(
+      drawer: _buildSettingsDrawer(context),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: IconThemeData(color: primaryColor),
+      ),
+      extendBodyBehindAppBar: true,
+
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -73,10 +78,13 @@ class _LoginState extends State<Login> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                const SizedBox(height: 40),
+
                 Image.asset(
                   'assets/images/app_icon_splash.png',
                   height: 100,
                   width: 100,
+                  errorBuilder: (c,e,s) => Icon(Icons.sports_tennis, size: 100, color: primaryColor),
                 ),
                 const SizedBox(height: 16),
 
@@ -86,7 +94,7 @@ class _LoginState extends State<Login> {
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: primaryColor,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -122,9 +130,7 @@ class _LoginState extends State<Login> {
                           },
                         ),
                       ),
-
                       const SizedBox(width: 12),
-
                       Expanded(
                         child: TextFormField(
                           controller: _cognomeController,
@@ -173,6 +179,11 @@ class _LoginState extends State<Login> {
                   controller: _passwordController,
                   obscureText: !_isPasswordVisible,
                   textInputAction: _isLogin ? TextInputAction.done : TextInputAction.next,
+                  onFieldSubmitted: (value) {
+                    if (_isLogin) {
+                      _submitForm();
+                    }
+                  },
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.translate("Password"),
                     prefixIcon: const Icon(Icons.lock_outline),
@@ -197,6 +208,9 @@ class _LoginState extends State<Login> {
                     controller: _confirmPasswordController,
                     obscureText: !_isPasswordVisible,
                     textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (value) {
+                      _submitForm();
+                    },
                     decoration: InputDecoration(
                       labelText: AppLocalizations.of(context)!.translate("Conferma Password"),
                       prefixIcon: const Icon(Icons.lock_outline_rounded),
@@ -230,7 +244,7 @@ class _LoginState extends State<Login> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _submitForm,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      backgroundColor: primaryColor,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       elevation: 5,
@@ -257,7 +271,7 @@ class _LoginState extends State<Login> {
                       child: Text(
                         _isLogin ? AppLocalizations.of(context)!.translate("Registrati") : AppLocalizations.of(context)!.translate("Accedi"),
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
+                          color: primaryColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
@@ -265,11 +279,63 @@ class _LoginState extends State<Login> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 24),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSettingsDrawer(BuildContext context) {
+    final appState = MyApp.of(context);
+    final currentLang = appState?.currentLocale.languageCode ?? 'it';
+
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            child: const Text(
+              'Impostazioni',
+              style: TextStyle(color: Colors.white, fontSize: 24),
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text('Lingua', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          ),
+          _buildLanguageTile(context, 'Italiano', 'it', appState, currentLang),
+          _buildLanguageTile(context, 'English', 'en', appState, currentLang),
+          _buildLanguageTile(context, 'Français', 'fr', appState, currentLang),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.brightness_6),
+            title: const Text('Cambia Tema'),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLanguageTile(BuildContext context, String name, String code, MyAppState? appState, String currentLang) {
+    return ListTile(
+      leading: const Icon(Icons.language),
+      title: Text(name),
+      onTap: () {
+        if (appState != null) {
+          appState.setLocale(Locale(code));
+        }
+        Navigator.pop(context);
+      },
+      trailing: currentLang == code ? const Icon(Icons.check) : null,
     );
   }
 }
