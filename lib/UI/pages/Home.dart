@@ -40,126 +40,10 @@ class _HomeState extends State<Home> {
         ora: "14:00",
         stato: "Annullato",
       ),
-      Prenotazione(
-        campo: "Campo Centrale",
-        data: "17 Novembre",
-        ora: "18:00",
-        stato: "Confermato",
-      ),
-      Prenotazione(
-        campo: "Campo 2 (Terra Rossa)",
-        data: "18 Novembre",
-        ora: "10:30",
-        stato: "Confermato",
-      ),
-      Prenotazione(
-        campo: "Campo 3 (Sintetico)",
-        data: "19 Novembre",
-        ora: "09:00",
-        stato: "In attesa",
-      ),
-      Prenotazione(
-        campo: "Campo Centrale",
-        data: "15 Novembre",
-        ora: "14:00",
-        stato: "Annullato",
-      ),Prenotazione(
-        campo: "Campo Centrale",
-        data: "17 Novembre",
-        ora: "18:00",
-        stato: "Confermato",
-      ),
-      Prenotazione(
-        campo: "Campo 2 (Terra Rossa)",
-        data: "18 Novembre",
-        ora: "10:30",
-        stato: "Confermato",
-      ),
-      Prenotazione(
-        campo: "Campo 3 (Sintetico)",
-        data: "19 Novembre",
-        ora: "09:00",
-        stato: "In attesa",
-      ),
-      Prenotazione(
-        campo: "Campo Centrale",
-        data: "15 Novembre",
-        ora: "14:00",
-        stato: "Annullato",
-      ),
     ];
 
     List<Partita2> storico = [
       Partita2(
-        avversario: "Marco Rossi",
-        gameVinti: 60,
-        gamePersi: 30,
-        setVinti: 2,
-        setPersi: 0,
-        isVittoria: true,
-        data: DateTime(2024, 11, 12),
-      ),
-      Partita2(
-        avversario: "Luca Bianchi",
-        gameVinti: 45,
-        gamePersi: 65,
-        setVinti: 1,
-        setPersi: 2,
-        isVittoria: false,
-        data: DateTime(2024, 11, 10),
-      ),
-      Partita2(
-        avversario: "Marco Rossi",
-        gameVinti: 60,
-        gamePersi: 30,
-        setVinti: 2,
-        setPersi: 0,
-        isVittoria: true,
-        data: DateTime(2024, 11, 12),
-      ),
-      Partita2(
-        avversario: "Luca Bianchi",
-        gameVinti: 45,
-        gamePersi: 65,
-        setVinti: 1,
-        setPersi: 2,
-        isVittoria: false,
-        data: DateTime(2024, 11, 10),
-      ),Partita2(
-        avversario: "Marco Rossi",
-        gameVinti: 60,
-        gamePersi: 30,
-        setVinti: 2,
-        setPersi: 0,
-        isVittoria: true,
-        data: DateTime(2024, 11, 12),
-      ),
-      Partita2(
-        avversario: "Luca Bianchi",
-        gameVinti: 45,
-        gamePersi: 65,
-        setVinti: 1,
-        setPersi: 2,
-        isVittoria: false,
-        data: DateTime(2024, 11, 10),
-      ),Partita2(
-        avversario: "Marco Rossi",
-        gameVinti: 60,
-        gamePersi: 30,
-        setVinti: 2,
-        setPersi: 0,
-        isVittoria: true,
-        data: DateTime(2024, 11, 12),
-      ),
-      Partita2(
-        avversario: "Luca Bianchi",
-        gameVinti: 45,
-        gamePersi: 65,
-        setVinti: 1,
-        setPersi: 2,
-        isVittoria: false,
-        data: DateTime(2024, 11, 10),
-      ),Partita2(
         avversario: "Marco Rossi",
         gameVinti: 60,
         gamePersi: 30,
@@ -186,10 +70,10 @@ class _HomeState extends State<Home> {
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-        const Padding(
+        Padding(
         padding: EdgeInsets.fromLTRB(15, 40, 0, 10),
         child: Text(
-          "Welcome!",
+          AppLocalizations.of(context)!.translate("Welcome"),
           style: TextStyle(
             fontSize: 25,
             fontWeight: FontWeight.bold,
