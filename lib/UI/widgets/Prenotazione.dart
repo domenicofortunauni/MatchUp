@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:matchup/UI/widgets/CustomSnackBar.dart';
 
 class Prenotazione {
   final String campo;
@@ -124,18 +125,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
                             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                           onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Prenotazione di ${p.campo}',
-                                  style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface),
-                                ),
-                                backgroundColor: Theme.of(context).colorScheme.surface,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                behavior: SnackBarBehavior.floating,
-                                margin: const EdgeInsets.fromLTRB(10, 0, 10, 5),
-                              ),
-                            );
+                            CustomSnackBar.show(context, 'Prenotazione di ${p.campo}');
                           },
                         ),
                       );

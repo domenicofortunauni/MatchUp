@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:matchup/UI/widgets/CustomSnackBar.dart';
 import 'package:matchup/UI/widgets/SfideDisponibili.dart';
 import 'package:matchup/UI/widgets/SfideInCorso.dart';
+
 
 class Sfide extends StatefulWidget {
   const Sfide({Key? key}) : super(key: key);
@@ -10,10 +12,7 @@ class Sfide extends StatefulWidget {
 }
 
 class _SfideState extends State<Sfide> {
-  // Variabile di stato per mostrare/nascondere l'elenco delle sfide disponibili
   bool _showChallenges = false;
-
-  // Variabile di stato per tracciare il pulsante selezionato (-1: nessuno, 0, 1, 2, 3)
   int _selectedButton = -1;
 
   final List<SfidaModel> _sfideDisponibili = [
@@ -23,11 +22,8 @@ class _SfideState extends State<Sfide> {
     SfidaModel(title: "Sfida del Servizio", opponent: "Marco"),
   ];
 
-  // Lista per le sfide accettate (Sfide in Corso)
   final List<SfidaModel> _sfideInCorso = [];
 
-
-  // Funzione helper per determinare il colore del pulsante
   Color _getButtonColor(BuildContext context, int buttonIndex) {
     if (buttonIndex == _selectedButton) {
       return Theme.of(context).colorScheme.primary;
@@ -36,53 +32,41 @@ class _SfideState extends State<Sfide> {
     }
   }
 
-  //Gestisce la selezione e la visibilità della lista
   void _handleButtonPress(int buttonIndex) {
     setState(() {
       if (buttonIndex == _selectedButton && buttonIndex == 0) {
-        // Caso 1: Click sul bottone 0 già selezionato (lo chiude)
         _showChallenges = false;
         _selectedButton = -1;
       } else if (buttonIndex == 0) {
-        // Caso 2: Click sul bottone 0 (lo apre e lo seleziona)
         _showChallenges = true;
         _selectedButton = 0;
       } else {
-        // Caso 3: Click su qualsiasi altro bottone (lo seleziona e nasconde la lista)
         _showChallenges = false;
         _selectedButton = buttonIndex;
       }
     });
   }
 
-  // Funzione per accettare una sfida (passata al widget figlio)
   void _accettaSfida(SfidaModel sfida) {
     setState(() {
-      // 1. Rimuovi la sfida dalla lista delle Disponibili
       _sfideDisponibili.removeWhere((s) => s.title == sfida.title && s.opponent == sfida.opponent);
-
-      // 2. Aggiungi la sfida alla lista in Corso
       _sfideInCorso.add(sfida);
-
-      // 3. Sposta la visualizzazione a "Sfide in Corso"
       _showChallenges = false;
-      _selectedButton = 2; // Indice 2 = Sfide in Corso
+      _selectedButton = 2;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Sfida accettata! Partita contro ${sfida.opponent} aggiunta alle Sfide in Corso.')),
-    );
+    CustomSnackBar.show(context, 'Sfida contro ${sfida.opponent} accettata!');
   }
-
 
   @override
   Widget build(BuildContext context) {
-    // VARIABILI PER LA VISUALIZZAZIONE CONDIZIONALE
     final bool showDisponibili = _showChallenges && _selectedButton == 0;
     final bool showInCorso = _selectedButton == 2 && !_showChallenges;
 
     return Scaffold(
       body: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 120.0),
+
         child: Card(
           elevation: 4.0,
           margin: const EdgeInsets.all(12.0),
@@ -114,10 +98,9 @@ class _SfideState extends State<Sfide> {
                 ),
                 const SizedBox(height: 30),
 
-                // Prima riga di pulsanti
+                // Prima riga pulsanti
                 Row(
                   children: [
-                    // Bottone 0: Sfide Disponibili
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () => _handleButtonPress(0),
@@ -131,7 +114,6 @@ class _SfideState extends State<Sfide> {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    // Bottone 1: Crea/Inviate
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () => _handleButtonPress(1),
@@ -148,10 +130,9 @@ class _SfideState extends State<Sfide> {
                 ),
                 const SizedBox(height: 20),
 
-                // Seconda riga di pulsanti
+                // Seconda riga pulsanti
                 Row(
                   children: [
-                    // Bottone 2: Sfide in Corso
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () => _handleButtonPress(2),
@@ -165,7 +146,6 @@ class _SfideState extends State<Sfide> {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    // Bottone 3: Sfide Ricevute (Reintrodotto)
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () => _handleButtonPress(3),
@@ -181,7 +161,7 @@ class _SfideState extends State<Sfide> {
                   ],
                 ),
 
-                // ELENCO DELLE SFIDE DISPONIBILI (Mostrato solo quando 0 è selezionato)
+                // ELENCO SFIDE DISPONIBILI
                 if (showDisponibili) ...[
                   const SizedBox(height: 30),
                   const Divider(),
@@ -197,7 +177,7 @@ class _SfideState extends State<Sfide> {
                   ),
                 ],
 
-                // ELENCO DELLE SFIDE IN CORSO (Mostrato solo quando 2 è selezionato)
+                // ELENCO SFIDE IN CORSO
                 if (showInCorso) ...[
                   const SizedBox(height: 30),
                   const Divider(),
@@ -207,16 +187,11 @@ class _SfideState extends State<Sfide> {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
-                  if (_sfideInCorso.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Text("Nessuna sfida in corso."),
-                    )
-                  else
-                  // Elenco delle sfide in corso
-                    SfideInCorsoList(sfide: _sfideInCorso),
-                ]
-                // ------------------------------------------------------------------------
+                  // Qui usiamo direttamente il widget.
+                  // Se nel file SfideInCorso.dart hai messo il controllo per la lista vuota,
+                  // non serve duplicarlo qui con if/else.
+                  SfideInCorsoList(sfide: _sfideInCorso),
+                ],
               ],
             ),
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchup/UI/widgets/SfideDisponibili.dart';
+import 'CustomSnackBar.dart';
 
 class SfideInCorsoList extends StatelessWidget {
   final List<SfidaModel> sfide;
@@ -41,9 +42,7 @@ class SfideInCorsoList extends StatelessWidget {
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               // Qui potrai gestire il click per entrare nel dettaglio della partita
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Apro la partita contro ${sfida.opponent}')),
-              );
+                CustomSnackBar.show(context,'Apro la partita contro ${sfida.opponent}');
             },
           ),
         );
