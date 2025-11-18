@@ -3,6 +3,7 @@ import '../behaviors/AppLocalizations.dart';
 import 'Home.dart';
 import 'News.dart';
 import 'package:matchup/UI/pages/Login.dart';
+import 'Sfide.dart';
 
 class Layout extends StatefulWidget {
   final String title;
@@ -88,7 +89,7 @@ class _LayoutState extends State<Layout> {
             News(),
             Home(),
             Home(),
-            Home(),
+            Sfide(),
             Home(),
           ],
         ),
