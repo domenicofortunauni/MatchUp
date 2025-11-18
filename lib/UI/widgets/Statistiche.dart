@@ -1,23 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchup/UI/pages/AggiungiPartitaStatistiche.dart';
-
-class Partita {
-  final int puntiFatti;
-  final int puntiSubiti;
-  final int setVinti;
-  final int setPersi;
-  final bool isVittoria;
-  final DateTime data;
-
-  Partita({
-    required this.puntiFatti,
-    required this.puntiSubiti,
-    required this.setVinti,
-    required this.setPersi,
-    required this.isVittoria,
-    required this.data,
-  });
-}
+import 'package:matchup/UI/widgets/StoricoPartite.dart';
 
 class Statistiche extends StatefulWidget {
   const Statistiche({Key? key}) : super(key: key);
@@ -34,27 +17,30 @@ class _Statistiche extends State<Statistiche> {
   void initState() {
     super.initState();
     _partiteGiocate.addAll([
-      // Esempi di partite
       Partita(
-          puntiFatti: 60, puntiSubiti: 30,
+          avversario: "Mario Rossi",
+          gameVinti: 60, gamePersi: 30,
           setVinti: 2, setPersi: 0,
           isVittoria: true,
           data: DateTime.now().subtract(Duration(days: 40))
       ),
       Partita(
-          puntiFatti: 45, puntiSubiti: 65,
+          avversario: "Luca Bianchi",
+          gameVinti: 45, gamePersi: 65,
           setVinti: 1, setPersi: 2,
           isVittoria: false,
           data: DateTime.now().subtract(Duration(days: 35))
       ),
       Partita(
-          puntiFatti: 70, puntiSubiti: 50,
+          avversario: "Marco Verdi",
+          gameVinti: 70, gamePersi: 50,
           setVinti: 2, setPersi: 1,
           isVittoria: true,
           data: DateTime.now().subtract(Duration(days: 10))
       ),
       Partita(
-          puntiFatti: 20, puntiSubiti: 60,
+          avversario: "Andrea Gialli",
+          gameVinti: 20, gamePersi: 60,
           setVinti: 0, setPersi: 2,
           isVittoria: false,
           data: DateTime.now().subtract(Duration(days: 5))
@@ -62,7 +48,6 @@ class _Statistiche extends State<Statistiche> {
     ]);
   }
 
-  // Metodo per aggiungere una nuova partita
   void aggiungiNuovaPartita(Partita nuovaPartita) {
     setState(() {
       _partiteGiocate.add(nuovaPartita);
@@ -75,24 +60,20 @@ class _Statistiche extends State<Statistiche> {
     final dataLimite = now.subtract(Duration(days: 30));
 
     int totalePartite = _partiteGiocate.length;
-    int totalePuntiFatti = 0;
-    int totalePuntiSubiti = 0;
+    int totaleGameVinti = 0;
+    int totaleGamePersi = 0;
     int totaleVittorie = 0;
 
-    // Statistiche per gli ultimi 30 giorni
     int totalePartiteUltimi30Giorni = 0;
     int totaleVittorieUltimi30Giorni = 0;
 
     for (var partita in _partiteGiocate) {
-      // Calcoli totali
-      totalePuntiFatti += partita.puntiFatti;
-      totalePuntiSubiti += partita.puntiSubiti;
+      totaleGameVinti += partita.gameVinti;
+      totaleGamePersi += partita.gamePersi;
       if (partita.isVittoria) {
         totaleVittorie++;
       }
 
-      // Calcoli per gli ultimi 30 giorni
-      // Controlla se la data della partita è dopo la data limite
       if (partita.data.isAfter(dataLimite)) {
         totalePartiteUltimi30Giorni++;
         if (partita.isVittoria) {
@@ -101,7 +82,6 @@ class _Statistiche extends State<Statistiche> {
       }
     }
 
-    // Calcolo percentuali
     double percentualeVittorieTotale = (totalePartite == 0)
         ? 0
         : (totaleVittorie / totalePartite) * 100;
@@ -132,7 +112,7 @@ class _Statistiche extends State<Statistiche> {
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -144,12 +124,12 @@ class _Statistiche extends State<Statistiche> {
             ),
             SizedBox(height: 8),
             Text(
-              'Punti Totali Fatti: $totalePuntiFatti',
+              'Game Totali Vinti: $totaleGameVinti',
               style: TextStyle(fontSize: 18),
             ),
             SizedBox(height: 8),
             Text(
-              'Punti Totali Subiti: $totalePuntiSubiti',
+              'Game Totali Persi: $totaleGamePersi',
               style: TextStyle(fontSize: 18),
             ),
             Divider(height: 24),
@@ -171,7 +151,6 @@ class _Statistiche extends State<Statistiche> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple[700]),
             ),
 
-            // Pulsante per aggiungere una nuova partita
             SizedBox(height: 20),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
