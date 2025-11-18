@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class Partita2 {
+class Partita {
   final String avversario;
   final int gameVinti;
   final int gamePersi;
@@ -10,7 +10,7 @@ class Partita2 {
   final bool isVittoria;
   final DateTime data;
 
-  Partita2({
+  Partita({
     required this.avversario,
     required this.gameVinti,
     required this.gamePersi,
@@ -22,7 +22,7 @@ class Partita2 {
 }
 
 class StoricoPartiteWidget extends StatefulWidget {
-  final List<Partita2> partite;
+  final List<Partita> partite;
 
   const StoricoPartiteWidget({super.key, required this.partite});
 

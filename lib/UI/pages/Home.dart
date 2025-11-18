@@ -89,8 +89,8 @@ class _HomeState extends State<Home> {
       ),
     ];
 
-    List<Partita2> storico = [
-      Partita2(
+    List<Partita> storico = [
+      Partita(
         avversario: "Marco Rossi",
         gameVinti: 60,
         gamePersi: 30,
@@ -99,7 +99,7 @@ class _HomeState extends State<Home> {
         isVittoria: true,
         data: DateTime(2024, 11, 12),
       ),
-      Partita2(
+      Partita(
         avversario: "Luca Bianchi",
         gameVinti: 45,
         gamePersi: 65,
@@ -108,7 +108,7 @@ class _HomeState extends State<Home> {
         isVittoria: false,
         data: DateTime(2024, 11, 10),
       ),
-      Partita2(
+      Partita(
         avversario: "Marco Rossi",
         gameVinti: 60,
         gamePersi: 30,
@@ -117,7 +117,7 @@ class _HomeState extends State<Home> {
         isVittoria: true,
         data: DateTime(2024, 11, 12),
       ),
-      Partita2(
+      Partita(
         avversario: "Luca Bianchi",
         gameVinti: 45,
         gamePersi: 65,
@@ -125,7 +125,7 @@ class _HomeState extends State<Home> {
         setPersi: 2,
         isVittoria: false,
         data: DateTime(2024, 11, 10),
-      ),Partita2(
+      ),Partita(
         avversario: "Marco Rossi",
         gameVinti: 60,
         gamePersi: 30,
@@ -134,7 +134,7 @@ class _HomeState extends State<Home> {
         isVittoria: true,
         data: DateTime(2024, 11, 12),
       ),
-      Partita2(
+      Partita(
         avversario: "Luca Bianchi",
         gameVinti: 45,
         gamePersi: 65,
@@ -142,7 +142,7 @@ class _HomeState extends State<Home> {
         setPersi: 2,
         isVittoria: false,
         data: DateTime(2024, 11, 10),
-      ),Partita2(
+      ),Partita(
         avversario: "Marco Rossi",
         gameVinti: 60,
         gamePersi: 30,
@@ -151,7 +151,7 @@ class _HomeState extends State<Home> {
         isVittoria: true,
         data: DateTime(2024, 11, 12),
       ),
-      Partita2(
+      Partita(
         avversario: "Luca Bianchi",
         gameVinti: 45,
         gamePersi: 65,
@@ -159,7 +159,7 @@ class _HomeState extends State<Home> {
         setPersi: 2,
         isVittoria: false,
         data: DateTime(2024, 11, 10),
-      ),Partita2(
+      ),Partita(
         avversario: "Marco Rossi",
         gameVinti: 60,
         gamePersi: 30,
@@ -168,7 +168,7 @@ class _HomeState extends State<Home> {
         isVittoria: true,
         data: DateTime(2024, 11, 12),
       ),
-      Partita2(
+      Partita(
         avversario: "Luca Bianchi",
         gameVinti: 45,
         gamePersi: 65,

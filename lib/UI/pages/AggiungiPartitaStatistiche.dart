@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:matchup/UI/widgets/Statistiche.dart';
+import 'package:matchup/UI/widgets/StoricoPartite.dart';
 import 'package:intl/intl.dart';
 
 class AggiungiPartitaStatistiche extends StatefulWidget {
@@ -11,20 +11,22 @@ class AggiungiPartitaStatistiche extends StatefulWidget {
 
 class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche> {
   final _formKey = GlobalKey<FormState>();
-  final _puntiFattiController = TextEditingController();
-  final _puntiSubitiController = TextEditingController();
+
+  final _avversarioController = TextEditingController();
+  final _gameVintiController = TextEditingController();
+  final _gamePersiController = TextEditingController();
   final _setVintiController = TextEditingController();
   final _setPersiController = TextEditingController();
 
 
   DateTime _dataPartita = DateTime.now();
-  // Metodo per aprire la selezione della data
+
   Future<void> _selezionaData(BuildContext context) async {
     final DateTime? dataSelezionata = await showDatePicker(
       context: context,
-      initialDate: _dataPartita, // Data iniziale
-      firstDate: DateTime(2010), // Data più vecchia selezionabile
-      lastDate: DateTime.now(),   // Data più recente (oggi)
+      initialDate: _dataPartita,
+      firstDate: DateTime(2010),
+      lastDate: DateTime.now(),
     );
 
     if (dataSelezionata != null && dataSelezionata != _dataPartita) {
@@ -37,8 +39,9 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
 
   @override
   void dispose() {
-    _puntiFattiController.dispose();
-    _puntiSubitiController.dispose();
+    _avversarioController.dispose();
+    _gameVintiController.dispose();
+    _gamePersiController.dispose();
     _setVintiController.dispose();
     _setPersiController.dispose();
     super.dispose();
@@ -46,16 +49,18 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
 
   void _salvaPartita() {
     if (_formKey.currentState!.validate()) {
-      final int puntiFatti = int.tryParse(_puntiFattiController.text) ?? 0;
-      final int puntiSubiti = int.tryParse(_puntiSubitiController.text) ?? 0;
+      final String avversario = _avversarioController.text;
+      final int gameVinti = int.tryParse(_gameVintiController.text) ?? 0;
+      final int gamePersi = int.tryParse(_gamePersiController.text) ?? 0;
       final int setVinti = int.tryParse(_setVintiController.text) ?? 0;
       final int setPersi = int.tryParse(_setPersiController.text) ?? 0;
 
       final bool isVittoria = setVinti > setPersi;
 
       final nuovaPartita = Partita(
-        puntiFatti: puntiFatti,
-        puntiSubiti: puntiSubiti,
+        avversario: avversario,
+        gameVinti: gameVinti,
+        gamePersi: gamePersi,
         setVinti: setVinti,
         setPersi: setPersi,
         isVittoria: isVittoria,
@@ -69,23 +74,33 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Aggiungi Nuova Partita'),
+        title: const Text('Aggiungi Nuova Partita'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: ListView(
             children: [
-              // Campo dei punti fatti
               TextFormField(
-                controller: _puntiFattiController,
-                decoration: InputDecoration(labelText: 'Punti Fatti'),
+                controller: _avversarioController,
+                decoration: const InputDecoration(labelText: 'Nome Avversario'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Inserisci il nome dell\'avversario';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              TextFormField(
+                controller: _gameVintiController,
+                decoration: const InputDecoration(labelText: 'Game Vinti'),
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Inserisci i punti fatti';
+                    return 'Inserisci i game vinti';
                   }
                   if (int.tryParse(value) == null) {
                     return 'Inserisci un numero valido';
@@ -93,16 +108,15 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-              // Campo dei punti subiti
               TextFormField(
-                controller: _puntiSubitiController,
-                decoration: InputDecoration(labelText: 'Punti Subiti'),
+                controller: _gamePersiController,
+                decoration: const InputDecoration(labelText: 'Game Persi'),
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Inserisci i punti subiti';
+                    return 'Inserisci i game persi';
                   }
                   if (int.tryParse(value) == null) {
                     return 'Inserisci un numero valido';
@@ -110,12 +124,11 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-              // Campi dei set vinti e persi
               TextFormField(
                 controller: _setVintiController,
-                decoration: InputDecoration(labelText: 'Set Vinti'),
+                decoration: const InputDecoration(labelText: 'Set Vinti'),
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) return 'Inserisci i set vinti';
@@ -123,11 +136,11 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
               TextFormField(
                 controller: _setPersiController,
-                decoration: InputDecoration(labelText: 'Set Persi'),
+                decoration: const InputDecoration(labelText: 'Set Persi'),
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) return 'Inserisci i set persi';
@@ -136,21 +149,21 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
                 },
               ),
 
-              // Widget per selezionare la data
               ListTile(
-                title: Text('Data della Partita'),
+                title: const Text('Data della Partita'),
                 subtitle: Text(DateFormat('dd MMMM yyyy').format(_dataPartita)),
-                trailing: Icon(Icons.calendar_today),
+                trailing: const Icon(Icons.calendar_today),
                 onTap: () => _selezionaData(context),
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _salvaPartita,
-                child: Text('Salva Partita'),
                 style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
+                child: const Text('Salva Partita'),
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),
