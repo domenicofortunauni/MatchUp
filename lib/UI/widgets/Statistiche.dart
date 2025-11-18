@@ -119,9 +119,22 @@ class _Statistiche extends State<Statistiche> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Statistiche Partite',
-              style: Theme.of(context).textTheme.headlineSmall,
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Center(
+                child: Text(
+                  "Statistiche Partite",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ),
             SizedBox(height: 16),
             Text(
@@ -160,8 +173,8 @@ class _Statistiche extends State<Statistiche> {
             // Pulsante per aggiungere una nuova partita
             SizedBox(height: 20),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor),
-              child: Text('Aggiungi Nuova Partita', style: TextStyle(fontSize: 16, color: Colors.white)),
+              style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
+              child: Text('Aggiungi Nuova Partita', style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onPrimaryContainer)),
               onPressed: () async {
                 final nuovaPartita = await Navigator.push(
                   context,

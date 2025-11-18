@@ -2,6 +2,7 @@ import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 import 'package:flutter/material.dart';
 import 'package:matchup/UI/widgets/Prenotazione.dart';
 import 'package:matchup/UI/widgets/Statistiche.dart';
+import 'package:matchup/UI/widgets/StoricoPartite.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -41,6 +42,28 @@ class _HomeState extends State<Home> {
       ),
     ];
 
+    List<Partita2> storico = [
+      Partita2(
+        avversario: "Marco Rossi",
+        gameVinti: 60,
+        gamePersi: 30,
+        setVinti: 2,
+        setPersi: 0,
+        isVittoria: true,
+        data: DateTime(2024, 11, 12),
+      ),
+      Partita2(
+        avversario: "Luca Bianchi",
+        gameVinti: 45,
+        gamePersi: 65,
+        setVinti: 1,
+        setPersi: 2,
+        isVittoria: false,
+        data: DateTime(2024, 11, 10),
+      ),
+    ];
+
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SingleChildScrollView(
@@ -57,9 +80,9 @@ class _HomeState extends State<Home> {
           ),
         ),
       ),
-
       PrenotazioniWidget(prenotazioni: prenotazioni),
         Statistiche(),
+              StoricoPartiteWidget(partite: storico),
               const SizedBox(height: 100.0),
             ],
         ),
