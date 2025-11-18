@@ -42,7 +42,7 @@ class _LayoutState extends State<Layout> {
                 indicator: UnderlineTabIndicator(
                   borderSide: BorderSide(
                     width: 7.0,
-                    color: Color (0xFF1B5E20), // colore della pagina selezionata dalla tab
+                    color: Theme.of(context).colorScheme.onPrimaryContainer.withValues(alpha: 0.55), // colore della pagina selezionata dalla tab
                   ),
                   borderRadius: BorderRadius.circular(12), // arrotondato
                 ),

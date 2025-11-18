@@ -160,7 +160,8 @@ class _Statistiche extends State<Statistiche> {
             // Pulsante per aggiungere una nuova partita
             SizedBox(height: 20),
             ElevatedButton(
-              child: Text('Aggiungi Nuova Partita'),
+              style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest),
+              child: Text('Aggiungi Nuova Partita', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
               onPressed: () async {
                 final nuovaPartita = await Navigator.push(
                   context,
