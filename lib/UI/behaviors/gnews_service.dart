@@ -24,10 +24,16 @@ class Notizia {
   });
 
   factory Notizia.fromJson(Map<String, dynamic> json) {
+    String? imageUrl = json['image'];
+
+    if (imageUrl == null || imageUrl.isEmpty) {
+      imageUrl = 'assets/images/defaultNews.jpg';
+    }
+
     return Notizia(
       titolo: json['title'] ?? 'Nessun Titolo',
       descrizione: json['description'] ?? 'Nessuna descrizione disponibile.',
-      urlImmagine: json['image'] ?? 'assets/images/defaultNews.jpg',
+      urlImmagine: imageUrl,
       fonte: json['source']?['name'] ?? 'Sconosciuta',
       urlArticolo: json['url'] ?? '',
     );
@@ -42,11 +48,6 @@ List<Notizia> _parseNews(String responseBody) {
   // Mappa gli articoli e filtra per quelli che hanno una foto reale.
   return articlesJson
       .map((json) => Notizia.fromJson(json))
-      .where((notizia) {
-    // Filtra le notizie senza una foto reale: controlla che l'URL dell'immagine
-    // non sia l'URL placeholder di default (che usiamo in caso di nullità).
-    return notizia.urlImmagine != 'https://via.placeholder.com/150';
-  })
       .toList();
 }
 
