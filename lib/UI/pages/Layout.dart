@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../behaviors/AppLocalizations.dart';
 import 'Home.dart';
 import 'News.dart';
+import 'package:matchup/UI/pages/Login.dart';
 
 class Layout extends StatefulWidget {
   final String title;
@@ -25,6 +26,7 @@ class _LayoutState extends State<Layout> {
   Widget build(BuildContext context) {
     return DefaultTabController(
         length: 5,
+        initialIndex: 2,
         child: Scaffold(
           extendBody: true,
           appBar: AppBar(
@@ -41,9 +43,12 @@ class _LayoutState extends State<Layout> {
             //parte destra app bar
             actions: [
               IconButton(
-                icon: Icon(Icons.person),
+                icon: Icon(Icons.logout_rounded),
                 onPressed: () {
-                  // TODO: completare pagina login
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const Login()),
+                        (route) => false,
+                  );
                 },
               ),
             ],

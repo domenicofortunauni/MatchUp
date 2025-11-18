@@ -22,7 +22,7 @@ class AppLocalizations {
   }
 
   String translate(String key) {
-    return _localizedStrings[key]!;
+    return _localizedStrings[key]??"Errore";
   }
 
 
@@ -32,7 +32,7 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   const _AppLocalizationsDelegate();
   @override
   bool isSupported(Locale locale) {
-    return ['en', 'it'].contains(locale.languageCode);
+    return ['it', 'en'].contains(locale.languageCode);
   }
   @override
   Future<AppLocalizations> load(Locale locale) async {

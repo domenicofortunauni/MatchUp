@@ -1,6 +1,6 @@
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
-import 'package:matchup/UI/pages/Layout.dart';
+import 'package:matchup/UI/pages/Login.dart';
 import 'package:matchup/model/utils/Constants.dart';
 import 'package:flutter/material.dart';
 
@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: Layout(title: "MatchUP"),
+      home: Login(),
     );
   }
 }
