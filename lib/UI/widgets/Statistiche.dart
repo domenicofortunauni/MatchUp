@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:matchup/UI/pages/AggiungiPartitaStatistiche.dart';
+import 'package:matchup/UI/widgets/AggiungiPartitaStatistiche.dart';
 import 'package:matchup/UI/widgets/StoricoPartite.dart';
 
 class Statistiche extends StatefulWidget {
