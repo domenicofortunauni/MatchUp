@@ -14,75 +14,148 @@ class Prenotazione {
   });
 }
 
-class PrenotazioniWidget extends StatelessWidget {
+class PrenotazioniWidget extends StatefulWidget {
   final List<Prenotazione> prenotazioni;
 
   const PrenotazioniWidget({super.key, required this.prenotazioni});
 
   @override
-  Widget build(BuildContext context) {
-    if(prenotazioni.isNotEmpty){
-      return ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: prenotazioni.length,
-        padding: const EdgeInsets.all(12),
-        itemBuilder: (context, index) {
-          final p = prenotazioni[index];
+  State<PrenotazioniWidget> createState() => _PrenotazioniWidgetState();
+}
 
-          return Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            elevation: 3,
-            child: ListTile(
-              leading: Icon(
-                Icons.sports_tennis,
-                color: p.stato == "Confermato" ? Colors.green : Colors.grey,
-                size: 32,
+class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 4.0,
+      margin: const EdgeInsets.all(12.0),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+                borderRadius: BorderRadius.circular(12),
               ),
-              title: Text(
-                p.campo,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-              subtitle: Text(
-                "${p.data} • ${p.ora}",
-                style: const TextStyle(fontSize: 14),
-              ),
-              trailing: Chip(
-                label: Text(
-                  p.stato,
-                  style: const TextStyle(color: Colors.white),
-                ),
-                backgroundColor: p.stato == "Confermato" ? Colors.green : Colors.redAccent,
-              ),
-              onTap: () {
-                // esempio di azione
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Prenotazione di ${p.campo}', style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface)),
-                  backgroundColor: Theme.of(context).colorScheme.surface,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  behavior: SnackBarBehavior.floating,
-                    margin: const EdgeInsets.fromLTRB(10, 0, 10, 5),
+              child: const Center(
+                child: Text(
+                  "Le Tue Prenotazioni",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-                );
-              },
+                ),
+              ),
             ),
-          );
-        },
-      );
-    }
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(15, 0, 0, 10),
-      child: Text(
-        "Non hai prenotazioni attive!",
-        style: TextStyle(
-          fontSize: 20
+            const SizedBox(height: 16),
+            if (widget.prenotazioni.isNotEmpty)
+              ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxHeight: 350,
+                ),
+                child: Scrollbar(
+                  controller: _scrollController,
+                  thumbVisibility: true,
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    shrinkWrap: true,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: widget.prenotazioni.length,
+                    padding: const EdgeInsets.only(right: 8.0),
+                    itemBuilder: (context, index) {
+                      final p = widget.prenotazioni[index];
+
+                      return Card(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.grey[850]
+                            : Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+                        ),
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        elevation: 2,
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: (p.stato == "Confermato" ? Colors.green : Colors.grey).withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.sports_tennis,
+                              color: p.stato == "Confermato" ? Colors.green : Colors.grey,
+                              size: 28,
+                            ),
+                          ),
+                          title: Text(
+                            p.campo,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                          ),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
+                            child: Text(
+                              "${p.data} • ${p.ora}",
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ),
+                          trailing: Chip(
+                            label: Text(
+                              p.stato,
+                              style: const TextStyle(color: Colors.white, fontSize: 12),
+                            ),
+                            backgroundColor: p.stato == "Confermato" ? Colors.green : Colors.redAccent,
+                            padding: EdgeInsets.zero,
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Prenotazione di ${p.campo}',
+                                  style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface),
+                                ),
+                                backgroundColor: Theme.of(context).colorScheme.surface,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                behavior: SnackBarBehavior.floating,
+                                margin: const EdgeInsets.fromLTRB(10, 0, 10, 5),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              )
+            else
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Center(
+                  child: Text(
+                    "Non hai prenotazioni attive!",
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
   }
 }
-
-

@@ -132,6 +132,7 @@ class _Statistiche extends State<Statistiche> {
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
+                      color: Colors.white,
                   ),
                 ),
               ),
@@ -174,7 +175,7 @@ class _Statistiche extends State<Statistiche> {
             SizedBox(height: 20),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
-              child: Text('Aggiungi Nuova Partita', style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onPrimaryContainer)),
+              child: Text('Aggiungi Nuova Partita', style: TextStyle(fontSize: 16, color: Colors.white)),
               onPressed: () async {
                 final nuovaPartita = await Navigator.push(
                   context,
