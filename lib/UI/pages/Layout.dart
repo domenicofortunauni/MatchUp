@@ -26,11 +26,31 @@ class _LayoutState extends State<Layout> {
         length: 5,
         child: Scaffold(
           extendBody: true,
-          appBar: AppBar(title: Text(widget.title),
-              backgroundColor: Theme.of(context).colorScheme.primary
+          appBar: AppBar(
+              title: Text(widget.title,textAlign: TextAlign.center),
+              centerTitle: true, // importante per centrare il titolo in Android/iOS
+              backgroundColor: Theme.of(context).colorScheme.primary,
+             //Parte sinistra della app bar
+              leading: IconButton(
+              icon: Icon(Icons.menu),
+              onPressed: () {
+              // TODO: Menù con selezione tema, lingua, impostazioni app
+              },
+          ),
+            //parte destra app bar
+            actions: [
+              IconButton(
+                icon: Icon(Icons.person),
+                onPressed: () {
+                  // TODO: completare pagina login
+                },
+              ),
+            ],
+
+
           ),
           bottomNavigationBar: Padding(
-          padding:  const EdgeInsets.fromLTRB(10, 0, 10, 12),
+          padding:  const EdgeInsets.fromLTRB(12, 0, 12, 12),
           child: Material(
               shadowColor: Colors.transparent,
               borderRadius: BorderRadius.circular(45),
@@ -67,7 +87,6 @@ class _LayoutState extends State<Layout> {
           ],
         ),
         )
-
     );
   }
 }
