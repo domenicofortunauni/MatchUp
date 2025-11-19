@@ -40,13 +40,11 @@ class _CreaSfidaState extends State<CreaSfida> {
 
   void _salvaSfida() {
     if (_formKey.currentState!.validate()) {
-      // Creiamo l'oggetto. Assicurati che SfidaModel sia importato correttamente.
       final nuovaSfida = SfidaModel(
         title: _titoloController.text,
         opponent: _avversarioController.text,
       );
 
-      // Restituiamo l'oggetto al widget precedente
       Navigator.of(context).pop(nuovaSfida);
     }
   }

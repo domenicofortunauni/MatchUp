@@ -3,7 +3,7 @@ import 'package:matchup/UI/widgets/CustomSnackBar.dart';
 import 'package:matchup/UI/widgets/SfideDisponibili.dart';
 import 'package:matchup/UI/widgets/SfideInCorso.dart';
 import 'package:matchup/UI/widgets/SfideInviate.dart';
-import 'package:matchup/UI/widgets/SfideRicevute.dart'; // IMPORTA IL NUOVO FILE
+import 'package:matchup/UI/widgets/SfideRicevute.dart';
 import 'package:matchup/UI/widgets/CreaSfida.dart';
 
 class Sfide extends StatefulWidget {
@@ -27,7 +27,6 @@ class _SfideState extends State<Sfide> {
   final List<SfidaModel> _sfideInCorso = [];
   List<SfidaModel> _sfideInviateList = [];
 
-  // NUOVA LISTA: Sfide Ricevute (Dati di prova)
   List<SfidaModel> _sfideRicevuteList = [
     SfidaModel(title: "Rivincita", opponent: "Giovanni"),
     SfidaModel(title: "Tie Break", opponent: "Luca"),
@@ -216,8 +215,6 @@ class _SfideState extends State<Sfide> {
                   ],
                 ),
 
-                // --- SEZIONI ---
-
                 if (showDisponibili) ...[
                   const SizedBox(height: 30),
                   const Divider(),
@@ -259,7 +256,6 @@ class _SfideState extends State<Sfide> {
                   SfideInCorsoList(sfide: _sfideInCorso),
                 ],
 
-                // NUOVA SEZIONE: RICEVUTE
                 if (showRicevute) ...[
                   const SizedBox(height: 30),
                   const Divider(),
