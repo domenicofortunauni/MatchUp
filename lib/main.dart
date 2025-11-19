@@ -14,7 +14,7 @@ class MyApp extends StatefulWidget {
   @override
   State<MyApp> createState() => MyAppState();
 
-  // Metodo statico essenziale per accedere allo stato da widget figli (Layout)
+  // Metodo statico per accedere allo stato da widget figli
   static MyAppState? of(BuildContext context) =>
       context.findAncestorStateOfType<MyAppState>();
 
@@ -23,7 +23,7 @@ class MyAppState extends State<MyApp> {
   // Variabile di stato per contenere la lingua corrente
   Locale? _locale;
 
-  // Getter per accedere alla lingua corrente in altri widget (per il checkmark)
+  // Getter per accedere alla lingua corrente in altri widget
   Locale get currentLocale => _locale ?? WidgetsBinding.instance.platformDispatcher.locale;
 
 
@@ -37,10 +37,8 @@ class MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: Constants.AppName,
-      // Passiamo la locale allo stato
       locale: _locale,
-
-      // Qui gestiamo come risolvere la lingua iniziale (dal sistema)
+      // Qui lingua iniziale presa dal sistema
       localeResolutionCallback: (locale, supportedLocales) {
         if (_locale != null) {
           return _locale;
@@ -58,9 +56,9 @@ class MyAppState extends State<MyApp> {
         GlobalWidgetsLocalizations.delegate
       ],
       supportedLocales: const [
-        Locale('en', ''),
-        Locale('it', ''),
-        Locale('fr', ''), // Aggiungi qui tutte le lingue supportate
+        Locale('en'),
+        Locale('it'),
+        Locale('fr'), // Aggiungere altre lingue
       ],
       theme: ThemeData(
         primaryColor: Color(0xFF3E963D),

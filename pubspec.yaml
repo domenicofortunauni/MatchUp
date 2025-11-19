@@ -35,8 +35,7 @@ dependencies:
   freezed: ^3.2.3
   flutter_localizations:
     sdk: flutter
-  intl: ^0.20.2 # O la versione più recente
-
+  flutter_chat_ui: ^2.9.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

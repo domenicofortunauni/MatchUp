@@ -3,6 +3,7 @@ import '../behaviors/AppLocalizations.dart';
 import 'Home.dart';
 import 'Sfide.dart';
 import 'News.dart';
+import 'ChatList.dart';
 import 'package:matchup/UI/pages/Login.dart';
 import '../../main.dart';
 
@@ -47,9 +48,10 @@ class _LayoutState extends State<Layout> {
           padding:  const EdgeInsets.fromLTRB(12, 0, 12, 12),
           child: Material(
               shadowColor: Colors.transparent,
-              borderRadius: BorderRadius.circular(45),
+            borderRadius: BorderRadius.circular(45),
               color: Theme.of(context).colorScheme.primary,
               child: TabBar(
+                splashBorderRadius: BorderRadius.circular(45), //fix rotondità dell'overlay della tabbar!!
                 dividerColor: Colors.transparent, //serve a rimuovere una strana linea grigia che usciva
                 labelColor: Colors.white, // colore del testo e dell'icona quando selezionato
                 unselectedLabelColor: Colors.white70, // tutto il testo non selezionato
@@ -74,7 +76,7 @@ class _LayoutState extends State<Layout> {
           body: TabBarView(
           children: [
             News(),
-            Home(),
+            ChatListPage(),
             Home(),
             Sfide(),
             Home(),
