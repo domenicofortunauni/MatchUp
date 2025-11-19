@@ -43,11 +43,12 @@ class SfideDisponibiliList extends StatelessWidget {
             title: Text(sfida.title, style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Text("vs ${sfida.opponent}"),
             trailing: ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
               onPressed: () {
                 // Chiamiamo la funzione passata dal genitore
                 onAccetta(sfida);
               },
-              child: const Text('Accetta'),
+              child: const Text('Accetta',style: TextStyle(fontSize: 16, color: Colors.white)),
             ),
           ),
         );

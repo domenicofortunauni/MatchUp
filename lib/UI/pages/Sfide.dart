@@ -28,7 +28,7 @@ class _SfideState extends State<Sfide> {
     if (buttonIndex == _selectedButton) {
       return Theme.of(context).colorScheme.primary;
     } else {
-      return Theme.of(context).colorScheme.secondary;
+      return Colors.grey.shade700;
     }
   }
 
