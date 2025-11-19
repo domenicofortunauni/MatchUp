@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchup/UI/widgets/CustomSnackBar.dart';
+import '../behaviors/AppLocalizations.dart';
 
 class Prenotazione {
   final String campo;
@@ -31,10 +32,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
   late DateTime _selectedDate;
   late DateTime _focusedMonth;
 
-  final List<String> _mesi = [
-    '', 'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
-    'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
-  ];
+  List<String> _mesi = [];
 
   @override
   void initState() {
@@ -44,6 +42,25 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
     _focusedMonth = DateTime(now.year, now.month, 1);
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _mesi = [
+      AppLocalizations.of(context)!.translate('Gennaio'),
+      AppLocalizations.of(context)!.translate('Febbraio'),
+      AppLocalizations.of(context)!.translate('Marzo'),
+      AppLocalizations.of(context)!.translate('Aprile'),
+      AppLocalizations.of(context)!.translate('Maggio'),
+      AppLocalizations.of(context)!.translate('Giugno'),
+      AppLocalizations.of(context)!.translate('Luglio'),
+      AppLocalizations.of(context)!.translate('Agosto'),
+      AppLocalizations.of(context)!.translate('Settembre'),
+      AppLocalizations.of(context)!.translate('Ottobre'),
+      AppLocalizations.of(context)!.translate('Novembre'),
+      AppLocalizations.of(context)!.translate('Dicembre'),
+    ];
+  }
   @override
   void dispose() {
     _scrollController.dispose();
@@ -133,7 +150,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Le Tue Prenotazioni",
+                    AppLocalizations.of(context)!.translate("Le Tue Prenotazioni"),
                     style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
 
@@ -156,8 +173,8 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
                             minimumSize: Size.zero,
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          child: const Text(
-                            "OGGI",
+                          child: Text(
+                            AppLocalizations.of(context)!.translate("OGGI"),
                             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                           ),
                         ),
@@ -222,7 +239,17 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
     final int emptySlots = firstWeekday - 1;
 
     String nomeMese = "";
-    if (baseDate.month >= 1 && baseDate.month <= 12) nomeMese = _mesi[baseDate.month];
+    if (baseDate.month >= 1 && baseDate.month <= 12) nomeMese = _mesi[baseDate.month-1];
+
+    final List<String> giorniSettimana = [
+      AppLocalizations.of(context)!.translate("Lunedì1"),
+      AppLocalizations.of(context)!.translate("Martedì1"),
+      AppLocalizations.of(context)!.translate("Mercoledì1"),
+      AppLocalizations.of(context)!.translate("Giovedì1"),
+      AppLocalizations.of(context)!.translate("Venerdì1"),
+      AppLocalizations.of(context)!.translate("Sabato1"),
+      AppLocalizations.of(context)!.translate("Domenica1"),
+    ];
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -255,17 +282,28 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
             ),
           ),
 
+
           // Giorni settimana
           Padding(
             padding: const EdgeInsets.only(bottom: 4, top: 6),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: ["L", "M", "M", "G", "V", "S", "D"]
-                  .map((d) => SizedBox(
-                  width: 32,
-                  child: Center(child: Text(d, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey)))
-              ))
-                  .toList(),
+
+              children: giorniSettimana.asMap().entries.map((entry) {
+            int idx = entry.key;
+            String d = entry.value;
+
+            return SizedBox(
+                key: ValueKey(idx),
+                width: 32,
+                child: Center(
+                    child: Text(
+                        d,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey)
+                    )
+                )
+            );
+          }).toList(),
             ),
           ),
 
@@ -365,10 +403,10 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: (p.stato == "Confermato" ? Colors.green : Colors.grey).withValues(alpha: 0.1),
+            color: (p.stato == AppLocalizations.of(context)!.translate("Confermato") ? Colors.green : Colors.grey).withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(Icons.sports_tennis, color: p.stato == "Confermato" ? Colors.green : Colors.grey, size: 28),
+          child: Icon(Icons.sports_tennis, color: p.stato == AppLocalizations.of(context)!.translate("Confermato") ? Colors.green : Colors.grey, size: 28),
         ),
         title: Text(p.campo, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         subtitle: Padding(
@@ -377,9 +415,9 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
         ),
         trailing: Chip(
           label: Text(p.stato, style: const TextStyle(color: Colors.white, fontSize: 12)),
-          backgroundColor: p.stato == "Confermato" ? Colors.green : Colors.redAccent,
+          backgroundColor: p.stato == AppLocalizations.of(context)!.translate("Confermato") ? Colors.green : Colors.redAccent,
         ),
-        onTap: () => CustomSnackBar.show(context, 'Prenotazione di ${p.campo}'),
+        onTap: () => CustomSnackBar.show(context, AppLocalizations.of(context)!.translate("Prenotazione di") + " " + p.campo)
       ),
     );
   }
@@ -394,8 +432,9 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
             const SizedBox(height: 8),
             Text(
               _isCalendarView
-                  ? "Nessuna prenotazione il ${_selectedDate.day}/${_selectedDate.month}"
-                  : "Non hai prenotazioni attive!",
+                  ? AppLocalizations.of(context)!.translate("Nessuna prenotazione il") +
+                  " ${_selectedDate.day}/${_selectedDate.month}"
+                  : AppLocalizations.of(context)!.translate("Non hai prenotazioni attive!"),
               style: const TextStyle(fontSize: 14, color: Colors.grey),
             ),
           ],
