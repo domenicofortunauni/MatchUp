@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:matchup/UI/widgets/CustomSnackBar.dart';
 import 'package:matchup/UI/widgets/SfideDisponibili.dart';
 import 'package:matchup/UI/widgets/SfideInCorso.dart';
-
+import 'package:matchup/UI/widgets/SfideInviate.dart';
+import 'package:matchup/UI/widgets/SfideRicevute.dart'; // IMPORTA IL NUOVO FILE
+import 'package:matchup/UI/widgets/CreaSfida.dart';
 
 class Sfide extends StatefulWidget {
   const Sfide({Key? key}) : super(key: key);
@@ -23,13 +25,18 @@ class _SfideState extends State<Sfide> {
   ];
 
   final List<SfidaModel> _sfideInCorso = [];
+  List<SfidaModel> _sfideInviateList = [];
+
+  // NUOVA LISTA: Sfide Ricevute (Dati di prova)
+  List<SfidaModel> _sfideRicevuteList = [
+    SfidaModel(title: "Rivincita", opponent: "Giovanni"),
+    SfidaModel(title: "Tie Break", opponent: "Luca"),
+  ];
 
   Color _getButtonColor(BuildContext context, int buttonIndex) {
-    if (buttonIndex == _selectedButton) {
-      return Theme.of(context).colorScheme.primary;
-    } else {
-      return Colors.grey.shade700;
-    }
+    return (buttonIndex == _selectedButton)
+        ? Theme.of(context).colorScheme.primary
+        : Colors.grey.shade700;
   }
 
   void _handleButtonPress(int buttonIndex) {
@@ -54,19 +61,68 @@ class _SfideState extends State<Sfide> {
       _showChallenges = false;
       _selectedButton = 2;
     });
-
     CustomSnackBar.show(context, 'Sfida contro ${sfida.opponent} accettata!');
+  }
+
+  // NUOVA LOGICA PER RICEVUTE
+  void _accettaRicevuta(SfidaModel sfida) {
+    setState(() {
+      _sfideRicevuteList = List.from(_sfideRicevuteList)..remove(sfida);
+      _sfideInCorso.add(sfida);
+      _selectedButton = 2; // Sposta la vista su In Corso
+      _showChallenges = false;
+    });
+    CustomSnackBar.show(context, 'Sfida di ${sfida.opponent} accettata!');
+  }
+
+  void _rifiutaRicevuta(SfidaModel sfida) {
+    setState(() {
+      _sfideRicevuteList = List.from(_sfideRicevuteList)..remove(sfida);
+    });
+    CustomSnackBar.show(context, 'Sfida di ${sfida.opponent} rifiutata.');
+  }
+
+  Future<void> _navigaEcreaSfida() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const CreaSfida()),
+    );
+
+    if (result != null) {
+      try {
+        final nuovaSfida = result as SfidaModel;
+        setState(() {
+          _sfideInviateList = [..._sfideInviateList, nuovaSfida];
+          _selectedButton = 1;
+          _showChallenges = false;
+        });
+        CustomSnackBar.show(context, 'Sfida inviata a ${nuovaSfida.opponent}!');
+      } catch (e) {
+        print("Errore nel recupero della sfida creata: $e");
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final bool showDisponibili = _showChallenges && _selectedButton == 0;
+    final bool showInviate = _selectedButton == 1 && !_showChallenges;
     final bool showInCorso = _selectedButton == 2 && !_showChallenges;
+    final bool showRicevute = _selectedButton == 3 && !_showChallenges; // Logica per Ricevute
 
     return Scaffold(
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 80.0, right: 5.0),
+        child: FloatingActionButton(
+          onPressed: _navigaEcreaSfida,
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          elevation: 4,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
+      ),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 120.0),
-
         child: Card(
           elevation: 4.0,
           margin: const EdgeInsets.all(12.0),
@@ -77,7 +133,6 @@ class _SfideState extends State<Sfide> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Container Titolo
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 12),
@@ -98,7 +153,7 @@ class _SfideState extends State<Sfide> {
                 ),
                 const SizedBox(height: 30),
 
-                // Prima riga pulsanti
+                // Bottoni Riga 1
                 Row(
                   children: [
                     Expanded(
@@ -123,14 +178,14 @@ class _SfideState extends State<Sfide> {
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        child: const Text('Crea/Inviate', style: TextStyle(fontSize: 16)),
+                        child: const Text('Inviate', style: TextStyle(fontSize: 16)),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 20),
 
-                // Seconda riga pulsanti
+                // Bottoni Riga 2
                 Row(
                   children: [
                     Expanded(
@@ -161,7 +216,8 @@ class _SfideState extends State<Sfide> {
                   ],
                 ),
 
-                // ELENCO SFIDE DISPONIBILI
+                // --- SEZIONI ---
+
                 if (showDisponibili) ...[
                   const SizedBox(height: 30),
                   const Divider(),
@@ -177,7 +233,20 @@ class _SfideState extends State<Sfide> {
                   ),
                 ],
 
-                // ELENCO SFIDE IN CORSO
+                if (showInviate) ...[
+                  const SizedBox(height: 30),
+                  const Divider(),
+                  const SizedBox(height: 10),
+                  const Text(
+                    "Sfide che hai inviato:",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  SfideInviateSection(
+                    sfideInviate: _sfideInviateList,
+                  ),
+                ],
+
                 if (showInCorso) ...[
                   const SizedBox(height: 30),
                   const Divider(),
@@ -187,10 +256,24 @@ class _SfideState extends State<Sfide> {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
-                  // Qui usiamo direttamente il widget.
-                  // Se nel file SfideInCorso.dart hai messo il controllo per la lista vuota,
-                  // non serve duplicarlo qui con if/else.
                   SfideInCorsoList(sfide: _sfideInCorso),
+                ],
+
+                // NUOVA SEZIONE: RICEVUTE
+                if (showRicevute) ...[
+                  const SizedBox(height: 30),
+                  const Divider(),
+                  const SizedBox(height: 10),
+                  const Text(
+                    "Sfide ricevute da altri giocatori:",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  SfideRicevuteSection(
+                    sfide: _sfideRicevuteList,
+                    onAccetta: _accettaRicevuta,
+                    onRifiuta: _rifiutaRicevuta,
+                  ),
                 ],
               ],
             ),
