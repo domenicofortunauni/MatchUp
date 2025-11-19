@@ -12,11 +12,16 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>();
+
   final _nomeController = TextEditingController();
   final _cognomeController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+
+  // Focus Nodes per gestire il tasto invio
+  final FocusNode _passwordFocusNode = FocusNode();
+  final FocusNode _confirmPasswordFocusNode = FocusNode();
 
   bool _isLogin = true;
   bool _isPasswordVisible = false;
@@ -29,6 +34,10 @@ class _LoginState extends State<Login> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+
+    _passwordFocusNode.dispose();
+    _confirmPasswordFocusNode.dispose();
+
     super.dispose();
   }
 
@@ -177,17 +186,21 @@ class _LoginState extends State<Login> {
 
                 TextFormField(
                   controller: _passwordController,
+                  focusNode: _passwordFocusNode,
                   obscureText: !_isPasswordVisible,
                   textInputAction: _isLogin ? TextInputAction.done : TextInputAction.next,
                   onFieldSubmitted: (value) {
                     if (_isLogin) {
                       _submitForm();
+                    } else {
+                      FocusScope.of(context).requestFocus(_confirmPasswordFocusNode);
                     }
                   },
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.translate("Password"),
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
+                      focusNode: FocusNode(skipTraversal: true),
                       icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
                       onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
                     ),
@@ -206,6 +219,7 @@ class _LoginState extends State<Login> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _confirmPasswordController,
+                    focusNode: _confirmPasswordFocusNode,
                     obscureText: !_isPasswordVisible,
                     textInputAction: TextInputAction.done,
                     onFieldSubmitted: (value) {
@@ -287,7 +301,7 @@ class _LoginState extends State<Login> {
       ),
     );
   }
-
+  
   Widget _buildSettingsDrawer(BuildContext context) {
     final appState = MyApp.of(context);
     final currentLang = appState?.currentLocale.languageCode ?? 'it';
