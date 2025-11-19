@@ -120,12 +120,62 @@ class _LayoutState extends State<Layout> {
 
           // --- Sezione Tema ---
           ListTile(
-            leading: const Icon(Icons.brightness_6),
             title: const Text('Cambia Tema'),
-            onTap: () {
-              // TODO: Aggiungi qui la logica per cambiare tema (Light/Dark)
-              Navigator.pop(context);
-            },
+            trailing: GestureDetector(
+              onTap: () {
+                final appState = MyApp.of(context);
+                appState?.toggleTheme();
+                Navigator.pop(context);
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: 70,
+                height: 35,
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(25),
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.blue[800]
+                      : Colors.green[400],
+                ),
+                child: Stack(
+                  children: [
+                    AnimatedPositioned(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      left: Theme.of(context).brightness == Brightness.dark ? 35 : 0,
+                      right: Theme.of(context).brightness == Brightness.dark ? 0 : 35,
+                      child: Container(
+                        width: 27,
+                        height: 27,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.yellow[700], // pallina da tennis
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              offset: const Offset(2, 2),
+                              blurRadius: 3,
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Theme.of(context).brightness == Brightness.dark
+                                ? Icons.nightlight_round
+                                : Icons.sports_tennis, // icona tennis
+                            size: 16,
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.green[900],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),

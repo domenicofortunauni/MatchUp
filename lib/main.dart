@@ -26,7 +26,14 @@ class MyAppState extends State<MyApp> {
   // Getter per accedere alla lingua corrente in altri widget
   Locale get currentLocale => _locale ?? WidgetsBinding.instance.platformDispatcher.locale;
 
-
+  ThemeMode _themeMode = ThemeMode.system; // tema del sistema
+  // Funzione per cambiare tema
+  void toggleTheme() {
+    setState(() {
+      _themeMode =
+      _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    });
+  }
   // Metodo per aggiornare la lingua
   void setLocale(Locale locale) {
     setState(() {
@@ -37,6 +44,7 @@ class MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: Constants.AppName,
+      themeMode: _themeMode,
       locale: _locale,
       // Qui lingua iniziale presa dal sistema
       localeResolutionCallback: (locale, supportedLocales) {
@@ -53,7 +61,8 @@ class MyAppState extends State<MyApp> {
       localizationsDelegates: [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate
       ],
       supportedLocales: const [
         Locale('en'),
