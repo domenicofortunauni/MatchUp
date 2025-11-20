@@ -53,6 +53,7 @@ class SingleChatPageState extends State<SingleChatPage> {
         title: Text(widget.chatTitle), // Usiamo il titolo passato
       ),
       body: Chat(
+        theme: ChatTheme.fromThemeData(Theme.of(context)),
         backgroundColor: Theme.of(context).colorScheme.surface,
         chatController: _chatController,
         currentUserId: 'user1',

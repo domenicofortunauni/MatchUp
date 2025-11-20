@@ -66,7 +66,7 @@ class ChatListPage extends StatelessWidget {
                   backgroundColor: Colors.blueGrey,
                   child: Text(
                     thread.title[0], // Iniziale del nome
-                    style: TextStyle(color: Theme.of(context).colorScheme.inverseSurface, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ),
 

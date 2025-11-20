@@ -126,7 +126,6 @@ class _LayoutState extends State<Layout> {
               onTap: () {
                 final appState = MyApp.of(context);
                 appState?.toggleTheme();
-                Navigator.pop(context);
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
@@ -154,7 +153,7 @@ class _LayoutState extends State<Layout> {
                           color: Colors.yellow[700], // pallina da tennis
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
+                              color: Colors.black.withValues(alpha: 0.3),
                               offset: const Offset(2, 2),
                               blurRadius: 3,
                             ),
