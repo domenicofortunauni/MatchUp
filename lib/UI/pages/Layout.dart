@@ -27,7 +27,10 @@ class _LayoutState extends State<Layout> {
           extendBody: true,
           drawer: _buildSettingsDrawer(context),
           appBar: AppBar(
-              title: Text(widget.title,textAlign: TextAlign.center),
+              title: Image.asset(
+                'assets/images/appBarLogo.png',
+                height: 40,
+              ),
               centerTitle: true, // importante per centrare il titolo in Android/iOS
               backgroundColor: Theme.of(context).colorScheme.primary,
             //parte destra app bar
