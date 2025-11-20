@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matchup/UI/widgets/AggiungiPartitaStatistiche.dart';
 import 'package:matchup/UI/widgets/StoricoPartite.dart';
+import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 
 class Statistiche extends StatefulWidget {
   const Statistiche({Key? key}) : super(key: key);
@@ -106,9 +107,9 @@ class _Statistiche extends State<Statistiche> {
                 color: Theme.of(context).colorScheme.primary,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  "Statistiche Partite",
+                  AppLocalizations.of(context)!.translate("Statistiche Partite"),
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -119,42 +120,52 @@ class _Statistiche extends State<Statistiche> {
             ),
             SizedBox(height: 16),
             Text(
-              'Partite Giocate: $totalePartite',
+              AppLocalizations.of(context)!.translate("Partite Giocate:") + " $totalePartite",
               style: TextStyle(fontSize: 18),
             ),
             SizedBox(height: 8),
             Text(
-              'Game Totali Vinti: $totaleGameVinti',
+              AppLocalizations.of(context)!.translate("Game Totali Vinti:") + " $totaleGameVinti",
               style: TextStyle(fontSize: 18),
             ),
             SizedBox(height: 8),
             Text(
-              'Game Totali Persi: $totaleGamePersi',
+              AppLocalizations.of(context)!.translate("Game Totali Persi:") + " $totaleGamePersi",
               style: TextStyle(fontSize: 18),
             ),
             Divider(height: 24),
             Text(
-              'Vittorie Totali: $totaleVittorie su $totalePartite partite',
+              AppLocalizations.of(context)!.translate("Vittorie Totali:") +
+                  " $totaleVittorie " +
+                  AppLocalizations.of(context)!.translate("su") +
+                  " $totalePartite " +
+                  AppLocalizations.of(context)!.translate("partite"),
               style: TextStyle(fontSize: 18),
             ),
             Text(
-              'Percentuale Vittorie (Totale): ${percentualeVittorieTotale.toStringAsFixed(1)}%',
+              AppLocalizations.of(context)!.translate("Percentuale Vittorie (Totale):") +
+                  " ${percentualeVittorieTotale.toStringAsFixed(1)}%",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue[700]),
             ),
             SizedBox(height: 16),
             Text(
-              'Vittorie (Ultimi 30gg): $totaleVittorieUltimi30Giorni su $totalePartiteUltimi30Giorni partite',
+              AppLocalizations.of(context)!.translate("Vittorie (Ultimi 30gg):") +
+                  " $totaleVittorieUltimi30Giorni " +
+                  AppLocalizations.of(context)!.translate("su") +
+                  " $totalePartiteUltimi30Giorni " +
+                  AppLocalizations.of(context)!.translate("partite"),
               style: TextStyle(fontSize: 18),
             ),
             Text(
-              'Percentuale Vittorie (Ultimi 30gg): ${percentualeVittorieUltimi30Giorni.toStringAsFixed(1)}%',
+              AppLocalizations.of(context)!.translate("Percentuale Vittorie (Ultimi 30gg):") +
+                  " ${percentualeVittorieUltimi30Giorni.toStringAsFixed(1)}%",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple[700]),
             ),
 
             SizedBox(height: 20),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
-              child: Text('Aggiungi Nuova Partita', style: TextStyle(fontSize: 16, color: Colors.white)),
+              child: Text(AppLocalizations.of(context)!.translate("Aggiungi Nuova Partita"), style: TextStyle(fontSize: 16, color: Colors.white)),
               onPressed: () async {
                 final nuovaPartita = await Navigator.push(
                   context,

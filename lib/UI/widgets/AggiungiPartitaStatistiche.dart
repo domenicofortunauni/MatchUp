@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matchup/UI/widgets/StoricoPartite.dart';
 import 'package:intl/intl.dart';
+import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 
 class AggiungiPartitaStatistiche extends StatefulWidget {
   const AggiungiPartitaStatistiche({Key? key}) : super(key: key);
@@ -74,7 +75,7 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Aggiungi Nuova Partita'),
+        title: Text(AppLocalizations.of(context)!.translate("Aggiungi Nuova Partita")),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -84,10 +85,10 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
             children: [
               TextFormField(
                 controller: _avversarioController,
-                decoration: const InputDecoration(labelText: 'Nome Avversario'),
+                decoration: InputDecoration(labelText: AppLocalizations.of(context)!.translate("Nome Avversario")),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Inserisci il nome dell\'avversario';
+                    return AppLocalizations.of(context)!.translate("Inserisci il nome dell'avversario");
                   }
                   return null;
                 },
@@ -96,14 +97,14 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
 
               TextFormField(
                 controller: _gameVintiController,
-                decoration: const InputDecoration(labelText: 'Game Vinti'),
+                decoration: InputDecoration(labelText: AppLocalizations.of(context)!.translate("Game Vinti")),
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Inserisci i game vinti';
+                    return AppLocalizations.of(context)!.translate("Inserisci i game vinti");
                   }
                   if (int.tryParse(value) == null) {
-                    return 'Inserisci un numero valido';
+                    return AppLocalizations.of(context)!.translate("Inserisci un numero valido");
                   }
                   return null;
                 },
@@ -112,14 +113,14 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
 
               TextFormField(
                 controller: _gamePersiController,
-                decoration: const InputDecoration(labelText: 'Game Persi'),
+                decoration: InputDecoration(labelText: AppLocalizations.of(context)!.translate("Game Persi")),
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Inserisci i game persi';
+                    return AppLocalizations.of(context)!.translate("Inserisci i game persi");
                   }
                   if (int.tryParse(value) == null) {
-                    return 'Inserisci un numero valido';
+                    return AppLocalizations.of(context)!.translate("Inserisci un numero valido");
                   }
                   return null;
                 },
@@ -128,11 +129,11 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
 
               TextFormField(
                 controller: _setVintiController,
-                decoration: const InputDecoration(labelText: 'Set Vinti'),
+                decoration: InputDecoration(labelText: AppLocalizations.of(context)!.translate("Set Vinti")),
                 keyboardType: TextInputType.number,
                 validator: (value) {
-                  if (value == null || value.isEmpty) return 'Inserisci i set vinti';
-                  if (int.tryParse(value) == null) return 'Inserisci un numero valido';
+                  if (value == null || value.isEmpty) return AppLocalizations.of(context)!.translate("Inserisci i set vinti");
+                  if (int.tryParse(value) == null) return AppLocalizations.of(context)!.translate("Inserisci un numero valido");
                   return null;
                 },
               ),
@@ -140,17 +141,17 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
 
               TextFormField(
                 controller: _setPersiController,
-                decoration: const InputDecoration(labelText: 'Set Persi'),
+                decoration: InputDecoration(labelText: AppLocalizations.of(context)!.translate("Set Persi")),
                 keyboardType: TextInputType.number,
                 validator: (value) {
-                  if (value == null || value.isEmpty) return 'Inserisci i set persi';
-                  if (int.tryParse(value) == null) return 'Inserisci un numero valido';
+                  if (value == null || value.isEmpty) return AppLocalizations.of(context)!.translate("Inserisci i set persi");
+                  if (int.tryParse(value) == null) return AppLocalizations.of(context)!.translate("Inserisci un numero valido");
                   return null;
                 },
               ),
 
               ListTile(
-                title: const Text('Data della Partita'),
+                title: Text(AppLocalizations.of(context)!.translate("Data della Partita")),
                 subtitle: Text(DateFormat('dd MMMM yyyy').format(_dataPartita)),
                 trailing: const Icon(Icons.calendar_today),
                 onTap: () => _selezionaData(context),
@@ -161,7 +162,7 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text('Salva Partita'),
+                child: Text(AppLocalizations.of(context)!.translate("Salva Partita")),
               ),
               const SizedBox(height: 24),
             ],
