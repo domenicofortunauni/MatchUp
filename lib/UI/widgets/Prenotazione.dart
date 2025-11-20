@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:matchup/UI/widgets/CustomSnackBar.dart';
-import '../behaviors/AppLocalizations.dart';
+import 'package:intl/intl.dart';
+
 
 class Prenotazione {
   final String campo;
-  final String data;
+  final String data; // Formato "dd/MM/yyyy"
   final String ora;
-  final String stato;
+  final String stato; // "Confermato", "In attesa", "Annullato"
 
   Prenotazione({
     required this.campo,
@@ -19,424 +19,489 @@ class Prenotazione {
 class PrenotazioniWidget extends StatefulWidget {
   final List<Prenotazione> prenotazioni;
 
-  const PrenotazioniWidget({super.key, required this.prenotazioni});
+  const PrenotazioniWidget({Key? key, required this.prenotazioni}) : super(key: key);
 
   @override
   State<PrenotazioniWidget> createState() => _PrenotazioniWidgetState();
 }
 
 class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
-  final ScrollController _scrollController = ScrollController();
+  DateTime _selectedDate = DateTime.now();
 
-  bool _isCalendarView = false;
-  late DateTime _selectedDate;
-  late DateTime _focusedMonth;
 
-  List<String> _mesi = [];
-
-  @override
-  void initState() {
-    super.initState();
-    final now = DateTime.now();
-    _selectedDate = now;
-    _focusedMonth = DateTime(now.year, now.month, 1);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    _mesi = [
-      AppLocalizations.of(context)!.translate('Gennaio'),
-      AppLocalizations.of(context)!.translate('Febbraio'),
-      AppLocalizations.of(context)!.translate('Marzo'),
-      AppLocalizations.of(context)!.translate('Aprile'),
-      AppLocalizations.of(context)!.translate('Maggio'),
-      AppLocalizations.of(context)!.translate('Giugno'),
-      AppLocalizations.of(context)!.translate('Luglio'),
-      AppLocalizations.of(context)!.translate('Agosto'),
-      AppLocalizations.of(context)!.translate('Settembre'),
-      AppLocalizations.of(context)!.translate('Ottobre'),
-      AppLocalizations.of(context)!.translate('Novembre'),
-      AppLocalizations.of(context)!.translate('Dicembre'),
-    ];
-  }
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  DateTime _parseDate(String? dateString) {
-    if (dateString == null || dateString.isEmpty) return DateTime(1970);
+  DateTime _parseDate(String dateStr) {
     try {
-      String cleanDate = dateString.trim();
-      try { return DateTime.parse(cleanDate); } catch (_) {}
-      String normalized = cleanDate.replaceAll('-', '/').replaceAll('.', '/');
-      final parts = normalized.split('/');
-      if (parts.length == 3) {
-        int day = int.parse(parts[0]);
-        int month = int.parse(parts[1]);
-        int year = int.parse(parts[2]);
-        if (year < 100) year += 2000;
-        return DateTime(year, month, day);
-      }
-    } catch (e) {}
-    return DateTime(1970);
+      return DateFormat("dd/MM/yyyy").parse(dateStr);
+    } catch (e) {
+      return DateTime.now();
+    }
   }
 
-  TimeOfDay _parseTime(String? timeString) {
-    if (timeString == null || timeString.isEmpty) return const TimeOfDay(hour: 0, minute: 0);
-    try {
-      String cleanTime = timeString.trim().replaceAll('.', ':');
-      final parts = cleanTime.split(':');
-      if (parts.length >= 2) {
-        return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
-      }
-    } catch (e) {}
-    return const TimeOfDay(hour: 0, minute: 0);
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
-  DateTime _getFullDateTime(Prenotazione p) {
-    DateTime date = _parseDate(p.data);
-    TimeOfDay time = _parseTime(p.ora);
-    return DateTime(date.year, date.month, date.day, time.hour, time.minute);
+  int _countPrenotazioniForDay(DateTime date) {
+    return widget.prenotazioni.where((p) {
+      final pDate = _parseDate(p.data);
+      return _isSameDay(pDate, date) && p.stato != "Annullato";
+    }).length;
   }
 
-  bool _isSameDay(DateTime date1, DateTime date2) {
-    return date1.year == date2.year && date1.month == date2.month && date1.day == date2.day;
+  List<Prenotazione> _getPrenotazioniSelected() {
+    return widget.prenotazioni.where((p) {
+      final pDate = _parseDate(p.data);
+      return _isSameDay(pDate, _selectedDate);
+    }).toList();
   }
 
-  int _countPrenotazioniForDay(DateTime day) {
-    return widget.prenotazioni.where((p) => _isSameDay(_parseDate(p.data), day)).length;
+  Color _getStatusColor(String stato) {
+    switch (stato) {
+      case "Confermato": return Colors.green;
+      case "In attesa": return Colors.orange;
+      case "Annullato": return Colors.red;
+      default: return Colors.grey;
+    }
   }
 
-  // Logica calendario
   int _getDaysInMonth(int year, int month) => DateTime(year, month + 1, 0).day;
   int _getFirstDayOffset(int year, int month) => DateTime(year, month, 1).weekday;
-  void _changeMonth(int increment) {
-    setState(() {
-      _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month + increment, 1);
-    });
+
+  void _showCustomCalendarDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        DateTime focusedMonth = DateTime(_selectedDate.year, _selectedDate.month, 1);
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            void changeMonth(int increment) {
+              setDialogState(() {
+                focusedMonth = DateTime(focusedMonth.year, focusedMonth.month + increment, 1);
+              });
+            }
+
+            final baseDate = focusedMonth;
+            final int daysInMonth = _getDaysInMonth(baseDate.year, baseDate.month);
+            final int firstWeekday = _getFirstDayOffset(baseDate.year, baseDate.month);
+            final int emptySlots = firstWeekday - 1;
+
+            final String localeCode = Localizations.localeOf(context).languageCode;
+            String nomeMese = DateFormat.yMMMM(localeCode).format(baseDate);
+            nomeMese = toBeginningOfSentenceCase(nomeMese) ?? nomeMese;
+
+            final List<String> giorniSettimana = ["L", "M", "M", "G", "V", "S", "D"];
+
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              contentPadding: const EdgeInsets.all(12),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.chevron_left),
+                        onPressed: () => changeMonth(-1),
+                      ),
+                      Text(
+                        nomeMese,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.chevron_right),
+                        onPressed: () => changeMonth(1),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: giorniSettimana.map((d) {
+                      return SizedBox(
+                        width: 32,
+                        child: Center(
+                          child: Text(
+                            d,
+                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 8),
+
+                  SizedBox(
+                    height: 250,
+                    width: 300,
+                    child: GridView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 7,
+                        childAspectRatio: 1.0,
+                      ),
+                      itemCount: emptySlots + daysInMonth,
+                      itemBuilder: (context, index) {
+                        if (index < emptySlots) return const SizedBox();
+
+                        final int dayNum = index - emptySlots + 1;
+                        final DateTime dayDate = DateTime(baseDate.year, baseDate.month, dayNum);
+                        final bool isSelected = _isSameDay(dayDate, _selectedDate);
+                        final bool isToday = _isSameDay(dayDate, DateTime.now());
+                        final int count = _countPrenotazioniForDay(dayDate);
+
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedDate = dayDate;
+                            });
+                            Navigator.pop(context);
+                          },
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            alignment: Alignment.center,
+                            children: [
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? Theme.of(context).colorScheme.primary
+                                      : (isToday ? Theme.of(context).colorScheme.primary.withOpacity(0.2) : Colors.transparent),
+                                  shape: BoxShape.circle,
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  "$dayNum",
+                                  style: TextStyle(
+                                    color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                  ),
+                                ),
+                              ),
+                              if (count > 0)
+                                Positioned(
+                                  top: 2,
+                                  right: 2,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(3),
+                                    decoration: BoxDecoration(
+                                      color: Colors.redAccent,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: Theme.of(context).cardColor, width: 1.5),
+                                    ),
+                                    constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      "$count",
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Prenotazione> listaDaMostrare = _isCalendarView
-        ? widget.prenotazioni.where((p) => _isSameDay(_parseDate(p.data), _selectedDate)).toList()
-        : widget.prenotazioni.toList();
+    final Color primaryColor = Theme.of(context).colorScheme.primary;
+    final Color onSurface = Theme.of(context).colorScheme.onSurface;
+    final String localeCode = Localizations.localeOf(context).languageCode;
 
-    listaDaMostrare.sort((a, b) {
-      return _getFullDateTime(a).compareTo(_getFullDateTime(b));
-    });
+    String monthYear = DateFormat.yMMMM(localeCode).format(_selectedDate);
+    monthYear = toBeginningOfSentenceCase(monthYear) ?? monthYear;
+
+    final selectedPrenotazioni = _getPrenotazioniSelected();
 
     return Card(
       elevation: 4.0,
       margin: const EdgeInsets.all(12.0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
+                color: primaryColor,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.translate("Le Tue Prenotazioni"),
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+              child: const Center(
+                child: Text(
+                  "Le Tue Prenotazioni",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Bottone "oggi"
-                      if (_isCalendarView)
-                        TextButton(
-                          onPressed: () {
-                            setState(() {
-                              final now = DateTime.now();
-                              _selectedDate = now; // Seleziona oggi
-                              _focusedMonth = DateTime(now.year, now.month, 1); // Torna al mese corrente
-                            });
-                          },
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white, // Colore testo
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: Text(
-                            AppLocalizations.of(context)!.translate("OGGI"),
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                          ),
-                        ),
-
-                      IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _isCalendarView = !_isCalendarView;
-                            if (_isCalendarView) {
-                              final now = DateTime.now();
-                              _selectedDate = now;
-                              _focusedMonth = DateTime(now.year, now.month, 1);
-                            }
-                          });
-                        },
-                        icon: Icon(
-                          _isCalendarView ? Icons.list_alt_rounded : Icons.calendar_month_rounded,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
-            if (_isCalendarView) _buildCustomCalendar(),
-
-            if (listaDaMostrare.isNotEmpty)
-              ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: _isCalendarView ? 200 : 350),
-                child: Scrollbar(
-                  controller: _scrollController,
-                  thumbVisibility: true,
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    shrinkWrap: true,
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: listaDaMostrare.length,
-                    padding: const EdgeInsets.only(right: 8.0),
-                    itemBuilder: (context, index) {
-                      final p = listaDaMostrare[index];
-                      return _buildPrenotazioneCard(p);
-                    },
-                  ),
-                ),
-              )
-            else
-              _buildEmptyState(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCustomCalendar() {
-    final baseDate = _focusedMonth;
-    final int daysInMonth = _getDaysInMonth(baseDate.year, baseDate.month);
-    final int firstWeekday = _getFirstDayOffset(baseDate.year, baseDate.month);
-    final int emptySlots = firstWeekday - 1;
-
-    String nomeMese = "";
-    if (baseDate.month >= 1 && baseDate.month <= 12) nomeMese = _mesi[baseDate.month-1];
-
-    final List<String> giorniSettimana = [
-      AppLocalizations.of(context)!.translate("Lunedì1"),
-      AppLocalizations.of(context)!.translate("Martedì1"),
-      AppLocalizations.of(context)!.translate("Mercoledì1"),
-      AppLocalizations.of(context)!.translate("Giovedì1"),
-      AppLocalizations.of(context)!.translate("Venerdì1"),
-      AppLocalizations.of(context)!.translate("Sabato1"),
-      AppLocalizations.of(context)!.translate("Domenica1"),
-    ];
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.fromLTRB(4, 4, 4, 6),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          SizedBox(
-            height: 32,
-            child: Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                IconButton(
-                    icon: const Icon(Icons.chevron_left, size: 22),
-                    padding: EdgeInsets.zero,
-                    visualDensity: VisualDensity.compact,
-                    onPressed: () => _changeMonth(-1)
+                Text(
+                  monthYear,
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: onSurface
+                  ),
                 ),
-                Text("$nomeMese ${baseDate.year}", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                IconButton(
-                    icon: const Icon(Icons.chevron_right, size: 22),
-                    padding: EdgeInsets.zero,
-                    visualDensity: VisualDensity.compact,
-                    onPressed: () => _changeMonth(1)
+                Row(
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _selectedDate = DateTime.now();
+                        });
+                      },
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text("vai a oggi"),
+                    ),
+                    const SizedBox(width: 8),
+
+                    // TASTO ESTENDI CALENDARIO
+                    IconButton(
+                      icon: const Icon(Icons.calendar_month_outlined),
+                      color: onSurface,
+                      onPressed: () => _showCustomCalendarDialog(context),
+                      tooltip: "Scegli data",
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ),
 
+            const SizedBox(height: 15),
 
-          // Giorni settimana
-          Padding(
-            padding: const EdgeInsets.only(bottom: 4, top: 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+            // CALENDARIO ORIZZONTALE
+            SizedBox(
+              height: 100,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: 35,
+                separatorBuilder: (ctx, i) => const SizedBox(width: 12),
+                itemBuilder: (context, index) {
+                  // Partiamo da 5 giorni fa
+                  final date = DateTime.now().add(Duration(days: index - 5));
 
-              children: giorniSettimana.asMap().entries.map((entry) {
-            int idx = entry.key;
-            String d = entry.value;
+                  final bool isSelected = _isSameDay(date, _selectedDate);
+                  final bool isToday = _isSameDay(date, DateTime.now());
+                  final int eventCount = _countPrenotazioniForDay(date);
 
-            return SizedBox(
-                key: ValueKey(idx),
-                width: 32,
-                child: Center(
-                    child: Text(
-                        d,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey)
-                    )
-                )
-            );
-          }).toList(),
-            ),
-          ),
+                  String dayName = DateFormat('EEE', localeCode).format(date).toUpperCase();
+                  String dayNumber = DateFormat('d', localeCode).format(date);
 
-          // Griglia giorni
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.zero,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 7,
-              childAspectRatio: 2.3,
-              mainAxisSpacing: 0,
-              crossAxisSpacing: 0,
-            ),
-            itemCount: emptySlots + daysInMonth,
-            itemBuilder: (context, index) {
-              if (index < emptySlots) return const SizedBox();
+                  Color bgColor = isSelected ? primaryColor : Colors.grey.shade100;
+                  Color textColor = isSelected ? Colors.white : onSurface;
 
-              final int dayNum = index - emptySlots + 1;
-              final DateTime dayDate = DateTime(baseDate.year, baseDate.month, dayNum);
-              final bool isSelected = _isSameDay(dayDate, _selectedDate);
-              final bool isToday = _isSameDay(dayDate, DateTime.now());
-              final int count = _countPrenotazioniForDay(dayDate);
-
-              return GestureDetector(
-                onTap: () => setState(() => _selectedDate = dayDate),
-                child: Center(
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      // Cerchio del giorno
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? Theme.of(context).colorScheme.primary
-                              : (isToday ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.2) : Colors.transparent),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            "$dayNum",
-                            style: TextStyle(
-                              color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              fontSize: 15,
-                            ),
+                  return InkWell(
+                    onTap: () {
+                      setState(() {
+                        _selectedDate = date;
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: 70,
+                          height: 90,
+                          decoration: BoxDecoration(
+                            color: bgColor,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: isSelected
+                                ? [BoxShadow(color: primaryColor.withOpacity(0.4), blurRadius: 8, offset: const Offset(0,4))]
+                                : [],
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                dayName,
+                                style: TextStyle(
+                                  color: textColor.withOpacity(0.7),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                dayNumber,
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 22,
+                                ),
+                              ),
+                              if (isToday) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  "oggi",
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ] else const SizedBox(height: 17),
+                            ],
                           ),
                         ),
-                      ),
 
-                      // Badge del numerino
-                      if (count > 0)
-                        Positioned(
-                          right: -6,
-                          top: -6,
-                          child: Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              color: Colors.redAccent,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Theme.of(context).colorScheme.surface, width: 1.5),
-                            ),
-                            constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                            child: Center(
+                        if (eventCount > 0)
+                          Positioned(
+                            top: -5,
+                            right: -5,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: const BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
                               child: Text(
-                                "$count",
+                                eventCount.toString(),
                                 style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
                           ),
-                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(height: 20),
+            const Divider(),
+            const SizedBox(height: 10),
+
+            //  LISTA PRENOTAZIONI
+            if (selectedPrenotazioni.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(Icons.event_available, size: 40, color: Colors.grey.shade300),
+                      const SizedBox(height: 10),
+                      Text(
+                        "Nessuna prenotazione",
+                        style: TextStyle(color: onSurface.withOpacity(0.5)),
+                      ),
                     ],
                   ),
                 ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
+              )
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: selectedPrenotazioni.length,
+                itemBuilder: (context, index) {
+                  final pren = selectedPrenotazioni[index];
+                  Color statusColor = _getStatusColor(pren.stato);
 
-  Widget _buildPrenotazioneCard(Prenotazione p) {
-    return Card(
-      color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[850] : Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.withValues(alpha: 0.2))),
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      elevation: 2,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: (p.stato == AppLocalizations.of(context)!.translate("Confermato") ? Colors.green : Colors.grey).withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(Icons.sports_tennis, color: p.stato == AppLocalizations.of(context)!.translate("Confermato") ? Colors.green : Colors.grey, size: 28),
-        ),
-        title: Text(p.campo, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4.0),
-          child: Text("${p.data} • ${p.ora}", style: const TextStyle(fontSize: 14)),
-        ),
-        trailing: Chip(
-          label: Text(p.stato, style: const TextStyle(color: Colors.white, fontSize: 12)),
-          backgroundColor: p.stato == AppLocalizations.of(context)!.translate("Confermato") ? Colors.green : Colors.redAccent,
-        ),
-        onTap: () => CustomSnackBar.show(context, AppLocalizations.of(context)!.translate("Prenotazione di") + " " + p.campo)
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      child: Center(
-        child: Column(
-          children: [
-            Icon(_isCalendarView ? Icons.event_busy : Icons.inbox, size: 40, color: Colors.grey.withValues(alpha: 0.4)),
-            const SizedBox(height: 8),
-            Text(
-              _isCalendarView
-                  ? AppLocalizations.of(context)!.translate("Nessuna prenotazione il") +
-                  " ${_selectedDate.day}/${_selectedDate.month}"
-                  : AppLocalizations.of(context)!.translate("Non hai prenotazioni attive!"),
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
-            ),
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.1),
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      leading: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(Icons.sports_tennis, color: primaryColor),
+                      ),
+                      title: Text(
+                        pren.campo,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(Icons.access_time, size: 14, color: Colors.grey.shade600),
+                              const SizedBox(width: 4),
+                              Text(
+                                pren.ora,
+                                style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      trailing: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: statusColor.withOpacity(0.3)),
+                        ),
+                        child: Text(
+                          pren.stato,
+                          style: TextStyle(
+                            color: statusColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
           ],
         ),
       ),
