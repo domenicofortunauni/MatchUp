@@ -6,6 +6,7 @@ import 'News.dart';
 import 'ChatList.dart';
 import 'package:matchup/UI/pages/Login.dart';
 import '../../main.dart';
+import 'Prenota.dart';
 
 class Layout extends StatefulWidget {
   final String title;
@@ -79,7 +80,7 @@ class _LayoutState extends State<Layout> {
             ChatListPage(),
             Home(),
             Sfide(),
-            Home(),
+            Prenota(),
           ],
         ),
         )
