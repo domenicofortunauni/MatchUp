@@ -41,6 +41,10 @@
   "Novembre": "November",
   "Dicembre": "December",
   "Le Tue Prenotazioni": "Your Reservations",
+  "oggi": "today",
+  "Annullato": "Cancelled",
+  "Vai a oggi": "Go to today",
+  "Scegli data": "Choose date",
   "OGGI": "TODAY",
   "Lunedì1": "M",
   "Martedì1": "T",
@@ -52,6 +56,7 @@
   "Confermato": "Confirmed",
   "Prenotazione di": "Reservation for",
   "Nessuna prenotazione il": "No reservation on",
+  "Nessuna prenotazione": "No reservation",
   "Non hai prenotazioni attive!": "No active reservations!",
   "Statistiche Partite": "Match Statistics",
   "Partite Giocate:": "Matches Played:",
@@ -84,5 +89,10 @@
   " • Set Persi:": " • Sets Lost:",
   "Vittoria": "Win",
   "Sconfitta": "Loss",
-  "Nessuna partita nello storico!": "No matches in history!"
+  "Nessuna partita nello storico!": "No matches in history!",
+  "Data:": "Date:",
+  "Logout": "Logout",
+  "Impostazioni": "Settings",
+  "Lingua": "Language",
+  "Cambia Tema": "Change Theme"
 }

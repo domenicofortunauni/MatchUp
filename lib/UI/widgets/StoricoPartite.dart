@@ -99,7 +99,8 @@ class _StoricoPartiteWidgetState extends State<StoricoPartiteWidget> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "Data: ${DateFormat('dd MMMM yyyy').format(partita.data)}",
+                                  AppLocalizations.of(context)!.translate("Data:") +
+                                      " ${DateFormat('dd MMMM yyyy').format(partita.data)}",
                                   style: const TextStyle(fontSize: 16),
                                 ),
                                 Text(

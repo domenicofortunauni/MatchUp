@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 
 
 class Prenotazione {
@@ -44,7 +45,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
   int _countPrenotazioniForDay(DateTime date) {
     return widget.prenotazioni.where((p) {
       final pDate = _parseDate(p.data);
-      return _isSameDay(pDate, date) && p.stato != "Annullato";
+      return _isSameDay(pDate, date) && p.stato != AppLocalizations.of(context)!.translate("Annullato");
     }).length;
   }
 
@@ -90,7 +91,13 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
             String nomeMese = DateFormat.yMMMM(localeCode).format(baseDate);
             nomeMese = toBeginningOfSentenceCase(nomeMese) ?? nomeMese;
 
-            final List<String> giorniSettimana = ["L", "M", "M", "G", "V", "S", "D"];
+            final List<String> giorniSettimana = [AppLocalizations.of(context)!.translate("Lunedì1"),
+            AppLocalizations.of(context)!.translate("Martedì1"),
+            AppLocalizations.of(context)!.translate("Mercoledì1"),
+            AppLocalizations.of(context)!.translate("Giovedì1"),
+            AppLocalizations.of(context)!.translate("Venerdì1"),
+            AppLocalizations.of(context)!.translate("Sabato1"),
+            AppLocalizations.of(context)!.translate("Domenica1"),];
 
             return AlertDialog(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -170,7 +177,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
                                 decoration: BoxDecoration(
                                   color: isSelected
                                       ? Theme.of(context).colorScheme.primary
-                                      : (isToday ? Theme.of(context).colorScheme.primary.withOpacity(0.2) : Colors.transparent),
+                                      : (isToday ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.2) : Colors.transparent),
                                   shape: BoxShape.circle,
                                 ),
                                 alignment: Alignment.center,
@@ -247,9 +254,9 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
                 color: primaryColor,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  "Le Tue Prenotazioni",
+                  AppLocalizations.of(context)!.translate("Le Tue Prenotazioni"),
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -285,7 +292,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                      child: const Text("vai a oggi"),
+                      child: Text(AppLocalizations.of(context)!.translate("Vai a oggi")),
                     ),
                     const SizedBox(width: 8),
 
@@ -294,7 +301,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
                       icon: const Icon(Icons.calendar_month_outlined),
                       color: onSurface,
                       onPressed: () => _showCustomCalendarDialog(context),
-                      tooltip: "Scegli data",
+                      tooltip: AppLocalizations.of(context)!.translate("Scegli data"),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
@@ -343,7 +350,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
                             color: bgColor,
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: isSelected
-                                ? [BoxShadow(color: primaryColor.withOpacity(0.4), blurRadius: 8, offset: const Offset(0,4))]
+                                ? [BoxShadow(color: primaryColor.withValues(alpha: 0.4), blurRadius: 8, offset: const Offset(0,4))]
                                 : [],
                           ),
                           child: Column(
@@ -352,7 +359,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
                               Text(
                                 dayName,
                                 style: TextStyle(
-                                  color: textColor.withOpacity(0.7),
+                                  color: textColor.withValues(alpha: 0.7),
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12,
                                 ),
@@ -369,7 +376,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
                               if (isToday) ...[
                                 const SizedBox(height: 4),
                                 Text(
-                                  "oggi",
+                                  AppLocalizations.of(context)!.translate("oggi"),
                                   style: TextStyle(
                                     color: textColor,
                                     fontWeight: FontWeight.w500,
@@ -422,8 +429,8 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
                       Icon(Icons.event_available, size: 40, color: Colors.grey.shade300),
                       const SizedBox(height: 10),
                       Text(
-                        "Nessuna prenotazione",
-                        style: TextStyle(color: onSurface.withOpacity(0.5)),
+                        AppLocalizations.of(context)!.translate("Nessuna prenotazione"),
+                        style: TextStyle(color: onSurface.withValues(alpha: 0.5)),
                       ),
                     ],
                   ),
@@ -445,7 +452,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
+                          color: Colors.grey.withValues(alpha: 0.1),
                           blurRadius: 5,
                           offset: const Offset(0, 2),
                         ),
@@ -457,7 +464,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
                       leading: Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: primaryColor.withOpacity(0.1),
+                          color: primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(Icons.sports_tennis, color: primaryColor),
@@ -485,9 +492,9 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
                       trailing: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color: statusColor.withOpacity(0.1),
+                          color: statusColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: statusColor.withOpacity(0.3)),
+                          border: Border.all(color: statusColor.withValues(alpha: 0.3)),
                         ),
                         child: Text(
                           pren.stato,

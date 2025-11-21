@@ -40,6 +40,10 @@
   "Novembre": "Novembre",
   "Dicembre": "Dicembre",
   "Le Tue Prenotazioni": "Le Tue Prenotazioni",
+  "oggi": "oggi",
+  "Annullato": "Annullato",
+  "Vai a oggi": "Vai a oggi",
+  "Scegli data": "Scegli data",
   "OGGI": "OGGI",
   "Lunedì1": "L",
   "Martedì1": "M",
@@ -51,6 +55,7 @@
   "Confermato": "Confermato",
   "Prenotazione di": "Prenotazione di",
   "Nessuna prenotazione il": "Nessuna prenotazione il",
+  "Nessuna prenotazione": "Nessuna prenotazione",
   "Non hai prenotazioni attive!": "Non hai prenotazioni attive!",
   "Statistiche Partite": "Statistiche Partite",
   "Partite Giocate:": "Partite Giocate:",
@@ -83,5 +88,10 @@
   " • Set Persi:": " • Set Persi:",
   "Vittoria": "Vittoria",
   "Sconfitta": "Sconfitta",
-  "Nessuna partita nello storico!": "Nessuna partita nello storico!"
+  "Nessuna partita nello storico!": "Nessuna partita nello storico!",
+  "Data:": "Data:",
+  "Logout": "Logout",
+  "Impostazioni": "Impostazioni",
+  "Lingua": "Lingua",
+  "Cambia Tema": "Cambia Tema"
 }
