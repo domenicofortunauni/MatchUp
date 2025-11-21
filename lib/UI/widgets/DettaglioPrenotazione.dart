@@ -14,6 +14,7 @@ class DettaglioPrenotazione extends StatefulWidget {
 
 class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
   final ScrollController _scrollController = ScrollController();
+  final ScrollController _calendarScrollController = ScrollController();
 
   // Data selezionata (inizialmente oggi)
   DateTime _selectedDate = DateTime.now();
@@ -33,6 +34,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _calendarScrollController.dispose();
     super.dispose();
   }
 
@@ -129,6 +131,15 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
   // Imposta la data a oggi
   void _resetToToday() {
     final now = DateTime.now();
+
+    if (_calendarScrollController.hasClients) {
+      _calendarScrollController.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOutQuart,
+      );
+    }
+
     if (!_isSameDay(now, _selectedDate)) {
       setState(() {
         _selectedDate = now;
@@ -179,6 +190,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
     final String localeCode = Localizations.localeOf(context).languageCode;
     final Color primaryColor = Theme.of(context).colorScheme.primary;
     final Color onSurface = Theme.of(context).colorScheme.onSurface;
+    final Color secondaryColor = Theme.of(context).colorScheme.secondary;
 
     String monthYear = DateFormat.yMMMM(localeCode).format(_selectedDate);
     monthYear = toBeginningOfSentenceCase(monthYear) ?? monthYear;
@@ -193,7 +205,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
               style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: onSurface
+                  color: onSurface,
               ),
             ),
             Row(
@@ -218,6 +230,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
         SizedBox(
           height: 90,
           child: ListView.separated(
+            controller: _calendarScrollController,
             scrollDirection: Axis.horizontal,
             itemCount: 30,
             separatorBuilder: (ctx, i) => const SizedBox(width: 12),
@@ -230,8 +243,8 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
               String dayName = DateFormat('EEE', localeCode).format(date).toUpperCase(); // LUN, MAR...
               String dayNumber = DateFormat('d', localeCode).format(date); // 20, 21...
 
-              Color bgColor = isSelected ? primaryColor : Colors.grey.shade100;
-              Color textColor = isSelected ? Colors.white : onSurface;
+              Color bgColor = isSelected ? primaryColor : secondaryColor;
+              Color textColor = isSelected ? Colors.white : Colors.black;
 
               return InkWell(
                 onTap: () {
@@ -254,7 +267,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                       Text(
                         dayName,
                         style: TextStyle(
-                          color: textColor.withOpacity(0.7),
+                          color: textColor.withValues(alpha: 0.7),
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
                         ),
@@ -320,7 +333,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
               height: 200,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.2),
+                color: primaryColor.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Center(
@@ -336,7 +349,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
             ),
             Text(
               "${widget.campo.indirizzo}, ${widget.campo.citta}",
-              style: TextStyle(color: onSurfaceColor.withOpacity(0.6), fontSize: 16),
+              style: TextStyle(color: onSurfaceColor.withValues(alpha: 0.6), fontSize: 16),
             ),
             const Divider(height: 30),
 
@@ -350,7 +363,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
             if (selectableSlots.isEmpty)
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Text("Nessun orario disponibile.", style: TextStyle(color: onSurfaceColor.withOpacity(0.5))),
+                child: Text("Nessun orario disponibile.", style: TextStyle(color: onSurfaceColor.withValues(alpha: 0.5))),
               )
             else
               GridView.builder(
@@ -376,7 +389,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                     },
                     child: Container(
                       decoration: BoxDecoration(
-                        color: isSelected ? primaryColor : Colors.grey.shade200,
+                        color: isSelected ? primaryColor : secondaryColor,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       alignment: Alignment.center,
@@ -406,7 +419,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                   const SizedBox(width: 8),
                   Text(
                     widget.campo.nome.toUpperCase(),
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: onSurfaceColor.withOpacity(0.7)),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: onSurfaceColor.withValues(alpha: 0.7)),
                   ),
                 ],
               ),
@@ -465,7 +478,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                                           Text(
                                             _formatDurationText(durata),
                                             style: TextStyle(
-                                                color: Theme.of(context).colorScheme.onSecondary.withOpacity(0.8),
+                                                color: Theme.of(context).colorScheme.onSecondary.withValues(alpha: 0.8),
                                                 fontSize: 14
                                             ),
                                           ),
@@ -491,7 +504,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Text("Sii il primo", style: TextStyle(color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.8), fontSize: 11)),
+                                      Text("Sii il primo", style: TextStyle(color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 11)),
                                       Text("Organizza!", style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
                                     ],
                                   ),

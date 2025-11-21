@@ -29,7 +29,6 @@ class PrenotazioniWidget extends StatefulWidget {
 class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
   DateTime _selectedDate = DateTime.now();
 
-
   DateTime _parseDate(String dateStr) {
     try {
       return DateFormat("dd/MM/yyyy").parse(dateStr);

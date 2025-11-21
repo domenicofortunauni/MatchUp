@@ -91,7 +91,7 @@ class _PrenotaState extends State<Prenota> {
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onPrimary,
+                        color: Colors.white,
                       ),
                     ),
                   ),
