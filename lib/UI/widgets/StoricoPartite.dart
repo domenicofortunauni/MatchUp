@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 
 class Partita {
   final String avversario;
@@ -58,9 +59,9 @@ class _StoricoPartiteWidgetState extends State<StoricoPartiteWidget> {
                 color: Theme.of(context).colorScheme.primary,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  "Storico Partite",
+                  AppLocalizations.of(context)!.translate("Storico Partite"),
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -98,19 +99,27 @@ class _StoricoPartiteWidgetState extends State<StoricoPartiteWidget> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "Data: ${DateFormat('dd MMMM yyyy').format(partita.data)}",
+                                  AppLocalizations.of(context)!.translate("Data:") +
+                                      " ${DateFormat('dd MMMM yyyy').format(partita.data)}",
                                   style: const TextStyle(fontSize: 16),
                                 ),
                                 Text(
-                                  "Game Vinti: ${partita.gameVinti}  •  Game Persi: ${partita.gamePersi}",
+                                  AppLocalizations.of(context)!.translate("Game Vinti:") +
+                                      " ${partita.gameVinti}" +
+                                      AppLocalizations.of(context)!.translate(" • Game Persi:") +
+                                      " ${partita.gamePersi}",
                                   style: const TextStyle(fontSize: 16),
                                 ),
                                 Text(
-                                  "Set Vinti: ${partita.setVinti}  •  Set Persi: ${partita.setPersi}",
+                                  AppLocalizations.of(context)!.translate("Set Vinti:") +
+                                      " ${partita.setVinti}" +
+                                      AppLocalizations.of(context)!.translate(" • Set Persi:") +
+                                      " ${partita.setPersi}",
                                   style: const TextStyle(fontSize: 16),
                                 ),
                                 Text(
-                                  partita.isVittoria ? "Vittoria" : "Sconfitta",
+                                  partita.isVittoria ? AppLocalizations.of(context)!.translate("Vittoria") :
+                                  AppLocalizations.of(context)!.translate("Sconfitta"),
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
@@ -128,11 +137,11 @@ class _StoricoPartiteWidgetState extends State<StoricoPartiteWidget> {
                 ),
               )
             else
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(vertical: 20.0),
                 child: Center(
                   child: Text(
-                    "Nessuna partita nello storico!",
+                    AppLocalizations.of(context)!.translate("Nessuna partita nello storico!"),
                     style: TextStyle(fontSize: 18, color: Colors.grey),
                   ),
                 ),

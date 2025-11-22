@@ -38,6 +38,7 @@ class _LayoutState extends State<Layout> {
             actions: [
               IconButton(
                 icon: Icon(Icons.logout_rounded),
+                tooltip: AppLocalizations.of(context)!.translate("Logout"),
                 onPressed: () {
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(builder: (context) => const Login()),
@@ -105,27 +106,28 @@ class _LayoutState extends State<Layout> {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
             ),
-            child: const Text(
-              'Impostazioni',
+            child: Text(
+              AppLocalizations.of(context)!.translate("Impostazioni"),
               style: TextStyle(color: Colors.white, fontSize: 24),
             ),
           ),
 
           // --- Sezione Lingua ---
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text('Lingua', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            child: Text(AppLocalizations.of(context)!.translate("Lingua"), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           ),
 
           _buildLanguageTile(context, 'Italiano', 'it', appState, currentLang),
           _buildLanguageTile(context, 'English', 'en', appState, currentLang),
           _buildLanguageTile(context, 'Français', 'fr', appState, currentLang),
+          _buildLanguageTile(context, 'Español', 'es', appState, currentLang),
 
           const Divider(),
 
           // --- Sezione Tema ---
           ListTile(
-            title: const Text('Cambia Tema'),
+            title: Text(AppLocalizations.of(context)!.translate("Cambia Tema")),
             trailing: GestureDetector(
               onTap: () {
                 final appState = MyApp.of(context);
