@@ -323,7 +323,12 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
                   String dayName = DateFormat('EEE', localeCode).format(date).toUpperCase();
                   String dayNumber = DateFormat('d', localeCode).format(date);
 
-                  Color bgColor = isSelected ? primaryColor : Colors.grey.shade100;
+                  Color? bgColor = isSelected
+                      ? Theme.of(context).colorScheme.primary
+                      : (Theme.of(context).brightness == Brightness.light
+                      ? Colors.grey[200] // tema chiaro
+                      : Colors.grey[800]); // tema scuro
+
                   Color textColor = isSelected ? Colors.white : onSurface;
 
                   return InkWell(

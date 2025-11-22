@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import '../behaviors/AppLocalizations.dart';
 import 'Home.dart';
 import 'Sfide.dart';
-import 'News.dart';
 import 'ChatList.dart';
+import 'Tornei.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:matchup/UI/pages/Login.dart';
 import '../../main.dart';
 import 'Prenota.dart';
@@ -68,7 +69,7 @@ class _LayoutState extends State<Layout> {
                 ),
                 labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                 tabs: [
-                  Tab(text: AppLocalizations.of(context)!.translate("News"), icon: Icon(Icons.newspaper_outlined)),
+                  Tab(text: AppLocalizations.of(context)!.translate("Tornei"), icon: Icon(FontAwesomeIcons.trophy)),
                   Tab(text: AppLocalizations.of(context)!.translate("Chat"), icon: Icon(Icons.chat_outlined)),
                   Tab(text: AppLocalizations.of(context)!.translate("Home"), icon: Icon(Icons.home_rounded)),
                   Tab(text: AppLocalizations.of(context)!.translate("Sfida"), icon: Icon(Icons.sports_tennis_outlined)),
@@ -79,7 +80,7 @@ class _LayoutState extends State<Layout> {
           ),
           body: TabBarView(
           children: [
-            News(),
+            TorneiPage(),
             ChatListPage(),
             Home(),
             Sfide(),
