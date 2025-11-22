@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:matchup/UI/pages/Prenota.dart';
 import 'package:matchup/UI/widgets/CustomSnackBar.dart';
+import 'package:matchup/UI/widgets/HorizontalWeekCalendar.dart';
 
 class DettaglioPrenotazione extends StatefulWidget {
   final CampoModel campo;
@@ -14,9 +15,7 @@ class DettaglioPrenotazione extends StatefulWidget {
 
 class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
   final ScrollController _scrollController = ScrollController();
-  final ScrollController _calendarScrollController = ScrollController();
 
-  // Data selezionata (inizialmente oggi)
   DateTime _selectedDate = DateTime.now();
   String? _selectedTimeSlot;
 
@@ -34,12 +33,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
   @override
   void dispose() {
     _scrollController.dispose();
-    _calendarScrollController.dispose();
     super.dispose();
-  }
-
-  bool _isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
   int _toMinutes(String time) {
@@ -104,50 +98,6 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
     });
   }
 
-  // Apre il calendario completo
-  Future<void> _pickDateFromCalendar(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 90)),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme,
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (picked != null && !_isSameDay(picked, _selectedDate)) {
-      setState(() {
-        _selectedDate = picked;
-        _selectedTimeSlot = null;
-      });
-    }
-  }
-
-  // Imposta la data a oggi
-  void _resetToToday() {
-    final now = DateTime.now();
-
-    if (_calendarScrollController.hasClients) {
-      _calendarScrollController.animateTo(
-        0.0,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeOutQuart,
-      );
-    }
-
-    if (!_isSameDay(now, _selectedDate)) {
-      setState(() {
-        _selectedDate = now;
-        _selectedTimeSlot = null;
-      });
-    }
-  }
-
   void _confermaPrenotazione(String nomeCampo, int durataMinuti) {
     double ore = durataMinuti / 60.0;
     double totale = widget.campo.prezzoOrario * ore;
@@ -185,127 +135,6 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
     );
   }
 
-  //Calendario orizzontale
-  Widget _buildHorizontalCalendar(BuildContext context) {
-    final String localeCode = Localizations.localeOf(context).languageCode;
-    final Color primaryColor = Theme.of(context).colorScheme.primary;
-    final Color onSurface = Theme.of(context).colorScheme.onSurface;
-    final Color secondaryColor = Theme.of(context).colorScheme.secondary;
-
-    String monthYear = DateFormat.yMMMM(localeCode).format(_selectedDate);
-    monthYear = toBeginningOfSentenceCase(monthYear) ?? monthYear;
-
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              monthYear,
-              style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: onSurface,
-              ),
-            ),
-            Row(
-              children: [
-                TextButton(
-                  onPressed: _resetToToday,
-                  child: const Text("vai a oggi", style: TextStyle(fontSize: 14)),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.calendar_today_outlined),
-                  onPressed: () => _pickDateFromCalendar(context),
-                  color: onSurface,
-                ),
-              ],
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 10),
-
-
-        SizedBox(
-          height: 90,
-          child: ListView.separated(
-            controller: _calendarScrollController,
-            scrollDirection: Axis.horizontal,
-            itemCount: 30,
-            separatorBuilder: (ctx, i) => const SizedBox(width: 12),
-            itemBuilder: (context, index) {
-              final date = DateTime.now().add(Duration(days: index));
-
-              final bool isSelected = _isSameDay(date, _selectedDate);
-              final bool isToday = _isSameDay(date, DateTime.now());
-
-              String dayName = DateFormat('EEE', localeCode).format(date).toUpperCase(); // LUN, MAR...
-              String dayNumber = DateFormat('d', localeCode).format(date); // 20, 21...
-
-              Color bgColor = isSelected ? primaryColor : secondaryColor;
-              Color textColor = isSelected ? Colors.white : Colors.black;
-
-              return InkWell(
-                onTap: () {
-                  setState(() {
-                    _selectedDate = date;
-                    _selectedTimeSlot = null;
-                  });
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  width: 70,
-                  decoration: BoxDecoration(
-                    color: bgColor,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-
-                      Text(
-                        dayName,
-                        style: TextStyle(
-                          color: textColor.withValues(alpha: 0.7),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-
-                      Text(
-                        dayNumber,
-                        style: TextStyle(
-                          color: textColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 22,
-                        ),
-                      ),
-
-                      if (isToday) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          "oggi",
-                          style: TextStyle(
-                            color: textColor,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ] else
-                        const SizedBox(height: 17),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     List<String> selectableSlots = _getSelectableSlots();
@@ -316,6 +145,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
     final Color primaryColor = Theme.of(context).colorScheme.primary;
     final Color secondaryColor = Theme.of(context).colorScheme.secondary;
     final Color onSurfaceColor = Theme.of(context).colorScheme.onSurface;
+    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -353,11 +183,19 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
             ),
             const Divider(height: 30),
 
-            _buildHorizontalCalendar(context),
+            HorizontalWeekCalendar(
+              selectedDate: _selectedDate,
+              onDateChanged: (newDate) {
+                setState(() {
+                  _selectedDate = newDate;
+                  _selectedTimeSlot = null;
+                });
+              },
+            ),
+            // ----------------------------------------------------
 
             const SizedBox(height: 25),
 
-            // Orari
             Text("Seleziona Orario", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: onSurfaceColor)),
             const SizedBox(height: 10),
             if (selectableSlots.isEmpty)
@@ -380,6 +218,14 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                   final time = selectableSlots[index];
                   final isSelected = _selectedTimeSlot == time;
 
+                  Color slotBgColor;
+                  if (isSelected) {
+                    slotBgColor = primaryColor;
+                  } else {
+                    slotBgColor = isDarkMode ? secondaryColor : Colors.grey.shade200;
+                  }
+                  Color slotTextColor = isSelected ? Colors.white : Colors.black87;
+
                   return InkWell(
                     onTap: () {
                       setState(() {
@@ -389,14 +235,14 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                     },
                     child: Container(
                       decoration: BoxDecoration(
-                        color: isSelected ? primaryColor : secondaryColor,
+                        color: slotBgColor,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       alignment: Alignment.center,
                       child: Text(
                         time,
                         style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.black87,
+                          color: slotTextColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
                         ),
@@ -408,7 +254,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
 
             const SizedBox(height: 30),
 
-            //lista campi e opzioni
+            // Lista Campi e Pulsanti
             if (_selectedTimeSlot != null) ...[
               const Divider(),
               const SizedBox(height: 10),
@@ -431,7 +277,6 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                 itemCount: _campiDisponibili.length,
                 itemBuilder: (ctx, index) {
                   final nomeCampo = _campiDisponibili[index];
-
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -444,7 +289,6 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                           ],
                         ),
                       ),
-
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
@@ -452,7 +296,6 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                             if (availableDurations.isNotEmpty)
                               ...availableDurations.map((durata) {
                                 double prezzo = widget.campo.prezzoOrario * (durata / 60.0);
-
                                 return Padding(
                                   padding: const EdgeInsets.only(right: 10.0),
                                   child: InkWell(
@@ -504,8 +347,8 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Text("Sii il primo", style: TextStyle(color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 11)),
-                                      Text("Organizza!", style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                                      Text("Sii il primo", style: TextStyle(color: Colors.white, fontSize: 11)),
+                                      Text("Organizza!", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                                     ],
                                   ),
                                 ),

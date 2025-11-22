@@ -18,31 +18,31 @@ class _HomeState extends State<Home> {
     List<Prenotazione> prenotazioni = [
       Prenotazione(
         campo: "Campo Centrale",
-        data: "17/11/2025",
+        data: "24/11/2025",
         ora: "18:00",
         stato: "Confermato",
       ),
       Prenotazione(
         campo: "Campo 2 (Terra Rossa)",
-        data: "17/11/2025",
+        data: "24/11/2025",
         ora: "10:30",
         stato: "Confermato",
       ),
       Prenotazione(
         campo: "Campo 3 (Sintetico)",
-        data: "19/11/2025",
+        data: "25/11/2025",
         ora: "09:00",
         stato: "In attesa",
       ),
       Prenotazione(
         campo: "Campo Centrale",
-        data: "20/11/2025",
+        data: "25/11/2025",
         ora: "14:00",
         stato: "Annullato",
       ),
       Prenotazione(
         campo: "Campo Centrale",
-        data: "17/11/2025",
+        data: "26/11/2025",
         ora: "18:00",
         stato: "Confermato",
       ),
