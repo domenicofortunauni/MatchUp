@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchup/UI/widgets/DettaglioPrenotazione.dart';
+import 'package:matchup/UI/widgets/MappaTennis.dart';
 
 // Modello dati per il campo
 class CampoModel {
@@ -96,6 +97,29 @@ class _PrenotaState extends State<Prenota> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
+
+                // --- NUOVO BOTTONE MAPPA ---
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const MappaTennis()),
+                    );
+                  },
+                  icon: const Icon(Icons.map_outlined),
+                  label: const Text("Cerca Campi su Mappa"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: primaryColor,
+                    elevation: 1,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: primaryColor.withValues(alpha: 0.5)),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
                 const SizedBox(height: 20),
 
                 // BARRA DI RICERCA
@@ -104,14 +128,14 @@ class _PrenotaState extends State<Prenota> {
                   style: TextStyle(color: onSurfaceColor),
                   decoration: InputDecoration(
                     labelText: 'Cerca campo o città...',
-                    labelStyle: TextStyle(color: onSurfaceColor.withOpacity(0.6)),
-                    prefixIcon: Icon(Icons.search, color: onSurfaceColor.withOpacity(0.6)),
+                    labelStyle: TextStyle(color: onSurfaceColor.withValues(alpha: 0.6)),
+                    prefixIcon: Icon(Icons.search, color: onSurfaceColor.withValues(alpha: 0.6)),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
-                    fillColor: onSurfaceColor.withOpacity(0.05),
+                    fillColor: onSurfaceColor.withValues(alpha: 0.05),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -123,7 +147,7 @@ class _PrenotaState extends State<Prenota> {
                     child: Center(
                       child: Text(
                           "Nessun campo trovato.",
-                          style: TextStyle(color: onSurfaceColor.withOpacity(0.6))
+                          style: TextStyle(color: onSurfaceColor.withValues(alpha: 0.6))
                       ),
                     ),
                   )
@@ -157,7 +181,7 @@ class _PrenotaState extends State<Prenota> {
                                   width: 80,
                                   height: 80,
                                   decoration: BoxDecoration(
-                                    color: primaryColor.withOpacity(0.15),
+                                    color: primaryColor.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Icon(Icons.sports_tennis, size: 40, color: primaryColor),
@@ -180,13 +204,13 @@ class _PrenotaState extends State<Prenota> {
                                       const SizedBox(height: 4),
                                       Row(
                                         children: [
-                                          Icon(Icons.location_on, size: 14, color: onSurfaceColor.withOpacity(0.5)),
+                                          Icon(Icons.location_on, size: 14, color: onSurfaceColor.withValues(alpha: 0.5)),
                                           const SizedBox(width: 4),
                                           Expanded(
                                             child: Text(
                                               "${campo.indirizzo}, ${campo.citta}",
                                               style: TextStyle(
-                                                  color: onSurfaceColor.withOpacity(0.6),
+                                                  color: onSurfaceColor.withValues(alpha: 0.6),
                                                   fontSize: 13
                                               ),
                                               overflow: TextOverflow.ellipsis,
@@ -224,7 +248,7 @@ class _PrenotaState extends State<Prenota> {
                                     ],
                                   ),
                                 ),
-                                Icon(Icons.chevron_right, color: onSurfaceColor.withOpacity(0.4)),
+                                Icon(Icons.chevron_right, color: onSurfaceColor.withValues(alpha: 0.4)),
                               ],
                             ),
                           ),

@@ -41,6 +41,8 @@ dependencies:
   flutter_chat_core: any
   intl: any
   font_awesome_flutter: ^10.12.0
+  flutter_map: ^6.0.0
+  latlong2: ^0.9.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
