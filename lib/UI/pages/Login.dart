@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matchup/UI/pages/Layout.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
-import 'package:matchup/main.dart';
+import 'package:matchup/UI/widgets/MenuLaterale.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -70,7 +70,12 @@ class _LoginState extends State<Login> {
     final primaryColor = Theme.of(context).colorScheme.primary;
 
     return Scaffold(
-      drawer: _buildSettingsDrawer(context),
+      drawer: MenuLaterale(headerImage: Image.asset(
+        'assets/images/appBarLogo.png',
+        height: 60,
+        fit: BoxFit.contain,
+      ),
+      ),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -299,57 +304,6 @@ class _LoginState extends State<Login> {
           ),
         ),
       ),
-    );
-  }
-  
-  Widget _buildSettingsDrawer(BuildContext context) {
-    final appState = MyApp.of(context);
-    final currentLang = appState?.currentLocale.languageCode ?? 'it';
-
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: <Widget>[
-          DrawerHeader(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            child: const Text(
-              'Impostazioni',
-              style: TextStyle(color: Colors.white, fontSize: 24),
-            ),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text('Lingua', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          ),
-          _buildLanguageTile(context, 'Italiano', 'it', appState, currentLang),
-          _buildLanguageTile(context, 'English', 'en', appState, currentLang),
-          _buildLanguageTile(context, 'Français', 'fr', appState, currentLang),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.brightness_6),
-            title: const Text('Cambia Tema'),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLanguageTile(BuildContext context, String name, String code, MyAppState? appState, String currentLang) {
-    return ListTile(
-      leading: const Icon(Icons.language),
-      title: Text(name),
-      onTap: () {
-        if (appState != null) {
-          appState.setLocale(Locale(code));
-        }
-        Navigator.pop(context);
-      },
-      trailing: currentLang == code ? const Icon(Icons.check) : null,
     );
   }
 }

@@ -309,11 +309,18 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
               String dayNumber = DateFormat('d', localeCode).format(date);
 
               Color bgColor;
+              Color borderColor;
+
               if (isSelected) {
                 bgColor = primaryColor;
+                //Se è selezionato, il bordo è uguale allo sfondo (o trasparente)
+                borderColor = primaryColor;
               } else {
                 bgColor = isDarkMode ? secondaryColor : Colors.grey.shade100;
+                //Se non è selezionato, mettiamo un bordino grigio per contrasto
+                borderColor = isDarkMode ? Colors.grey.shade700 : Colors.grey.shade300;
               }
+
               Color textColor = isSelected ? Colors.white : Colors.black;
 
               return InkWell(
@@ -328,6 +335,10 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
                       decoration: BoxDecoration(
                         color: bgColor,
                         borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                            color: borderColor,
+                            width: 1.5
+                        ),
                         boxShadow: isSelected
                             ? [BoxShadow(color: primaryColor.withValues(alpha: 0.4), blurRadius: 8, offset: const Offset(0, 4))]
                             : [],

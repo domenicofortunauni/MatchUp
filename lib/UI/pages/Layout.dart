@@ -6,8 +6,8 @@ import 'ChatList.dart';
 import 'Tornei.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:matchup/UI/pages/Login.dart';
-import '../../main.dart';
 import 'Prenota.dart';
+import 'package:matchup/UI/widgets/MenuLaterale.dart';
 
 class Layout extends StatefulWidget {
   final String title;
@@ -19,6 +19,41 @@ class Layout extends StatefulWidget {
 }
 
 class _LayoutState extends State<Layout> {
+  void _mostraLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.translate("Logout")),
+          content: Text(AppLocalizations.of(context)!.translate("Sei sicuro di voler uscire?")),
+          actions: [
+            //Tasto Annulla
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(); //Chiude solo il popup
+              },
+              child: Text(AppLocalizations.of(context)!.translate("Annulla")),
+            ),
+            //Tasto Conferma Logout
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(); //Chiude prima il popup
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const Login()),
+                      (route) => false,
+                );
+              },
+              child: Text(
+                AppLocalizations.of(context)!.translate("Esci"),
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -26,7 +61,12 @@ class _LayoutState extends State<Layout> {
         initialIndex: 2,
         child: Scaffold(
           extendBody: true,
-          drawer: _buildSettingsDrawer(context),
+          drawer: MenuLaterale(headerImage: Image.asset(
+            'assets/images/appBarLogo.png',
+            height: 60,
+            fit: BoxFit.contain,
+          ),
+          ),
           appBar: AppBar(
               title: Image.asset(
                 'assets/images/appBarLogo.png',
@@ -39,16 +79,9 @@ class _LayoutState extends State<Layout> {
               IconButton(
                 icon: Icon(Icons.logout_rounded),
                 tooltip: AppLocalizations.of(context)!.translate("Logout"),
-                onPressed: () {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const Login()),
-                        (route) => false,
-                  );
-                },
-              ),
+                onPressed: () => _mostraLogoutDialog(context),
+                  ),
             ],
-
-
           ),
           bottomNavigationBar: Padding(
           padding:  const EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -89,124 +122,6 @@ class _LayoutState extends State<Layout> {
           ],
         ),
         )
-    );
-  }
-
-  Widget _buildSettingsDrawer(BuildContext context) {
-    // Recupera l'istanza dello stato globale di MyApp
-    final appState = MyApp.of(context);
-    // Recupera il codice della lingua corrente per il checkmark
-    final currentLang = appState?.currentLocale.languageCode ?? 'it';
-
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: <Widget>[
-          DrawerHeader(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            child: Text(
-              AppLocalizations.of(context)!.translate("Impostazioni"),
-              style: TextStyle(color: Colors.white, fontSize: 24),
-            ),
-          ),
-
-          // --- Sezione Lingua ---
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(AppLocalizations.of(context)!.translate("Lingua"), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          ),
-
-          _buildLanguageTile(context, 'Italiano', 'it', appState, currentLang),
-          _buildLanguageTile(context, 'English', 'en', appState, currentLang),
-          _buildLanguageTile(context, 'Français', 'fr', appState, currentLang),
-          _buildLanguageTile(context, 'Español', 'es', appState, currentLang),
-
-          const Divider(),
-
-          // --- Sezione Tema ---
-          ListTile(
-            title: Text(AppLocalizations.of(context)!.translate("Cambia Tema")),
-            trailing: GestureDetector(
-              onTap: () {
-                final appState = MyApp.of(context);
-                appState?.toggleTheme();
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                width: 70,
-                height: 35,
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(25),
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.blue[800]
-                      : Colors.green[400],
-                ),
-                child: Stack(
-                  children: [
-                    AnimatedPositioned(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                      left: Theme.of(context).brightness == Brightness.dark ? 35 : 0,
-                      right: Theme.of(context).brightness == Brightness.dark ? 0 : 35,
-                      child: Container(
-                        width: 27,
-                        height: 27,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.yellow[700], // pallina da tennis
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              offset: const Offset(2, 2),
-                              blurRadius: 3,
-                            ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Icon(
-                            Theme.of(context).brightness == Brightness.dark
-                                ? Icons.nightlight_round
-                                : Icons.sports_tennis, // icona tennis
-                            size: 16,
-                            color: Theme.of(context).brightness == Brightness.dark
-                                ? Colors.white
-                                : Colors.green[900],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLanguageTile(
-      BuildContext context,
-      String name,
-      String code,
-      MyAppState? appState,
-      String currentLang
-      ) {
-    return ListTile(
-      leading: const Icon(Icons.language),
-      title: Text(name),
-      onTap: () {
-        // Chiama setLocale solo se appState esiste
-        if (appState != null) {
-          appState.setLocale(Locale(code));
-        }
-        Navigator.pop(context); // Chiude il Drawer
-      },
-      // Mostra il checkmark sulla lingua attualmente selezionata
-      trailing: currentLang == code ? const Icon(Icons.check) : null,
     );
   }
 }
