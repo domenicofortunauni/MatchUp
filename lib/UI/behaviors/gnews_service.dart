@@ -27,7 +27,7 @@ class Notizia {
     String? imageUrl = json['image'];
 
     if (imageUrl == null || imageUrl.isEmpty) {
-      imageUrl = 'assets/images/defaultNews.jpg';
+      imageUrl = 'assets/images/defaultNews1.jpg';
     }
 
     return Notizia(
