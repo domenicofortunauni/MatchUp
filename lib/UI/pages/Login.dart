@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:matchup/UI/pages/Layout.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
+import 'package:matchup/UI/widgets/CustomSnackBar.dart';
 import 'package:matchup/UI/widgets/MenuLaterale.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -13,6 +16,8 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>();
 
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final _nomeController = TextEditingController();
   final _cognomeController = TextEditingController();
   final _emailController = TextEditingController();
@@ -41,10 +46,44 @@ class _LoginState extends State<Login> {
     super.dispose();
   }
 
-  void _submitForm() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
-      await Future.delayed(const Duration(seconds: 2));
+  // Funzione per mostrare errori a video
+  void _showError(String message) {
+    CustomSnackBar.show(context, message,backgroundColor: Colors.red,textColor: Colors.white,iconColor: Colors.white);
+  }
+
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      if (_isLogin) {
+        //LOGICA LOGIN
+        await _auth.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+      } else {
+        //LOGICA REGISTRAZIONE
+
+        //Creiamo l'utente nell'Auth (Password sicura)
+        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+
+        //Prendiamo l'ID univoco creato da Firebase
+        String uid = userCredential.user!.uid;
+
+        //Salviamo i dati anagrafici nel Database (Firestore)
+        await _firestore.collection('users').doc(uid).set({
+          'nome': _nomeController.text.trim(),
+          'cognome': _cognomeController.text.trim(),
+          'email': _emailController.text.trim(),
+          'uid': uid,
+          'data_iscrizione': FieldValue.serverTimestamp(),
+        });
+      }
 
       if (mounted) {
         setState(() => _isLoading = false);
@@ -53,6 +92,43 @@ class _LoginState extends State<Login> {
           MaterialPageRoute(builder: (context) => Layout(title: "MatchUP")),
         );
       }
+
+    } on FirebaseAuthException catch (e) {
+      setState(() => _isLoading = false);
+
+      String errorMessage = "Si è verificato un errore.";
+
+      if (e.code == 'user-not-found') {
+        errorMessage = "Utente non trovato.";
+      } else if (e.code == 'wrong-password') {
+        errorMessage = "Password errata.";
+      } else if (e.code == 'email-already-in-use') {
+        errorMessage = "Email già registrata.";
+      } else if (e.code == 'weak-password') {
+        errorMessage = "La password è troppo debole.";
+      } else if (e.code == 'invalid-email') {
+        errorMessage = "Formato email non valido.";
+      }
+
+      _showError(errorMessage);
+
+    } catch (e) {
+      setState(() => _isLoading = false);
+      _showError("Errore: $e");
+    }
+  }
+
+  // Funzione per Reset Password
+  Future<void> _resetPassword() async {
+    if (_emailController.text.isEmpty) {
+      _showError("Inserisci l'email per resettare la password");
+      return;
+    }
+    try {
+      await _auth.sendPasswordResetEmail(email: _emailController.text.trim());
+        CustomSnackBar.show(context, "Email di reset inviata! Controlla la posta (Cartella SPAM).");
+    } catch (e) {
+      _showError("Errore nell'invio email: $e");
     }
   }
 
@@ -249,7 +325,7 @@ class _LoginState extends State<Login> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: () {},
+                      onPressed: _resetPassword,
                       child: Text(AppLocalizations.of(context)!.translate("Password dimenticata?")),
                     ),
                   )
