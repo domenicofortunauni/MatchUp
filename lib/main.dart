@@ -3,9 +3,11 @@ import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 import 'package:matchup/UI/pages/Login.dart';
 import 'package:matchup/model/utils/Constants.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
