@@ -1,5 +1,3 @@
-// File: SfideDisponibili.dart
-
 import 'package:flutter/material.dart';
 
 // Classe pubblica (Mantieni questa definizione)

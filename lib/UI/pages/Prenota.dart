@@ -1,25 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:matchup/model/CampoModel.dart';
 import 'package:matchup/UI/widgets/DettaglioPrenotazione.dart';
 import 'package:matchup/UI/widgets/MappaTennis.dart';
 
 // Modello dati per il campo
-class CampoModel {
-  final String nome;
-  final String indirizzo;
-  final String citta;
-  final double prezzoOrario;
-  final double rating;
-  final String imageUrl;
-
-  CampoModel({
-    required this.nome,
-    required this.indirizzo,
-    required this.citta,
-    required this.prezzoOrario,
-    required this.rating,
-    this.imageUrl = "",
-  });
-}
 
 class Prenota extends StatefulWidget {
   const Prenota({Key? key}) : super(key: key);

@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;      // API
 import 'package:geolocator/geolocator.dart';  // GPS
 import 'package:matchup/UI/widgets/CustomSnackBar.dart';
 import 'dart:async';
+import '../../services/localizzazione.dart';
 
 class MappaTennis extends StatefulWidget {
   const MappaTennis({Key? key}) : super(key: key);
@@ -44,31 +45,12 @@ class _MappaTennisState extends State<MappaTennis> {
 
   Future<void> _goToUserLocation() async {
     setState(() => _isLoading = true);
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        setState(() => _isLoading = false);
-        return;
-      }
-    }
-
-    try {
-      const LocationSettings locationSettings = LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 100,
-      );
-
-      Position position = await Geolocator.getCurrentPosition(
-          locationSettings: locationSettings
-      );
-
+    final Position? position = await LocationService.getCurrentPosition();
+    if (position != null) {
       final userLatLng = LatLng(position.latitude, position.longitude);
 
       setState(() {
         _mapController.move(userLatLng, 15.0);
-
         _userLocationMarker = Marker(
           point: userLatLng,
           width: 60,
@@ -83,13 +65,16 @@ class _MappaTennisState extends State<MappaTennis> {
       });
 
       _cercaCampiArea(centerOverride: userLatLng);
-
-    } catch (e) {
-      debugPrint("Errore GPS: $e");
-    } finally {
-      setState(() => _isLoading = false);
+    } else {
+      // Se position è null, significa che l'utente ha negato i permessi o il GPS è spento
+      if(mounted) {
+        CustomSnackBar.show(context, "Impossibile ottenere la posizione GPS");
+      }
     }
+
+    setState(() => _isLoading = false);
   }
+
 
   Future<void> _cercaIndirizzo() async {
     final String linguaCorrente = Localizations.localeOf(context).languageCode;
@@ -347,48 +332,22 @@ class _MappaTennisState extends State<MappaTennis> {
   }
 
   Future<void> _inizializzaMappaConGPS() async {
-    bool gpsTrovato = false;
+    // CHIAMATA AL SERVICE
+    final Position? position = await LocationService.getCurrentPosition();
 
-    //Controlliamo i permessi
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
+    if (position != null) {
+      _center = LatLng(position.latitude, position.longitude);
 
-    if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
-      try {
-        Position? position;
-        try {
-          position = await Geolocator.getLastKnownPosition();
-        } catch (e) {
-          }
-
-        if (position == null) {
-          const LocationSettings locationSettings = LocationSettings(
-            accuracy: LocationAccuracy.high,
-            timeLimit: Duration(seconds: 10), //Diamo 10 secondi per cliccare "Consenti"
-          );
-
-          position = await Geolocator.getCurrentPosition(locationSettings: locationSettings);
-        }
-
-        _center = LatLng(position.latitude, position.longitude);
-        gpsTrovato = true;
-
-      } catch (e) {
-        debugPrint("GPS fallito: $e. Uso Roma come fallback.");
-      }
-    }
-
-    if (gpsTrovato) {
       _userLocationMarker = Marker(
         point: _center,
         width: 60,
         height: 60,
         child: const Icon(Icons.my_location, color: Colors.blueAccent, size: 30),
       );
+      // Cerca campi nella posizione dell'utente
       _cercaCampiArea(centerOverride: _center);
     } else {
+      // Fallback su Roma (o le coordinate di default che avevi impostato)
       _cercaCampiArea(centerOverride: _center);
     }
 

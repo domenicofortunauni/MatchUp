@@ -1,38 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:matchup/UI/behaviors/gnews_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../services/gnews_service.dart';
 
 class NewsCard extends StatelessWidget {
   final Notizia notizia;
 
   const NewsCard({super.key, required this.notizia});
 
-  //Logica di selezione immagine
+
   String _getPlaceholderImage() {
-    //Lista di immagini di riserva
-    List<String> placeholders = [
-      'assets/images/defaultNews1.jpg',
-      'assets/images/defaultNews2.jpg',
-      'assets/images/defaultNews3.jpg',
-      'assets/images/defaultNews4.jpg',
-      'assets/images/defaultNews5.jpg',
-      'assets/images/defaultNews6.jpg',
-      'assets/images/defaultNews7.jpg',
-      'assets/images/defaultNews8.jpg',
-      'assets/images/defaultNews9.jpg',
-      'assets/images/defaultNews10.jpg',
-
-    ];
-
-    //Genera un numero univoco basato sul titolo della notizia, usiamo .hashCode che converte il testo in un numero intero.
-    //Usiamo .abs() perché l'hash potrebbe essere negativo.
+    const int numeroImmagini = 10;
     int uniqueId = notizia.titolo.hashCode.abs();
-
-    //Usa l'operatore modulo per scegliere un indice valido della lista
-    int index = uniqueId % placeholders.length;
-
-    return placeholders[index];
-  }
+    int imageNumber = (uniqueId % numeroImmagini) + 1;
+    return 'assets/images/immagini_news/defaultNews$imageNumber.jpg';
+    }
 
   Future<void> _launchURL(String urlString) async {
     //Convertiamo la stringa in un oggetto Uri
