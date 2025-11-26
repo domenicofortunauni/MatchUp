@@ -20,6 +20,7 @@ class _LoginState extends State<Login> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final _nomeController = TextEditingController();
   final _cognomeController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -36,6 +37,7 @@ class _LoginState extends State<Login> {
   void dispose() {
     _nomeController.dispose();
     _cognomeController.dispose();
+    _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -49,6 +51,21 @@ class _LoginState extends State<Login> {
   // Funzione per mostrare errori a video
   void _showError(String message) {
     CustomSnackBar.show(context, message,backgroundColor: Colors.red,textColor: Colors.white,iconColor: Colors.white);
+  }
+
+  // Funzione per formattare Nome e Cognome (es: " gian  carlo " -> "Gian Carlo")
+  String _formatName(String text) {
+    if (text.isEmpty) return "";
+
+    // 1. Toglie spazi inizio/fine e riduce spazi multipli interni a uno solo
+    String cleaned = text.trim().replaceAll(RegExp(r'\s+'), ' ');
+
+    // 2. Divide le parole, mette la prima maiuscola e le riunisce
+    return cleaned.split(' ').map((word) {
+      if (word.isEmpty) return "";
+      // Prende la prima lettera Maiuscola + il resto minuscolo
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).join(' ');
   }
 
   Future<void> _submitForm() async {
@@ -77,8 +94,9 @@ class _LoginState extends State<Login> {
 
         //Salviamo i dati anagrafici nel Database (Firestore)
         await _firestore.collection('users').doc(uid).set({
-          'nome': _nomeController.text.trim(),
-          'cognome': _cognomeController.text.trim(),
+          'nome': _formatName(_nomeController.text),
+          'cognome':_formatName(_cognomeController.text),
+          'username': _usernameController.text.trim(),
           'email': _emailController.text.trim(),
           'uid': uid,
           'data_iscrizione': FieldValue.serverTimestamp(),
@@ -244,7 +262,27 @@ class _LoginState extends State<Login> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                ],
+
+                TextFormField(
+                  controller: _usernameController,
+                  textInputAction: TextInputAction.next,
+                  textCapitalization: TextCapitalization.none,
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.translate("Username"),
+                    prefixIcon: const Icon(Icons.alternate_email),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    filled: true,
+                    fillColor: inputFillColor,
+                  ),
+                  validator: (value) {
+                    if (_isLogin) return null;
+                    if (value == null || value.isEmpty) return AppLocalizations.of(context)!.translate("Inserisci un username");
+                    if (value.length < 3) return AppLocalizations.of(context)!.translate("Minimo 3 caratteri");
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+              ],
 
                 TextFormField(
                   controller: _emailController,

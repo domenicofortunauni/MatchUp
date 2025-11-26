@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../behaviors/AppLocalizations.dart';
 import 'Home.dart';
@@ -36,7 +37,8 @@ class _LayoutState extends State<Layout> {
             ),
             //Tasto Conferma Logout
             TextButton(
-              onPressed: () {
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
                 Navigator.of(dialogContext).pop(); //Chiude prima il popup
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (context) => const Login()),
