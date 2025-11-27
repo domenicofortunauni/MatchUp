@@ -1,37 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../widgets/NuovaChat.dart';
 import 'ChatPage.dart';
-import '../../model/ChatPreview.dart';
-//TODO: MAagari portarle su behavior?
-
-// struttura pagina chat
+import '../../services/chat_service.dart';
 
 class ChatListPage extends StatelessWidget {
-   ChatListPage({super.key});
+  ChatListPage({super.key});
 
-  // Dati fittizi per lista delle chat
-  final List<ChatPreview> _mockThreads = [
-    ChatPreview(
-      id: 'marco_thread',
-      title: 'Marco',
-      lastMessage: 'Finiamo l\'app?',
-      lastMessageTime: DateTime(2025, 11, 19, 17, 30),
-      unreadCount: 999,
-    ),
-    ChatPreview(
-      id: 'domenico_thread',
-      title: 'Domenico',
-      lastMessage: 'Ho finito.',
-      lastMessageTime: DateTime(2025, 11, 19, 14, 05),
-      unreadCount: 103,
-    ),
-    ChatPreview(
-      id: 'andrea_thread',
-      title: 'Andrea',
-      lastMessage: 'Ok, grazie per l\'informazione!',
-      lastMessageTime: DateTime(2025, 11, 18, 09, 15),
-      unreadCount: 100,
-    ),
-  ];
+  final ChatService _chatService = ChatService();
+  final String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
   @override
   Widget build(BuildContext context) {
@@ -40,96 +18,81 @@ class ChatListPage extends StatelessWidget {
         title: const Text('Chat'),
         elevation: 0,
       ),
-      body: ListView.builder(
-        itemCount: _mockThreads.length,
-        itemBuilder: (context, index) {
-          final thread = _mockThreads[index];
-          return Column(
-            children: [
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                // Navigazione alla chat singola
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      //  l'ID e il Titolo alla SingleChatPage
-                      builder: (context) => SingleChatPage(
-                        threadId: thread.id,
-                        chatTitle: thread.title,
-                      ),
-                    ),
-                  );
-                },
-                // Fotoprofilo utente
-                leading: CircleAvatar(
-                  radius: 28,
-                  backgroundColor: Colors.blueGrey,
-                  child: Text(
-                    thread.title[0], // Iniziale del nome
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                ),
 
-                // Titolo e ultimo Messaggio
-                title: Text(
-                  thread.title,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                subtitle: Text(
-                  thread.lastMessage,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: thread.unreadCount > 0 ? Theme.of(context).colorScheme.inverseSurface : Colors.grey,
-                  ),
-                ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _chatService.getMyChats(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) return const Center(child: Text("Errore"));
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final docs = snapshot.data!.docs;
 
-                // Ora e Contatore non letti
-                trailing: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '${thread.lastMessageTime.hour}:${thread.lastMessageTime.minute.toString().padLeft(2, '0')}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: thread.unreadCount > 0 ? Theme.of(context).primaryColor : Colors.grey,
-                      ),
-                    ),
-                    if (thread.unreadCount > 0)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4.0),
-                        child: Container(
-                          padding: const EdgeInsets.all(5),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                          child: Text(
-                            '${thread.unreadCount}',
-                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+          // Nessuna chat
+          if (docs.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.chat_bubble_outline, size: 80, color: Colors.grey),
+                  const SizedBox(height: 20),
+                  const Text("Nessuna conversazione attiva.", style: TextStyle(color: Colors.grey)),
+                ],
               ),
-              const Divider(height: 1, indent: 80), // Linea separatrice
-            ],
+            );
+          }
+          // Lista chat
+          return ListView.builder(
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              final doc = docs[index];
+              final data = doc.data() as Map<String, dynamic>;
+              final List<dynamic> participants = data['participants'] ?? [];
+              final String otherUserId = participants.firstWhere(
+                      (id) => id != currentUserId, orElse: () => "Sconosciuto");
+              final Map<String, dynamic> names = data['userNames'] ?? {};
+              final String title = names[otherUserId] ?? "Utente";
+              final String lastMessage = data['lastMessage'] ?? '';
+              final int unreadCount = data['unreadCount'] ?? 0;
+
+              return Column(
+                children: [
+                  ListTile(
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ChatPage(receiverId: otherUserId, receiverName: title),
+                      ));
+                    },
+                    leading: CircleAvatar(
+                      child: Text(title.isNotEmpty ? title[0].toUpperCase() : "?"),
+                    ),
+                    title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text(lastMessage, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ),
+                  const Divider(height: 1),
+                ],
+              );
+            },
           );
         },
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 80.0, right: 5.0),
+        padding: const EdgeInsets.only(bottom: 80.0),
         child: FloatingActionButton(
           backgroundColor: Theme.of(context).colorScheme.primary,
-          elevation: 4,
-          onPressed: () {
-            // TODO: Logica per avviare una nuova chat con un altro utente registrato/ al campo?
-          },
-          child: const Icon(Icons.message),
+          child: const Icon(Icons.comment),
+          onPressed: () => _apriNuovaChat(context),
         ),
       ),
+
+    );
+  }
+  void _apriNuovaChat(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) => const NuovaChatPopup(),
     );
   }
 }

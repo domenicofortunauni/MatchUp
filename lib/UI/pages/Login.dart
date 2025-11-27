@@ -5,6 +5,7 @@ import 'package:matchup/UI/widgets/CustomSnackBar.dart';
 import 'package:matchup/UI/widgets/MenuLaterale.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../services/localizzazione.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -24,8 +25,6 @@ class _LoginState extends State<Login> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-
-  // Focus Nodes per gestire il tasto invio
   final FocusNode _passwordFocusNode = FocusNode();
   final FocusNode _confirmPasswordFocusNode = FocusNode();
 
@@ -41,19 +40,17 @@ class _LoginState extends State<Login> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-
     _passwordFocusNode.dispose();
     _confirmPasswordFocusNode.dispose();
 
     super.dispose();
   }
 
-  // Funzione per mostrare errori a video
   void _showError(String message) {
     CustomSnackBar.show(context, message,backgroundColor: Colors.red,textColor: Colors.white,iconColor: Colors.white);
   }
 
-  // Funzione per formattare Nome e Cognome (es: " gian  carlo " -> "Gian Carlo")
+  // Funzione per formattare nome cognome
   String _formatName(String text) {
     if (text.isEmpty) return "";
 
@@ -63,7 +60,6 @@ class _LoginState extends State<Login> {
     // 2. Divide le parole, mette la prima maiuscola e le riunisce
     return cleaned.split(' ').map((word) {
       if (word.isEmpty) return "";
-      // Prende la prima lettera Maiuscola + il resto minuscolo
       return word[0].toUpperCase() + word.substring(1).toLowerCase();
     }).join(' ');
   }
@@ -75,31 +71,42 @@ class _LoginState extends State<Login> {
 
     try {
       if (_isLogin) {
-        //LOGICA LOGIN
+        //  LOGIN
         await _auth.signInWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
       } else {
-        //LOGICA REGISTRAZIONE
+        //  REGISTRAZIONE
 
-        //Creiamo l'utente nell'Auth (Password sicura)
+        //Crea utente Auth
         UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
 
-        //Prendiamo l'ID univoco creato da Firebase
         String uid = userCredential.user!.uid;
+        String nomeFormattato = _formatName(_nomeController.text);
+        String cognomeFormattato = _formatName(_cognomeController.text);
+        String username = _usernameController.text.trim();
 
-        //Salviamo i dati anagrafici nel Database (Firestore)
+        // recupera la città per il context aware
+        String cittaUtente = await LocationService.getCurrentCity();
+
+
+        await userCredential.user!.updateDisplayName(username); // O nomeCompleto, come preferisci
+
+        // Salva nel Database
         await _firestore.collection('users').doc(uid).set({
-          'nome': _formatName(_nomeController.text),
-          'cognome':_formatName(_cognomeController.text),
-          'username': _usernameController.text.trim(),
+          'nome': nomeFormattato,
+          'cognome': cognomeFormattato,
+          'username': username,
+          'displayName': username, // Aggiungo questo campo per coerenza con la Chat
           'email': _emailController.text.trim(),
           'uid': uid,
           'data_iscrizione': FieldValue.serverTimestamp(),
+          'citta': cittaUtente,
+          'livello': 3.5 //predisposizione per il livello, vediamo se farlo poi...
         });
       }
 
@@ -113,30 +120,15 @@ class _LoginState extends State<Login> {
 
     } on FirebaseAuthException catch (e) {
       setState(() => _isLoading = false);
-
       String errorMessage = "Si è verificato un errore.";
-
-      if (e.code == 'user-not-found') {
-        errorMessage = "Utente non trovato.";
-      } else if (e.code == 'wrong-password') {
-        errorMessage = "Password errata.";
-      } else if (e.code == 'email-already-in-use') {
-        errorMessage = "Email già registrata.";
-      } else if (e.code == 'weak-password') {
-        errorMessage = "La password è troppo debole.";
-      } else if (e.code == 'invalid-email') {
-        errorMessage = "Formato email non valido.";
-      }
-
+      if (e.code == 'email-already-in-use') errorMessage = "Email già registrata.";
       _showError(errorMessage);
-
     } catch (e) {
       setState(() => _isLoading = false);
       _showError("Errore: $e");
     }
   }
 
-  // Funzione per Reset Password
   Future<void> _resetPassword() async {
     if (_emailController.text.isEmpty) {
       _showError("Inserisci l'email per resettare la password");

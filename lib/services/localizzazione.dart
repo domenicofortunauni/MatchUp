@@ -2,7 +2,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 
 class LocationService {
-  /// Ottiene la città corrente o ritorna una città di default in caso di errore
+  /// Ottiene la città corrente o ritorna Roma in caso di errore
   static Future<String> getCurrentCity({String defaultCity = 'Roma'}) async {
     try {
       // Controllo Permessi geoloc
@@ -43,7 +43,6 @@ class LocationService {
           return null;
         }
       }
-
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) return null;
 

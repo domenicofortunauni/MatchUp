@@ -14,13 +14,10 @@ class NewsCard extends StatelessWidget {
     int imageNumber = (uniqueId % numeroImmagini) + 1;
     return 'assets/images/immagini_news/defaultNews$imageNumber.jpg';
     }
-
   Future<void> _launchURL(String urlString) async {
-    //Convertiamo la stringa in un oggetto Uri
     final Uri url = Uri.parse(urlString);
 
-    //Proviamo ad aprire il link
-    //mode: LaunchMode.externalApplication serve per aprire il browser del telefono
+    //serve per aprire il browser del telefono
     try {
       if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
         debugPrint('Non riesco ad aprire il link: $urlString');
@@ -32,7 +29,6 @@ class NewsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //Calcoliamo subito quale immagine usare in caso di errore
     final String fallbackImage = _getPlaceholderImage();
     return InkWell(
       onTap: () => _launchURL(notizia.urlArticolo),
@@ -46,7 +42,6 @@ class NewsCard extends StatelessWidget {
             ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
               child: Image.network(
-                //Se l'url è null, passiamo una stringa vuota per far scattare l'errore e mostrare l'immagine di default
                 notizia.urlImmagine.isNotEmpty ? notizia.urlImmagine : "",
                 height: 180,
                 width: double.infinity,

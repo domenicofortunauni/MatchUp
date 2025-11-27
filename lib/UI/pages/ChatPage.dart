@@ -1,81 +1,180 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter_chat_core/flutter_chat_core.dart';
-import 'package:flutter_chat_ui/flutter_chat_ui.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../services/chat_service.dart';
+import '../behaviors/AppLocalizations.dart';
 
-class SingleChatPage extends StatefulWidget {
-  final String threadId;
-  final String chatTitle;
-
-  const SingleChatPage({
+class ChatPage extends StatefulWidget {
+  final String receiverId;
+  final String receiverName;
+  const ChatPage({
     super.key,
-    required this.threadId,
-    required this.chatTitle,
+    required this.receiverId,
+    required this.receiverName,
   });
 
   @override
-  SingleChatPageState createState() => SingleChatPageState();
+  State<ChatPage> createState() => _ChatPageState();
 }
 
-class SingleChatPageState extends State<SingleChatPage> {
-  // InMemoryChatController va sostituito con FireStore credo
-  final _chatController = InMemoryChatController();
+class _ChatPageState extends State<ChatPage> {
+  final TextEditingController _messageController = TextEditingController();
+  final ChatService _chatService = ChatService();
+  final ScrollController _scrollController = ScrollController();
+  final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
-  @override
-  void initState() {
-    super.initState();
-    // Qui potresti chiamare una funzione per caricare i messaggi
-    // iniziali usando widget.threadId, ad esempio:
-    // _loadMessages(widget.threadId);
+  void sendMessage() async {
+    if (_messageController.text.trim().isEmpty) return;
 
-    // messaggio iniziale fittizio:
-    _chatController.insertMessage(
-      TextMessage(
-        id: 'initial_msg',
-        authorId: 'user2', // Un altro utente
-        createdAt: DateTime.now().toUtc().subtract(const Duration(minutes: 5)),
-        text: 'Benvenuto nella chat ${widget.chatTitle} ',
-      ),
+    // Nota: Sarebbe meglio passarlo o averlo salvato in locale, qui metto un fallback
+    String myName = FirebaseAuth.instance.currentUser?.displayName ?? "Io";
+
+    await _chatService.sendMessage(
+        widget.receiverId,
+        _messageController.text.trim(),
+        myName,
+        widget.receiverName
     );
+
+    _messageController.clear();
+    _scrollDown();
   }
 
-  @override
-  void dispose() {
-    _chatController.dispose();
-    super.dispose();
+  void _scrollDown() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        title: Text(widget.chatTitle), // Usiamo il titolo passato
-      ),
-      body: Chat(
-        theme: ChatTheme.fromThemeData(Theme.of(context)),
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        chatController: _chatController,
-        currentUserId: 'user1',
-        onMessageSend: (text) {
-          // Logica per inviare il messaggio al backend usando widget.threadId
-          _chatController.insertMessage(
-            TextMessage(
-              // Better to use UUID or similar for the ID - IDs must be unique
-              id: '${Random().nextInt(1000) + 1}',
-              authorId: 'user1',
-              createdAt: DateTime.now().toUtc(),
-              text: text,
+        title: Row(
+          children: [
+            CircleAvatar(
+              radius: 18,
+              child: Text(widget.receiverName[0].toUpperCase()),
             ),
-          );
-        },
-        resolveUser: (UserID id) async {
-          // Risolvi i nomi degli utenti
-          return User(
-            id: id,
-            name: id == 'user1' ? 'Tu' : 'Amico', // Esempio di risoluzione
-          );
-        },
+            const SizedBox(width: 10),
+            Text(widget.receiverName),
+          ],
+        ),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
+      ),
+      body: Column(
+        children: [
+          // streambuilder per prendere la lista dei messaggi da firebase
+          Expanded(
+            child: StreamBuilder(
+              stream: _chatService.getMessages(widget.receiverId),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(child: Text("Errore: ${snapshot.error}"));
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final docs = snapshot.data!.docs;
+
+                return ListView.builder(
+                  controller: _scrollController,
+                  itemCount: docs.length,
+                  padding: const EdgeInsets.only(bottom: 20, top: 10),
+                  itemBuilder: (context, index) {
+                    final data = docs[index].data() as Map<String, dynamic>;
+
+                    final bool isMe = data['senderId'] == currentUserId;
+                    final String text = data['text'];
+                    final Timestamp? ts = data['timestamp'];
+                    final DateTime time = ts != null ? ts.toDate() : DateTime.now();
+
+                    return _buildMessageBubble(text, isMe, time);
+                  },
+                );
+              },
+            ),
+          ),
+
+          Container(
+            padding: const EdgeInsets.all(10),
+            color: Theme.of(context).colorScheme.surface,
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _messageController,
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context)!.translate("ScriviMessaggio"),
+                      filled: true,
+                      fillColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(25),
+                          borderSide: BorderSide.none
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                CircleAvatar(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  radius: 24,
+                  child: IconButton(
+                    icon: Icon(Icons.send, color: Theme.of(context).colorScheme.surface, size: 20),
+                    onPressed: sendMessage,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Widget per la singola nuvoletta del messaggio
+  Widget _buildMessageBubble(String message, bool isMe, DateTime time) {
+    return Align(
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 10),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        decoration: BoxDecoration(
+          color: isMe ? Theme.of(context).primaryColor : Theme.of(context).colorScheme.onSurface,
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(16),
+            topRight: const Radius.circular(16),
+            bottomLeft: isMe ? const Radius.circular(16) : Radius.zero,
+            bottomRight: isMe ? Radius.zero : const Radius.circular(16),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              message,
+              style: TextStyle(
+                color: isMe ? Colors.white : Colors.black87,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "${time.hour}:${time.minute.toString().padLeft(2, '0')}",
+              style: TextStyle(
+                color: isMe ? Colors.white70 : Colors.black54,
+                fontSize: 10,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

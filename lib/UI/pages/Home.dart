@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 import 'package:flutter/material.dart';
 import 'package:matchup/UI/widgets/Prenotazione.dart';
@@ -189,8 +190,8 @@ class _HomeState extends State<Home> {
               Padding(
                 padding: EdgeInsets.fromLTRB(15, 40, 0, 10),
                 child: Text(
-                  AppLocalizations.of(context)!.translate("Welcome"),
-          style: TextStyle(
+                  AppLocalizations.of(context)!.translate("Benvenuto"),
+                style: TextStyle(
             fontSize: 25,
             fontWeight: FontWeight.bold,
           ),
