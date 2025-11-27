@@ -185,6 +185,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
 
             HorizontalWeekCalendar(
               selectedDate: _selectedDate,
+              allowPastDates: false,
               onDateChanged: (newDate) {
                 setState(() {
                   _selectedDate = newDate;

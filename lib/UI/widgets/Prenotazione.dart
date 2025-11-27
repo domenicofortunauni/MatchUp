@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
-// Importa il file del calendario modulare
 import 'package:matchup/UI/widgets/HorizontalWeekCalendar.dart';
 
 class Prenotazione {
@@ -102,13 +101,10 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
             ),
 
             const SizedBox(height: 20),
-
-            // ---------------------------------------------------------
-            // USO DEL CALENDARIO MODULARE
-            // ---------------------------------------------------------
             HorizontalWeekCalendar(
               selectedDate: _selectedDate,
               showMonthHeader: true, // Questo gestisce anche la riga del mese e il bottone "Vai a oggi"
+              allowPastDates: true,
               onDateChanged: (newDate) {
                 setState(() {
                   _selectedDate = newDate;

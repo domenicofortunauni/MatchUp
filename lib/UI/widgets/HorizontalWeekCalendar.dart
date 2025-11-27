@@ -8,6 +8,7 @@ class HorizontalWeekCalendar extends StatefulWidget {
   final int Function(DateTime)? eventCountProvider;
   final Color? activeColor;
   final bool showMonthHeader;
+  final bool allowPastDates;
 
   const HorizontalWeekCalendar({
     Key? key,
@@ -16,6 +17,7 @@ class HorizontalWeekCalendar extends StatefulWidget {
     this.eventCountProvider,
     this.activeColor,
     this.showMonthHeader = true,
+    required this.allowPastDates,
   }) : super(key: key);
 
   @override
@@ -23,7 +25,28 @@ class HorizontalWeekCalendar extends StatefulWidget {
 }
 
 class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
-  final ScrollController _scrollController = ScrollController();
+  late ScrollController _scrollController;
+
+  //Costanti per le dimensioni, utili per il calcolo dello scroll
+  final double _itemWidth = 70.0;
+  final double _separatorWidth = 12.0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    //Calcoliamo dove deve posizionarsi lo scroll all'inizio
+    double initialOffset = 0.0;
+
+    if (widget.allowPastDates) {
+      //Se accettiamo il passato, la lista inizia molto prima, dobbiamo calcolare la distanza tra l'inizio della lista e la data selezionata.
+      final startOfList = _getStartDate();
+      final difference = widget.selectedDate.difference(startOfList).inDays;
+      initialOffset = difference * (_itemWidth + _separatorWidth);
+    }
+
+    _scrollController = ScrollController(initialScrollOffset: initialOffset);
+  }
 
   @override
   void dispose() {
@@ -35,14 +58,36 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
+  //Funzione per rimuovere l'ora e confrontare solo le date
+  DateTime _stripTime(DateTime date) {
+    return DateTime(date.year, date.month, date.day);
+  }
+
   int _getDaysInMonth(int year, int month) => DateTime(year, month + 1, 0).day;
   int _getFirstDayOffset(int year, int month) => DateTime(year, month, 1).weekday;
 
+  DateTime _getStartDate() {
+    final now = DateTime.now();
+    if (widget.allowPastDates) {
+      return _stripTime(now).subtract(const Duration(days: 365));
+    }
+    return _stripTime(now);
+  }
+
   void _resetToToday() {
     final now = DateTime.now();
+
+    //Calcolo nuova posizione scroll
+    double targetOffset = 0.0;
+    if (widget.allowPastDates) {
+      final startOfList = _getStartDate();
+      final diff = _stripTime(now).difference(startOfList).inDays;
+      targetOffset = diff * (_itemWidth + _separatorWidth);
+    }
+
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
-        0.0,
+        targetOffset,
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeOutQuart,
       );
@@ -52,17 +97,14 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
     }
   }
 
-  // --- LOGICA DEL DIALOG CON CONFERMA MANUALE ---
   void _showCustomCalendarDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (ctx) {
-        // Data temporanea per la selezione nel dialog (non conferma subito)
         DateTime tempSelectedDate = widget.selectedDate;
-
-        // Mese visualizzato (inizia da quello della data selezionata)
         DateTime focusedMonth = DateTime(tempSelectedDate.year, tempSelectedDate.month, 1);
         final primaryColor = widget.activeColor ?? Theme.of(context).colorScheme.primary;
+        final today = _stripTime(DateTime.now());
 
         return StatefulBuilder(
           builder: (context, setDialogState) {
@@ -93,11 +135,11 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
 
             return AlertDialog(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              contentPadding: const EdgeInsets.fromLTRB(12, 12, 12, 0), // Padding ridotto sotto per i bottoni
+              contentPadding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Navigazione Mese
+                  //Navigazione Mese
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -116,8 +158,6 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
                     ],
                   ),
                   const SizedBox(height: 10),
-
-                  // Intestazione Giorni Settimana
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: giorniSettimana.map((d) {
@@ -134,7 +174,6 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
                   ),
                   const SizedBox(height: 8),
 
-                  // Griglia Giorni
                   SizedBox(
                     height: 300,
                     width: 300,
@@ -151,67 +190,70 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
                         final int dayNum = index - emptySlots + 1;
                         final DateTime dayDate = DateTime(baseDate.year, baseDate.month, dayNum);
 
-                        // Controlliamo la selezione sulla variabile temporanea
                         final bool isSelected = _isSameDay(dayDate, tempSelectedDate);
                         final bool isToday = _isSameDay(dayDate, DateTime.now());
 
-                        final int count = widget.eventCountProvider != null
+                        bool isDisabled = !widget.allowPastDates && dayDate.isBefore(today);
+
+                        final int count = (widget.eventCountProvider != null && !isDisabled)
                             ? widget.eventCountProvider!(dayDate)
                             : 0;
 
                         return GestureDetector(
-                          onTap: () {
-                            // Aggiorniamo solo lo stato locale del dialog (non chiudiamo)
+                          onTap: isDisabled ? null : () {
                             setDialogState(() {
                               tempSelectedDate = dayDate;
                             });
                           },
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            alignment: Alignment.center,
-                            children: [
-                              Container(
-                                width: 36,
-                                height: 36,
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? primaryColor
-                                      : (isToday ? primaryColor.withValues(alpha: 0.2) : Colors.transparent),
-                                  shape: BoxShape.circle,
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  "$dayNum",
-                                  style: TextStyle(
-                                    color: isSelected ? Colors.white : Colors.black,
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          child: Opacity(
+                            opacity: isDisabled ? 0.3 : 1.0, //Rende trasparente se disabilitato
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              alignment: Alignment.center,
+                              children: [
+                                Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? primaryColor
+                                        : (isToday ? primaryColor.withValues(alpha: 0.2) : Colors.transparent),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    "$dayNum",
+                                    style: TextStyle(
+                                      color: isSelected ? Colors.white : Colors.black,
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              if (count > 0)
-                                Positioned(
-                                  top: 2,
-                                  right: 2,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(3),
-                                    decoration: BoxDecoration(
-                                      color: Colors.redAccent,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(color: Theme.of(context).cardColor, width: 1.5),
-                                    ),
-                                    constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      "$count",
-                                      style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 9,
-                                          fontWeight: FontWeight.bold
+                                if (count > 0)
+                                  Positioned(
+                                    top: 2,
+                                    right: 2,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(3),
+                                      decoration: BoxDecoration(
+                                        color: Colors.redAccent,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: Theme.of(context).cardColor, width: 1.5),
+                                      ),
+                                      constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        "$count",
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.bold
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                            ],
+                              ],
+                            ),
                           ),
                         );
                       },
@@ -219,15 +261,13 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
                   ),
                 ],
               ),
-              // BOTTONI DI AZIONE
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context), // Chiude senza salvare
+                  onPressed: () => Navigator.pop(context),
                   child: Text(AppLocalizations.of(context)!.translate("Annulla")),
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    // Chiama la callback del padre e chiude
                     widget.onDateChanged(tempSelectedDate);
                     Navigator.pop(context);
                   },
@@ -251,6 +291,12 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
 
     String monthYear = DateFormat.yMMMM(localeCode).format(widget.selectedDate);
     monthYear = toBeginningOfSentenceCase(monthYear) ?? monthYear;
+
+    //Data da cui partire per generare la lista
+    final startDate = _getStartDate();
+
+    //Se permettiamo il passato, aumentiamo di molto gli elementi, se non lo permettiamo mettiamo solo i futuri (esempio 60)
+    final int itemCount = widget.allowPastDates ? 800 : 60;
 
     return Column(
       children: [
@@ -293,10 +339,11 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
           child: ListView.separated(
             controller: _scrollController,
             scrollDirection: Axis.horizontal,
-            itemCount: 40,
-            separatorBuilder: (ctx, i) => const SizedBox(width: 12),
+            itemCount: itemCount,
+            separatorBuilder: (ctx, i) => SizedBox(width: _separatorWidth),
             itemBuilder: (context, index) {
-              final date = DateTime.now().add(Duration(days: index));
+
+              final date = startDate.add(Duration(days: index));
 
               final bool isSelected = _isSameDay(date, widget.selectedDate);
               final bool isToday = _isSameDay(date, DateTime.now());
@@ -313,11 +360,9 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
 
               if (isSelected) {
                 bgColor = primaryColor;
-                //Se è selezionato, il bordo è uguale allo sfondo (o trasparente)
                 borderColor = primaryColor;
               } else {
                 bgColor = isDarkMode ? secondaryColor : Colors.grey.shade100;
-                //Se non è selezionato, mettiamo un bordino grigio per contrasto
                 borderColor = isDarkMode ? Colors.grey.shade700 : Colors.grey.shade300;
               }
 
@@ -330,7 +375,7 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
                   clipBehavior: Clip.none,
                   children: [
                     Container(
-                      width: 70,
+                      width: _itemWidth,
                       height: 90,
                       decoration: BoxDecoration(
                         color: bgColor,
@@ -373,8 +418,7 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
                                 fontSize: 11,
                               ),
                             ),
-                          ] else
-                            const SizedBox(height: 17),
+                          ]
                         ],
                       ),
                     ),
