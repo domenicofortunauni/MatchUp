@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 import 'package:flutter/material.dart';
 import 'package:matchup/UI/widgets/Prenotazione.dart';
@@ -15,80 +14,6 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
-    // Esempio di prenotazioni
-    List<Prenotazione> prenotazioni = [
-      Prenotazione(
-        campo: "Campo Centrale",
-        data: "24/11/2025",
-        ora: "18:00",
-        stato: "Confermato",
-      ),
-      Prenotazione(
-        campo: "Campo 2 (Terra Rossa)",
-        data: "24/11/2025",
-        ora: "10:30",
-        stato: "Confermato",
-      ),
-      Prenotazione(
-        campo: "Campo 3 (Sintetico)",
-        data: "25/11/2025",
-        ora: "09:00",
-        stato: "In attesa",
-      ),
-      Prenotazione(
-        campo: "Campo Centrale",
-        data: "25/11/2025",
-        ora: "14:00",
-        stato: "Annullato",
-      ),
-      Prenotazione(
-        campo: "Campo Centrale",
-        data: "26/11/2025",
-        ora: "18:00",
-        stato: "Confermato",
-      ),
-      Prenotazione(
-        campo: "Campo 2 (Terra Rossa)",
-        data: "18/11/2025",
-        ora: "10:30",
-        stato: "Confermato",
-      ),
-      Prenotazione(
-        campo: "Campo 3 (Sintetico)",
-        data: "19/11/2025",
-        ora: "09:00",
-        stato: "In attesa",
-      ),
-      Prenotazione(
-        campo: "Campo Centrale",
-        data: "15/11/2025",
-        ora: "14:00",
-        stato: "Annullato",
-      ),Prenotazione(
-        campo: "Campo Centrale",
-        data: "17/11/2025",
-        ora: "18:00",
-        stato: "Confermato",
-      ),
-      Prenotazione(
-        campo: "Campo 2 (Terra Rossa)",
-        data: "18/11/2025",
-        ora: "10:30",
-        stato: "Confermato",
-      ),
-      Prenotazione(
-        campo: "Campo 3 (Sintetico)",
-        data: "19/11/2025",
-        ora: "09:00",
-        stato: "In attesa",
-      ),
-      Prenotazione(
-        campo: "Campo Centrale",
-        data: "15/11/2025",
-        ora: "14:00",
-        stato: "Annullato",
-      ),
-    ];
 
     List<Partita> storico = [
       Partita(
@@ -197,7 +122,7 @@ class _HomeState extends State<Home> {
           ),
         ),
       ),
-      PrenotazioniWidget(prenotazioni: prenotazioni),
+              const PrenotazioniWidget(),
         Statistiche(),
               StoricoPartiteWidget(partite: storico),
               const SizedBox(height: 100.0),
