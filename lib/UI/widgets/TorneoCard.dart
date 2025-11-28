@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:matchup/model/TorneoModel.dart';
 
+import '../behaviors/AppLocalizations.dart';
+
 class TorneoCard extends StatelessWidget {
   final Torneo torneo;
   final bool isDark;
@@ -42,7 +44,10 @@ class TorneoCard extends StatelessWidget {
                 Icon(Icons.calendar_today, size: 16, color: theme.primaryColor),
                 const SizedBox(width: 8),
                 Text(
-                  'Dal ${torneo.dataInizio} al ${torneo.dataFine}',
+                  AppLocalizations.of(context)!.translate("Dal") +
+                      " ${torneo.dataInizio}" +
+                      AppLocalizations.of(context)!.translate(" al ") +
+                      "${torneo.dataFine}",
                   style: theme.textTheme.titleSmall?.copyWith(color: textColor),
                 ),
               ],
@@ -60,7 +65,7 @@ class TorneoCard extends StatelessWidget {
             ),
             const Divider(height: 20),
             Text(
-              'Organizzato da:',
+              AppLocalizations.of(context)!.translate("Organizzato da:"),
               style: theme.textTheme.labelMedium?.copyWith(
                 color: textColor.withValues(alpha:0.7),
               ),
@@ -91,7 +96,7 @@ class TorneoCard extends StatelessWidget {
                 if (torneo.iscrizioneOnline)
                   _buildInfoChip(
                     context,
-                    label: 'Iscrizione Online',
+                    label: AppLocalizations.of(context)!.translate("Iscrizione Online"),
                     icon: Icons.check_circle_outline,
                     color: Colors.green,
                     textColor: Colors.white,
@@ -99,7 +104,7 @@ class TorneoCard extends StatelessWidget {
                 else
                   _buildInfoChip(
                     context,
-                    label: 'Iscrizione in loco',
+                    label: AppLocalizations.of(context)!.translate("Iscrizione in loco"),
                     icon: Icons.cancel_outlined,
                     color: Colors.red,
                     textColor: Colors.white,

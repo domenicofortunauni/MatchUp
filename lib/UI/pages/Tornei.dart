@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import "package:matchup/model/TorneoModel.dart";
+import "../behaviors/AppLocalizations.dart";
 import "../widgets/TorneoCard.dart";
 import "../../services/sito_tornei.dart";
 import "../../services/localizzazione.dart"; // Importa il nuovo service
@@ -80,7 +81,7 @@ class _TorneiPageState extends State<TorneiPage> {
               controller: _searchController,
               enabled: !_isLoadingLocation,
               decoration: InputDecoration(
-                labelText: _isLoadingLocation ? 'Localizzazione...' : 'Cerca città',
+                labelText: _isLoadingLocation ? AppLocalizations.of(context)!.translate("Localizzazione...") : AppLocalizations.of(context)!.translate("Cerca città"),
                 hintText: 'es. Roma',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 prefixIcon: const Icon(Icons.search),
@@ -96,7 +97,7 @@ class _TorneiPageState extends State<TorneiPage> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text('Cerca'),
+            child: Text(AppLocalizations.of(context)!.translate("Cerca")),
           ),
         ],
       ),
@@ -114,7 +115,7 @@ class _TorneiPageState extends State<TorneiPage> {
             const SizedBox(width: 8),
           ],
           Text(
-            'Risultati per: $_currentSearchText',
+            AppLocalizations.of(context)!.translate("Risultati per:") + " $_currentSearchText",
             style: TextStyle(
               color: Theme.of(context).primaryColor,
               fontWeight: FontWeight.w600,
@@ -137,7 +138,7 @@ class _TorneiPageState extends State<TorneiPage> {
         }
 
         if (snapshot.hasError) {
-          return Center(child: Text('Errore: ${snapshot.error}'));
+          return Center(child: Text(AppLocalizations.of(context)!.translate("Errore:") + " ${snapshot.error}"));
         }
 
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -145,9 +146,9 @@ class _TorneiPageState extends State<TorneiPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.sports_tennis_outlined, size: 80, color: Theme.of(context).primaryColor.withOpacity(0.5)),
+                Icon(Icons.sports_tennis_outlined, size: 80, color: Theme.of(context).primaryColor.withValues(alpha: 0.5)),
                 const SizedBox(height: 16),
-                const Text('Nessun torneo trovato.'),
+                Text(AppLocalizations.of(context)!.translate("Nessun torneo trovato.")),
               ],
             ),
           );

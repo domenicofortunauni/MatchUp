@@ -147,7 +147,7 @@ class _ChatPageState extends State<ChatPage> {
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
         constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
         decoration: BoxDecoration(
-          color: isMe ? Theme.of(context).primaryColor : Theme.of(context).colorScheme.onSurface,
+          color: isMe ? Theme.of(context).primaryColor : Theme.of(context).colorScheme.surfaceContainerHigh,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
@@ -161,7 +161,7 @@ class _ChatPageState extends State<ChatPage> {
             Text(
               message,
               style: TextStyle(
-                color: isMe ? Colors.white : Colors.black87,
+                color: isMe ? Colors.white : Theme.of(context).colorScheme.inverseSurface,
                 fontSize: 16,
               ),
             ),
@@ -169,7 +169,7 @@ class _ChatPageState extends State<ChatPage> {
             Text(
               "${time.hour}:${time.minute.toString().padLeft(2, '0')}",
               style: TextStyle(
-                color: isMe ? Colors.white70 : Colors.black54,
+                color: isMe ? Colors.white70 : Theme.of(context).colorScheme.inverseSurface,
                 fontSize: 10,
               ),
             ),
