@@ -57,6 +57,7 @@ class _SfideState extends State<Sfide> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 120.0),
         child: Card(
+          color: Theme.of(context).colorScheme.surface,
           elevation: 4.0,
           margin: const EdgeInsets.all(12.0),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

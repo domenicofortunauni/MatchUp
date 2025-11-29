@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 class PrenotazioneService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  // 1. Scarica orari occupati
+  // Scarica orari occupati
   Future<Map<String, Set<int>>> getOrariOccupati(String campoId, DateTime date) async {
     String dataString = DateFormat('yyyy-MM-dd').format(date);
 
@@ -39,7 +39,7 @@ class PrenotazioneService {
     return occupati;
   }
 
-  // 2. Salva prenotazione
+  // Salva prenotazione
   Future<void> creaPrenotazione({
     required String uid,
     required String nomeUtente,

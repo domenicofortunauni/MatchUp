@@ -33,7 +33,6 @@ class TorneoCard extends StatelessWidget {
             Text(
               torneo.nomeTorneo,
               style: theme.textTheme.titleLarge?.copyWith(
-                color: Theme.of(context).colorScheme.inverseSurface,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -88,7 +87,7 @@ class TorneoCard extends StatelessWidget {
                   context,
                   label: torneo.idFonte,
                   icon: Icons.sports_tennis,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Colors.blue[900]!,
                   textColor: Colors.white,
                 ),
                 // Chip per l'iscrizione online

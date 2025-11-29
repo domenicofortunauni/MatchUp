@@ -176,7 +176,7 @@ class MenuLaterale extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: EdgeInsets.fromLTRB(0,0,0,10),
+              padding: EdgeInsets.fromLTRB(0,0,0,15),
               child: Image.asset(
                   'assets/images/appBarLogo.png',
                   height: 40,

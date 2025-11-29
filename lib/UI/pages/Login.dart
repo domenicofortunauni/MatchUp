@@ -123,7 +123,7 @@ class _LoginState extends State<Login> {
       String errorMessage = "Si è verificato un errore.";
       if (e.code == 'email-already-in-use') errorMessage = "Email già registrata.";
       _showError(errorMessage);
-      if (e.code == 'invalid-credential') errorMessage = "Credenziali sbagliate.";
+      if (e.code == 'invalid-credential') errorMessage = "Credenziali errate.";
       _showError(errorMessage);
     } catch (e) {
       setState(() => _isLoading = false);

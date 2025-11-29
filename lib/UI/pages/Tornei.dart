@@ -31,7 +31,7 @@ class _TorneiPageState extends State<TorneiPage> {
   // Logica di inizializzazione super compatta
   void _initData() async {
     // Chiediamo la città al nostro nuovo Service pulito
-    final city = await LocationService.getCurrentCity(defaultCity: 'Cosenza');
+    final city = await LocationService.getCurrentCity(defaultCity: 'Roma');
 
     if (mounted) {
       setState(() {

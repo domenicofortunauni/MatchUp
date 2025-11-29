@@ -238,7 +238,7 @@ class _CreaSfidaState extends State<CreaSfida> {
 
               // LIVELLO
               DropdownButtonFormField<String>(
-                value: _livelloSelezionato,
+                initialValue: _livelloSelezionato,
                 decoration: const InputDecoration(
                   labelText: 'Livello Richiesto',
                   border: OutlineInputBorder(),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 import 'package:matchup/UI/widgets/cards/NewsCard.dart';
 import 'package:matchup/services/gnews_service.dart';
+import '../../model/objects/NotiziaModel.dart';
 
 class News extends StatelessWidget {
   const News({super.key});
@@ -20,7 +21,7 @@ class News extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          else if (snapshot.hasError) {
+          else if (snapshot.hasError || snapshot.data!.isEmpty) {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(20.0),

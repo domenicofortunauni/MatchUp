@@ -35,75 +35,6 @@ class _HomeState extends State<Home> {
         isVittoria: false,
         data: DateTime(2024, 11, 10),
       ),
-      Partita(
-        avversario: "Marco Rossi",
-        gameVinti: 60,
-        gamePersi: 30,
-        setVinti: 2,
-        setPersi: 0,
-        isVittoria: true,
-        data: DateTime(2024, 11, 12),
-      ),
-      Partita(
-        avversario: "Luca Bianchi",
-        gameVinti: 45,
-        gamePersi: 65,
-        setVinti: 1,
-        setPersi: 2,
-        isVittoria: false,
-        data: DateTime(2024, 11, 10),
-      ),Partita(
-        avversario: "Marco Rossi",
-        gameVinti: 60,
-        gamePersi: 30,
-        setVinti: 2,
-        setPersi: 0,
-        isVittoria: true,
-        data: DateTime(2024, 11, 12),
-      ),
-      Partita(
-        avversario: "Luca Bianchi",
-        gameVinti: 45,
-        gamePersi: 65,
-        setVinti: 1,
-        setPersi: 2,
-        isVittoria: false,
-        data: DateTime(2024, 11, 10),
-      ),Partita(
-        avversario: "Marco Rossi",
-        gameVinti: 60,
-        gamePersi: 30,
-        setVinti: 2,
-        setPersi: 0,
-        isVittoria: true,
-        data: DateTime(2024, 11, 12),
-      ),
-      Partita(
-        avversario: "Luca Bianchi",
-        gameVinti: 45,
-        gamePersi: 65,
-        setVinti: 1,
-        setPersi: 2,
-        isVittoria: false,
-        data: DateTime(2024, 11, 10),
-      ),Partita(
-        avversario: "Marco Rossi",
-        gameVinti: 60,
-        gamePersi: 30,
-        setVinti: 2,
-        setPersi: 0,
-        isVittoria: true,
-        data: DateTime(2024, 11, 12),
-      ),
-      Partita(
-        avversario: "Luca Bianchi",
-        gameVinti: 45,
-        gamePersi: 65,
-        setVinti: 1,
-        setPersi: 2,
-        isVittoria: false,
-        data: DateTime(2024, 11, 10),
-      ),
     ];
 
 
@@ -114,7 +45,7 @@ class _HomeState extends State<Home> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: EdgeInsets.fromLTRB(15, 40, 0, 10),
+                padding: EdgeInsets.fromLTRB(15, 10, 0, 0),
                 child: Text(
                   AppLocalizations.of(context)!.translate("Benvenuto"),
                 style: TextStyle(
@@ -124,7 +55,7 @@ class _HomeState extends State<Home> {
         ),
       ),
               const PrenotazioniWidget(),
-        Statistiche(),
+              Statistiche(),
               StoricoPartiteWidget(partite: storico),
               const SizedBox(height: 100.0),
             ],

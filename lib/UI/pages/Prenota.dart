@@ -56,6 +56,7 @@ class _PrenotaState extends State<Prenota> {
             child: Card(
               elevation: 4.0,
               margin: const EdgeInsets.all(12.0),
+              color: Theme.of(context).colorScheme.surface,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),

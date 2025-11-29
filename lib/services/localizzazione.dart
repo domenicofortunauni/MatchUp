@@ -2,10 +2,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 
 class LocationService {
-  /// Ottiene la città corrente o ritorna Roma in caso di errore
+  /// Ottiene la provincia corrente o ritorna Roma in caso di errore
   static Future<String> getCurrentCity({String defaultCity = 'Roma'}) async {
     try {
-      // Controllo Permessi geoloc
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -16,7 +15,7 @@ class LocationService {
 
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) return defaultCity;
-      final position = await Geolocator.getCurrentPosition();
+      final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best );
 
       List<Placemark> placemarks = await placemarkFromCoordinates(
           position.latitude,
@@ -24,8 +23,9 @@ class LocationService {
       );
 
       if (placemarks.isNotEmpty) {
-        return placemarks.first.locality ??
-            placemarks.first.subAdministrativeArea ??
+        //andrebbe visto all'estero come traduce "Provincia di " :/..
+        return placemarks.first.subAdministrativeArea?.replaceFirst("Provincia di ", "") ??
+            placemarks.first.locality ??
             defaultCity;
       }
       return defaultCity;

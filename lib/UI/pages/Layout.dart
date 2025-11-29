@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../behaviors/AppLocalizations.dart';
 import '../widgets/dialogs/logoutDialog.dart';
@@ -27,8 +26,8 @@ class _LayoutState extends State<Layout> {
         initialIndex: 2,
         child: Scaffold(
           extendBody: true,
-          drawer: MenuLaterale(headerImage: Image.asset(
-            'assets/images/appBarLogo.png',
+          drawer: MenuLaterale(
+            headerImage: Image.asset('assets/images/appBarLogo.png',
             height: 60,
             fit: BoxFit.contain,
           ),
@@ -38,8 +37,9 @@ class _LayoutState extends State<Layout> {
                 'assets/images/appBarLogo.png',
                 height: 40,
               ),
-              centerTitle: true, // importante per centrare il titolo in Android/iOS
+              centerTitle: true,
               backgroundColor: Theme.of(context).colorScheme.primary,
+              iconTheme: const IconThemeData(color: Colors.white),
             //parte destra app bar
             actions: [
               IconButton(
