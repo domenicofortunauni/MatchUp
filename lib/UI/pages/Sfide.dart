@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:matchup/UI/widgets/CustomSnackBar.dart';
 import 'package:matchup/UI/widgets/sfide/SfideDisponibili.dart';
 import 'package:matchup/UI/widgets/sfide/SfideInCorso.dart';
 import 'package:matchup/UI/widgets/sfide/SfideInviate.dart';
 import 'package:matchup/UI/widgets/sfide/SfideRicevute.dart';
 import 'package:matchup/UI/widgets/sfide/CreaSfida.dart';
-
 import '../widgets/buttons/CircularFloatingIconButton.dart';
 
 class Sfide extends StatefulWidget {
@@ -16,23 +14,12 @@ class Sfide extends StatefulWidget {
 }
 
 class _SfideState extends State<Sfide> {
-  bool _showChallenges = false;
-  int _selectedButton = -1;
-
-  final List<SfidaModel> _sfideDisponibili = [
-    SfidaModel(title: "Battaglia di Set", opponent: "Peppe"),
-    SfidaModel(title: "Game Veloce", opponent: "Andrea"),
-    SfidaModel(title: "Partita Singola", opponent: "Mimmo"),
-    SfidaModel(title: "Sfida del Servizio", opponent: "Marco"),
-  ];
-
-  final List<SfidaModel> _sfideInCorso = [];
-  List<SfidaModel> _sfideInviateList = [];
-
-  List<SfidaModel> _sfideRicevuteList = [
-    SfidaModel(title: "Rivincita", opponent: "Giovanni"),
-    SfidaModel(title: "Tie Break", opponent: "Luca"),
-  ];
+  // 0 = Disponibili (Pubbliche)
+  // 1 = Inviate (Create da me in attesa)
+  // 2 = In Corso (Accettate)
+  // 3 = Ricevute (Inviti diretti per me)
+  // -1 = Nessuno selezionato (o default)
+  int _selectedButton = 0; // Default mostriamo le disponibili
 
   Color _getButtonColor(BuildContext context, int buttonIndex) {
     return (buttonIndex == _selectedButton)
@@ -42,80 +29,30 @@ class _SfideState extends State<Sfide> {
 
   void _handleButtonPress(int buttonIndex) {
     setState(() {
-      if (buttonIndex == _selectedButton && buttonIndex == 0) {
-        _showChallenges = false;
-        _selectedButton = -1;
-      } else if (buttonIndex == 0) {
-        _showChallenges = true;
-        _selectedButton = 0;
-      } else {
-        _showChallenges = false;
-        _selectedButton = buttonIndex;
-      }
+      _selectedButton = buttonIndex;
     });
-  }
-
-  void _accettaSfida(SfidaModel sfida) {
-    setState(() {
-      _sfideDisponibili.removeWhere((s) => s.title == sfida.title && s.opponent == sfida.opponent);
-      _sfideInCorso.add(sfida);
-      _showChallenges = false;
-      _selectedButton = 2;
-    });
-    CustomSnackBar.show(context, 'Sfida contro ${sfida.opponent} accettata!');
-  }
-
-  // NUOVA LOGICA PER RICEVUTE
-  void _accettaRicevuta(SfidaModel sfida) {
-    setState(() {
-      _sfideRicevuteList = List.from(_sfideRicevuteList)..remove(sfida);
-      _sfideInCorso.add(sfida);
-      _selectedButton = 2; // Sposta la vista su In Corso
-      _showChallenges = false;
-    });
-    CustomSnackBar.show(context, 'Sfida di ${sfida.opponent} accettata!');
-  }
-
-  void _rifiutaRicevuta(SfidaModel sfida) {
-    setState(() {
-      _sfideRicevuteList = List.from(_sfideRicevuteList)..remove(sfida);
-    });
-    CustomSnackBar.show(context, 'Sfida di ${sfida.opponent} rifiutata.');
   }
 
   Future<void> _navigaEcreaSfida() async {
-    final result = await Navigator.push(
+    // Navighiamo alla pagina di creazione.
+    await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const CreaSfida()),
     );
 
-    if (result != null) {
-      try {
-        final nuovaSfida = result as SfidaModel;
-        setState(() {
-          _sfideInviateList = [..._sfideInviateList, nuovaSfida];
-          _selectedButton = 1;
-          _showChallenges = false;
-        });
-        CustomSnackBar.show(context, 'Sfida inviata a ${nuovaSfida.opponent}!');
-      } catch (e) {
-        print("Errore nel recupero della sfida creata: $e");
-      }
-    }
+    // Al ritorno, potremmo voler mostrare le "Inviate"
+    setState(() {
+      _selectedButton = 1;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool showDisponibili = _showChallenges && _selectedButton == 0;
-    final bool showInviate = _selectedButton == 1 && !_showChallenges;
-    final bool showInCorso = _selectedButton == 2 && !_showChallenges;
-    final bool showRicevute = _selectedButton == 3 && !_showChallenges; // Logica per Ricevute
-
     return Scaffold(
       floatingActionButton: CircularFloatingIconButton(
         onPressed: _navigaEcreaSfida,
         icon: Icons.add,
-        ),
+      ),
 
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 120.0),
@@ -129,6 +66,7 @@ class _SfideState extends State<Sfide> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Header
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 12),
@@ -212,61 +150,41 @@ class _SfideState extends State<Sfide> {
                   ],
                 ),
 
-                if (showDisponibili) ...[
-                  const SizedBox(height: 30),
-                  const Divider(),
-                  const SizedBox(height: 10),
+                const SizedBox(height: 30),
+                const Divider(),
+                const SizedBox(height: 10),
+
+                //CONTENUTO DINAMICO
+                // Qui mostriamo il widget giusto in base al bottone premuto
+
+                if (_selectedButton == 0) ...[
                   const Text(
-                    "Sfide in attesa di accettazione:",
+                    "Sfide pubbliche disponibili:",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
-                  SfideDisponibiliList(
-                    sfide: _sfideDisponibili,
-                    onAccetta: _accettaSfida,
-                  ),
-                ],
-
-                if (showInviate) ...[
-                  const SizedBox(height: 30),
-                  const Divider(),
-                  const SizedBox(height: 10),
+                  const SfideDisponibiliList(),
+                ] else if (_selectedButton == 1) ...[
                   const Text(
                     "Sfide che hai inviato:",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
-                  SfideInviateSection(
-                    sfideInviate: _sfideInviateList,
-                  ),
-                ],
-
-                if (showInCorso) ...[
-                  const SizedBox(height: 30),
-                  const Divider(),
-                  const SizedBox(height: 10),
+                  const SfideInviateSection(),
+                ] else if (_selectedButton == 2) ...[
                   const Text(
-                    "Le tue sfide accettate e in corso:",
+                    "Partite accettate e in corso:",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
-                  SfideInCorsoList(sfide: _sfideInCorso),
-                ],
-
-                if (showRicevute) ...[
-                  const SizedBox(height: 30),
-                  const Divider(),
-                  const SizedBox(height: 10),
+                  const SfideInCorsoList(),
+                ] else if (_selectedButton == 3) ...[
                   const Text(
                     "Sfide ricevute da altri giocatori:",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
-                  SfideRicevuteSection(
-                    sfide: _sfideRicevuteList,
-                    onAccetta: _accettaRicevuta,
-                    onRifiuta: _rifiutaRicevuta,
-                  ),
+                  const SfideRicevuteSection(),
                 ],
               ],
             ),
