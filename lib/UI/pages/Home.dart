@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:matchup/UI/widgets/Prenotazione.dart';
 import 'package:matchup/UI/widgets/Statistiche.dart';
 import 'package:matchup/UI/widgets/StoricoPartite.dart';
+import '../../model/objects/PartitaModel.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});

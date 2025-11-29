@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../services/gnews_service.dart';
+import '../../../services/gnews_service.dart';
 
 class NewsCard extends StatelessWidget {
   final Notizia notizia;

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:matchup/model/CampoModel.dart';
+import 'package:matchup/model/objects/CampoModel.dart';
 import 'package:matchup/UI/widgets/DettaglioPrenotazione.dart';
 import 'package:matchup/UI/widgets/MappaTennis.dart';
 import '../../services/campo_service.dart';
+import '../behaviors/AppLocalizations.dart';
 
 class Prenota extends StatefulWidget {
   const Prenota({Key? key}) : super(key: key);
@@ -183,7 +184,9 @@ class _PrenotaState extends State<Prenota> {
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            campo.nome,
+                                            campo.nome == "Campo Sconosciuto"
+                                                ? AppLocalizations.of(context)!.translate("Campo sconosciuto")
+                                                : campo.nome,
                                             style: TextStyle(
                                               fontSize: 18,
                                               fontWeight: FontWeight.bold,

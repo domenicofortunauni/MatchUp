@@ -58,7 +58,9 @@ class MenuLaterale extends StatelessWidget {
 
                 //Sezione Tema
                 ListTile(
-                  title: Text(AppLocalizations.of(context)!.translate("Cambia Tema")),
+                  title: Text(AppLocalizations.of(context)!.translate("Cambia Tema"),
+                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                   trailing: GestureDetector(
                     onTap: () {
                       final appState = MyApp.of(context);
@@ -172,8 +174,14 @@ class MenuLaterale extends StatelessWidget {
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(0,0,0,10),
+              child: Image.asset(
+                  'assets/images/appBarLogo.png',
+                  height: 40,
+                ),
+              ),
             Row(
               children: [
                 //Avatar con iniziali

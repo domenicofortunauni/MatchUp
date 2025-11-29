@@ -24,10 +24,10 @@ class Torneo {
   factory Torneo.fromJson(Map<String, dynamic> json) {
     return Torneo(
       guid: json['guid'] ?? '',
-      nomeTorneo: json['nome_torneo'] ?? 'Torneo non specificato',
+      nomeTorneo: json['nome_torneo'] ?? '',
       citta: json['citta'] ?? '',
       provincia: json['provincia'] ?? '',
-      tennisClub: json['tennisclub'] ?? 'Club non specificato',
+      tennisClub: json['tennisclub'] ?? '',
       dataInizio: json['data_inizio'] ?? '',
       dataFine: json['data_fine'] ?? '',
       idFonte: json['id_fonte'] ?? '',

@@ -3,6 +3,8 @@ import 'package:matchup/UI/widgets/StoricoPartite.dart';
 import 'package:intl/intl.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 
+import '../../model/objects/PartitaModel.dart';
+
 class AggiungiPartitaStatistiche extends StatefulWidget {
   const AggiungiPartitaStatistiche({Key? key}) : super(key: key);
 

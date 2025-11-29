@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
-import 'package:matchup/UI/widgets/NewsCard.dart';
+import 'package:matchup/UI/widgets/cards/NewsCard.dart';
 import 'package:matchup/services/gnews_service.dart';
 
 class News extends StatelessWidget {
@@ -15,7 +15,7 @@ class News extends StatelessWidget {
         foregroundColor: Colors.white,
       ),
       body: FutureBuilder<List<Notizia>>(
-        future: fetchNews(), // Chiama la funzione API per ottenere le notizie
+        future: fetchNews(Localizations.localeOf(context).languageCode), // Chiama la funzione API per ottenere le notizie
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

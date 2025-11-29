@@ -1,9 +1,9 @@
 import "dart:convert";
 import "package:http/http.dart" as http;
-import "../model/TorneoModel.dart";
+import "../model/objects/TorneoModel.dart";
+import "../model/support/Constants.dart";
 
 class FitpService {
-  static const String apiUrl = 'https://appflutter-5frv.vercel.app/api/proxy';
   Future<List<Torneo>> fetchTournaments(String freetext) async {
     final now = DateTime.now();
     final dataInizio = '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
@@ -38,7 +38,7 @@ class FitpService {
 
     try {
       final response = await http.post(
-        Uri.parse(apiUrl),
+        Uri.parse(Constants.API_TORNEI_URL),
         headers: headers,
         body: body,
       );

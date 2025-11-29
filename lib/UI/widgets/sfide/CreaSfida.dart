@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:matchup/UI/widgets/SfideDisponibili.dart';
+import 'package:matchup/UI/widgets/sfide/SfideDisponibili.dart';
 
 class CreaSfida extends StatefulWidget {
   const CreaSfida({Key? key}) : super(key: key);

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:matchup/UI/widgets/SfideDisponibili.dart';
+import 'package:matchup/UI/widgets/sfide/SfideDisponibili.dart';
 
 class SfideRicevuteSection extends StatelessWidget {
   final List<SfidaModel> sfide;

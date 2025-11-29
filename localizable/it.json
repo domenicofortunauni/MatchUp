@@ -98,6 +98,7 @@
   "Cambia Tema": "Cambia Tema",
   "Annulla": "Annulla",
   "Conferma": "Conferma",
+  "Prenotazione confermata!": "Prenotazione confermata!",
   "Sei sicuro di voler uscire?": "Sei sicuro di voler uscire?",
   "Esci": "Esci",
   "Username": "Username",
@@ -107,9 +108,17 @@
   "Risultati per:": "Risultati per:",
   "Errore:": "Errore:",
   "Nessun torneo trovato.": "Nessun torneo trovato.",
+  "Errore durante la prenotazione": "Errore durante la prenotazione",
   "Dal": "Dal",
   " al ": " al ",
   "Organizzato da:": "Organizzato da:",
   "Iscrizione Online": "Iscrizione Online",
-  "Iscrizione in loco": "Iscrizione in loco"
+  "Iscrizione in loco": "Iscrizione in loco",
+  "Campo sconosciuto" : "Campo sconosciuto",
+  "Devi essere loggato per prenotare": "Devi essere loggato per prenotare",
+  "Conferma Prenotazione" : "Conferma Prenotazione",
+  "Campo": "Campo",
+  "Ora": "Ora",
+  "Durata": "Durata",
+  "Totale": "Totale"
 }

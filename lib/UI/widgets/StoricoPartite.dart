@@ -2,25 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 
-class Partita {
-  final String avversario;
-  final int gameVinti;
-  final int gamePersi;
-  final int setVinti;
-  final int setPersi;
-  final bool isVittoria;
-  final DateTime data;
-
-  Partita({
-    required this.avversario,
-    required this.gameVinti,
-    required this.gamePersi,
-    required this.setVinti,
-    required this.setPersi,
-    required this.isVittoria,
-    required this.data,
-  });
-}
+import '../../model/objects/PartitaModel.dart';
 
 class StoricoPartiteWidget extends StatefulWidget {
   final List<Partita> partite;

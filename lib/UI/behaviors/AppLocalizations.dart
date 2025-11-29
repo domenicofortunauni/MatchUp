@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../../model/support/Constants.dart';
+
 class AppLocalizations {
   final Locale locale;
   AppLocalizations(this.locale);
@@ -13,7 +15,7 @@ class AppLocalizations {
   }
 
   Future<bool> load() async {
-    String jsonString = await rootBundle.loadString('assets/localizable/${locale.languageCode}.json');
+    String jsonString = await rootBundle.loadString('localizable/${locale.languageCode}.json');
     Map<String, dynamic> jsonMap = json.decode(jsonString);
     _localizedStrings = jsonMap.map((key, value) {
       return MapEntry(key, value.toString());
@@ -27,12 +29,11 @@ class AppLocalizations {
 
 
 }
-// TODO: capire che fa
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
   @override
   bool isSupported(Locale locale) {
-    return ['it', 'en', 'fr', 'es', 'de'].contains(locale.languageCode);
+    return Constants.supportedLocales.map((e) => e.languageCode).contains(locale.languageCode);
   }
   @override
   Future<AppLocalizations> load(Locale locale) async {

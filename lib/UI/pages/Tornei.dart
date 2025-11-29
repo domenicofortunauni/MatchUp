@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import "package:matchup/model/TorneoModel.dart";
+import "package:matchup/model/objects/TorneoModel.dart";
 import "../behaviors/AppLocalizations.dart";
-import "../widgets/TorneoCard.dart";
+import "../widgets/cards/TorneoCard.dart";
 import "../../services/sito_tornei.dart";
 import "../../services/localizzazione.dart"; // Importa il nuovo service
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:matchup/UI/widgets/SfideDisponibili.dart';
-import 'CustomSnackBar.dart';
+import 'package:matchup/UI/widgets/sfide/SfideDisponibili.dart';
+import '../CustomSnackBar.dart';
 
 class SfideInCorsoList extends StatelessWidget {
   final List<SfidaModel> sfide;

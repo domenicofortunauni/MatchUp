@@ -1,13 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
+import '../model/support/Constants.dart';
 
-// Chiave API e Base URL (rimangono invariati)
-const String _apiKey = '470ca9d053c288330bf2c04403b58850';
-const String _baseUrl = 'https://gnews.io/api/v4/search';
-
-// Modello dei Dati per un Articolo (rimane invariato)
 class Notizia {
   final String titolo;
   final String descrizione;
@@ -24,37 +19,32 @@ class Notizia {
   });
 
   factory Notizia.fromJson(Map<String, dynamic> json) {
-    String? imageUrl = json['image'];
-
-    if (imageUrl == null || imageUrl.isEmpty) {
-      imageUrl = 'assets/images/defaultNews1.jpg';
-    }
-
     return Notizia(
-      titolo: json['title'] ?? 'Nessun Titolo',
-      descrizione: json['description'] ?? 'Nessuna descrizione disponibile.',
-      urlImmagine: imageUrl,
-      fonte: json['source']?['name'] ?? 'Sconosciuta',
+      titolo: json['title'] ?? '',
+      descrizione: json['description'] ?? '',
+      urlImmagine: json['image'],
+      fonte: json['source']?['name'] ?? '',
       urlArticolo: json['url'] ?? '',
     );
   }
 }
 
-// Funzione di Parsing Eseguita in Isolate (MODIFICATA)
 List<Notizia> _parseNews(String responseBody) {
   final Map<String, dynamic> data = json.decode(responseBody);
   final List<dynamic> articlesJson = data['articles'] ?? [];
 
-  // Mappa gli articoli e filtra per quelli che hanno una foto reale.
   return articlesJson
       .map((json) => Notizia.fromJson(json))
       .toList();
 }
 
-// Funzione principale per il recupero delle notizie (MODIFICATA)
-Future<List<Notizia>> fetchNews() async {
-  final String query = 'tennis NOT "calcio" NOT "basket"';
-  final String lang = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+// Funzione principale per il recupero delle notizie
+Future<List<Notizia>> fetchNews(String languageCode) async {
+  String baseQuery = 'tennis';
+  String context = '(ATP OR WTA OR "Davis Cup" OR "Grand Slam" OR Wimbledon OR "Roland Garros" OR "US Open" OR "Australian Open")';
+  String exclusions = 'NOT "table tennis" NOT "ping pong" NOT padel NOT audience NOT ascolti NOT tv';
+  final String query = '$baseQuery AND $context $exclusions';
+  final String lang = languageCode;
   //di default magari meglio prendere quella del telefono
   //in modo smart, si potrebbe far cambiare dal menù in app bar
   final String sortby = 'publishedAt';
@@ -64,17 +54,13 @@ Future<List<Notizia>> fetchNews() async {
   final DateTime sevenDaysAgo = now.subtract(const Duration(days: 7));
   final String fromDate = sevenDaysAgo.toIso8601String().substring(0, 10);
 
-  // L'API di GNews non supporta un filtro diretto per "immagine presente",
-  // ma filtrando solo per 'q=tennis' si ottengono articoli pertinenti.
-
-  final url = Uri.parse('$_baseUrl?q=$query&lang=$lang&from=$fromDate&sortby=$sortby&token=$_apiKey');
+  final url = Uri.parse('$Constants.API_GNEWS_URL?q=$query&lang=$lang&from=$fromDate&sortby=$sortby&token=$Constants.APIKEY_GNEWS');
 
   final response = await http.get(url);
 
   if (response.statusCode == 200) {
     return compute(_parseNews, response.body);
   } else {
-    // TODO: Sistemare con applocalization
-    throw Exception('Failed to load news. Status Code: ${response.statusCode}. Body: ${response.body}');
+    return [];
   }
 }

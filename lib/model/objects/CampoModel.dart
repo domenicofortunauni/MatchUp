@@ -25,7 +25,7 @@ class CampoModel {
 
     return CampoModel(
       id: doc.id,
-      nome: data['nome'] ?? 'Campo sconosciuto',
+      nome: data['nome'] ?? 'Campo sconosciuto', //no applocalizations qui!
       indirizzo: data['indirizzo'] ?? '',
       citta: data['citta'] ?? '',
       prezzoOrario: (data['prezzoOrario'] ?? 0).toDouble(),

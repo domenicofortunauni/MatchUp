@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:matchup/model/TorneoModel.dart';
-
-import '../behaviors/AppLocalizations.dart';
+import 'package:matchup/model/objects/TorneoModel.dart';
+import '../../behaviors/AppLocalizations.dart';
 
 class TorneoCard extends StatelessWidget {
   final Torneo torneo;

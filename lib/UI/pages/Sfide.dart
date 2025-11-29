@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:matchup/UI/widgets/CustomSnackBar.dart';
-import 'package:matchup/UI/widgets/SfideDisponibili.dart';
-import 'package:matchup/UI/widgets/SfideInCorso.dart';
-import 'package:matchup/UI/widgets/SfideInviate.dart';
-import 'package:matchup/UI/widgets/SfideRicevute.dart';
-import 'package:matchup/UI/widgets/CreaSfida.dart';
+import 'package:matchup/UI/widgets/sfide/SfideDisponibili.dart';
+import 'package:matchup/UI/widgets/sfide/SfideInCorso.dart';
+import 'package:matchup/UI/widgets/sfide/SfideInviate.dart';
+import 'package:matchup/UI/widgets/sfide/SfideRicevute.dart';
+import 'package:matchup/UI/widgets/sfide/CreaSfida.dart';
+
+import '../widgets/buttons/CircularFloatingIconButton.dart';
 
 class Sfide extends StatefulWidget {
   const Sfide({Key? key}) : super(key: key);
@@ -110,15 +112,10 @@ class _SfideState extends State<Sfide> {
     final bool showRicevute = _selectedButton == 3 && !_showChallenges; // Logica per Ricevute
 
     return Scaffold(
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 80.0, right: 5.0),
-        child: FloatingActionButton(
-          onPressed: _navigaEcreaSfida,
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          elevation: 4,
-          child: const Icon(Icons.add, color: Colors.white),
+      floatingActionButton: CircularFloatingIconButton(
+        onPressed: _navigaEcreaSfida,
+        icon: Icons.add,
         ),
-      ),
 
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 120.0),

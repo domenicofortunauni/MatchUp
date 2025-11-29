@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../widgets/NuovaChat.dart';
+import '../widgets/buttons/CircularFloatingIconButton.dart';
 import 'ChatPage.dart';
 import '../../services/chat_service.dart';
 
@@ -76,14 +77,10 @@ class ChatListPage extends StatelessWidget {
           );
         },
       ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 80.0),
-        child: FloatingActionButton(
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          child: const Icon(Icons.comment),
-          onPressed: () => _apriNuovaChat(context),
+
+      floatingActionButton: CircularFloatingIconButton(
+          onPressed: () => _apriNuovaChat(context), icon: Icons.comment,
         ),
-      ),
 
     );
   }

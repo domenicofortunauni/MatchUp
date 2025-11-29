@@ -1,12 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../behaviors/AppLocalizations.dart';
+import '../widgets/dialogs/logoutDialog.dart';
 import 'Home.dart';
 import 'Sfide.dart';
 import 'ChatList.dart';
 import 'Tornei.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:matchup/UI/pages/Login.dart';
 import 'Prenota.dart';
 import 'package:matchup/UI/widgets/MenuLaterale.dart';
 
@@ -20,42 +20,6 @@ class Layout extends StatefulWidget {
 }
 
 class _LayoutState extends State<Layout> {
-  void _mostraLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: Text(AppLocalizations.of(context)!.translate("Logout")),
-          content: Text(AppLocalizations.of(context)!.translate("Sei sicuro di voler uscire?")),
-          actions: [
-            //Tasto Annulla
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop(); //Chiude solo il popup
-              },
-              child: Text(AppLocalizations.of(context)!.translate("Annulla")),
-            ),
-            //Tasto Conferma Logout
-            TextButton(
-              onPressed: () async {
-                await FirebaseAuth.instance.signOut();
-                Navigator.of(dialogContext).pop(); //Chiude prima il popup
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const Login()),
-                      (route) => false,
-                );
-              },
-              child: Text(
-                AppLocalizations.of(context)!.translate("Esci"),
-                style: const TextStyle(color: Colors.red),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -81,7 +45,7 @@ class _LayoutState extends State<Layout> {
               IconButton(
                 icon: Icon(Icons.logout_rounded),
                 tooltip: AppLocalizations.of(context)!.translate("Logout"),
-                onPressed: () => _mostraLogoutDialog(context),
+                onPressed: () => LogoutDialog.show(context),
                   ),
             ],
           ),

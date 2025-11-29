@@ -1,7 +1,7 @@
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 import 'package:matchup/UI/pages/Login.dart';
-import 'package:matchup/model/utils/Constants.dart';
+import 'package:matchup/model/support/Constants.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -30,13 +30,11 @@ class MyAppState extends State<MyApp> {
 
   // Getter per accedere alla lingua corrente in altri widget
   Locale get currentLocale => _locale ?? WidgetsBinding.instance.platformDispatcher.locale;
-
   ThemeMode _themeMode = ThemeMode.system; // tema del sistema
   // Funzione per cambiare tema
   void toggleTheme() {
     setState(() {
-      _themeMode =
-      _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+      _themeMode = (_themeMode == ThemeMode.light) ? ThemeMode.dark : ThemeMode.light;
     });
   }
   // Metodo per aggiornare la lingua
@@ -51,7 +49,7 @@ class MyAppState extends State<MyApp> {
       title: Constants.AppName,
       themeMode: _themeMode,
       locale: _locale,
-      // Qui lingua iniziale presa dal sistema
+      // lingua iniziale presa dal sistema
       localeResolutionCallback: (locale, supportedLocales) {
         if (_locale != null) {
           return _locale;
@@ -61,7 +59,7 @@ class MyAppState extends State<MyApp> {
             return supportedLocale;
           }
         }
-        return supportedLocales.first;
+        return supportedLocales.first; //se non è supportata mette l'inglese
       },
       localizationsDelegates: [
         AppLocalizations.delegate,
@@ -69,11 +67,7 @@ class MyAppState extends State<MyApp> {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate
       ],
-      supportedLocales: const [
-        Locale('en'),
-        Locale('it'),
-        Locale('fr'), // Aggiungere altre lingue
-      ],
+      supportedLocales: Constants.supportedLocales,
       theme: ThemeData(
         primaryColor: Color(0xFF3E963D),
         colorScheme: ColorScheme.fromSeed(

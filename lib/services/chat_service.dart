@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../services/localizzazione.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ChatService {
@@ -51,7 +52,7 @@ class ChatService {
       }, SetOptions(merge: true));
 
     } catch (e) {
-      print("Errore invio: $e");
+      print("Errore invio -per debug: $e");
       rethrow;
     }
   }
