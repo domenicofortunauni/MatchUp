@@ -42,7 +42,7 @@ class FitpService {
         headers: headers,
         body: body,
       );
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 ||response.statusCode == 500 ) {
         if (response.body.isEmpty) {
           return [];
         }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
-import '../../model/objects/PartitaModel.dart';
-import 'cards/MatchCard.dart';
+import '../../../model/objects/PartitaModel.dart';
+import '../cards/MatchCard.dart';
 import 'noPartiteStorico.dart';
 
 class StoricoPartiteWidget extends StatefulWidget {

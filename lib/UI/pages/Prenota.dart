@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:matchup/model/objects/CampoModel.dart';
-import 'package:matchup/UI/widgets/DettaglioPrenotazione.dart';
-import 'package:matchup/UI/widgets/MappaTennis.dart';
+import 'package:matchup/UI/widgets/prenota/MappaTennis.dart';
 import '../../services/campo_service.dart';
-import '../behaviors/AppLocalizations.dart';
+import '../widgets/cards/CampoPrenotabileCard.dart';
 
 class Prenota extends StatefulWidget {
   const Prenota({Key? key}) : super(key: key);
@@ -13,10 +12,8 @@ class Prenota extends StatefulWidget {
 }
 
 class _PrenotaState extends State<Prenota> {
-  // Istanza del servizio
   final CampoService _campoService = CampoService();
 
-  // Variabile per la ricerca
   String _searchQuery = "";
 
   @override
@@ -30,20 +27,13 @@ class _PrenotaState extends State<Prenota> {
       body: StreamBuilder<List<CampoModel>>(
         stream: _campoService.getCampi(),
         builder: (context, snapshot) {
-          // Gestione Errori
           if (snapshot.hasError) {
             return Center(child: Text("Errore nel caricamento: ${snapshot.error}"));
           }
-
-          // Gestione Caricamento
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-
-          // Dati grezzi da Firebase
           final List<CampoModel> tuttiICampi = snapshot.data ?? [];
-
-          // Logica di Filtro (Ricerca locale)
           final List<CampoModel> campiFiltrati = tuttiICampi.where((campo) {
             final nomeLower = campo.nome.toLowerCase();
             final cittaLower = campo.citta.toLowerCase();
@@ -54,7 +44,7 @@ class _PrenotaState extends State<Prenota> {
           return SingleChildScrollView(
             padding: const EdgeInsets.only(bottom: 120.0),
             child: Card(
-              elevation: 4.0,
+              elevation: 0,
               margin: const EdgeInsets.all(12.0),
               color: Theme.of(context).colorScheme.surface,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -107,7 +97,6 @@ class _PrenotaState extends State<Prenota> {
                     ),
                     const SizedBox(height: 20),
 
-                    // BARRA DI RICERCA
                     TextField(
                       onChanged: (value) {
                         setState(() {
@@ -129,7 +118,6 @@ class _PrenotaState extends State<Prenota> {
                     ),
                     const SizedBox(height: 20),
 
-                    // LISTA CAMPI (Dinamica)
                     if (campiFiltrati.isEmpty)
                       Padding(
                         padding: const EdgeInsets.all(20.0),
@@ -149,104 +137,7 @@ class _PrenotaState extends State<Prenota> {
                         itemCount: campiFiltrati.length,
                         itemBuilder: (context, index) {
                           final campo = campiFiltrati[index];
-                          return Card(
-                            elevation: 2,
-                            margin: const EdgeInsets.symmetric(vertical: 8),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(12),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => DettaglioPrenotazione(campo: campo),
-                                  ),
-                                );
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Row(
-                                  children: [
-                                    // Icona/Immagine del campo
-                                    Container(
-                                      width: 80,
-                                      height: 80,
-                                      decoration: BoxDecoration(
-                                        color: primaryColor.withValues(alpha: 0.15),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Icon(Icons.sports_tennis, size: 40, color: primaryColor),
-                                    ),
-                                    const SizedBox(width: 16),
-
-                                    // Info Campo
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            campo.nome == "Campo Sconosciuto"
-                                                ? AppLocalizations.of(context)!.translate("Campo sconosciuto")
-                                                : campo.nome,
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: onSurfaceColor,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Row(
-                                            children: [
-                                              Icon(Icons.location_on, size: 14, color: onSurfaceColor.withValues(alpha: 0.5)),
-                                              const SizedBox(width: 4),
-                                              Expanded(
-                                                child: Text(
-                                                  "${campo.indirizzo}, ${campo.citta}",
-                                                  style: TextStyle(
-                                                      color: onSurfaceColor.withValues(alpha: 0.6),
-                                                      fontSize: 13
-                                                  ),
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  const Icon(Icons.star, size: 16, color: Colors.amber),
-                                                  const SizedBox(width: 4),
-                                                  Text(
-                                                    campo.rating.toString(),
-                                                    style: TextStyle(
-                                                        fontWeight: FontWeight.bold,
-                                                        color: onSurfaceColor
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              Text(
-                                                "€${campo.prezzoOrario.toStringAsFixed(0)}/h",
-                                                style: TextStyle(
-                                                  color: primaryColor,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 16,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Icon(Icons.chevron_right, color: onSurfaceColor.withValues(alpha: 0.4)),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
+                          return CampoCard(campo: campo);
                         },
                       ),
                   ],

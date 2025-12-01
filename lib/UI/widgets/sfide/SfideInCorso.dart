@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:matchup/model/objects/SfidaModel.dart';
 import '../CustomSnackBar.dart';
+import '../cards/SfidaCard.dart';
 
 class SfideInCorsoList extends StatelessWidget {
   const SfideInCorsoList({Key? key}) : super(key: key);
@@ -14,7 +15,6 @@ class SfideInCorsoList extends StatelessWidget {
     if (currentUserId == null) {
       return const SizedBox.shrink();
     }
-
     // STREAM: Ascolta le sfide in stato 'accettata' dove io sono creatore O avversario
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
@@ -37,7 +37,6 @@ class SfideInCorsoList extends StatelessWidget {
 
         // Convertiamo i documenti in oggetti SfidaModel
         final sfide = docs.map((doc) => SfidaModel.fromSnapshot(doc)).toList();
-
         // Gestione lista vuota
         if (sfide.isEmpty) {
           return const Center(
@@ -58,60 +57,20 @@ class SfideInCorsoList extends StatelessWidget {
           itemCount: sfide.length,
           itemBuilder: (context, index) {
             final sfida = sfide[index];
-
-            // LOGICA NOMI:
-            // Se io sono il creatore (challenger), l'avversario è l'opponent.
-            // Se io sono l'opponent, l'avversario è il challenger.
             bool isMyChallenge = sfida.challengerId == currentUserId;
-
-            String nomeAvversario = isMyChallenge
-                ? (sfida.opponentName ?? "Sconosciuto")
+            String nomeDaMostrare = isMyChallenge
+                ? (sfida.opponentName ?? "Avversario")
                 : sfida.challengerName;
 
-            return Card(
-              margin: const EdgeInsets.only(bottom: 8),
-              elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-
-                // Icona Racchette incrociate o campo
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.sports_tennis, color: Colors.green, size: 24),
-                ),
-
-                title: Text(
-                  sfida.nomeStruttura,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 4),
-                    Text(
-                      "vs $nomeAvversario", // Mostra il nome corretto
-                      style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w500),
-                    ),
-                    Text(
-                      sfida.dataOra, // Es: 22/10 - 18:00
-                      style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                    ),
-                  ],
-                ),
-
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-
-                onTap: () {
-                  // Qui in futuro potrai aprire la pagina del match con il punteggio
-                  CustomSnackBar.show(context, 'Apro la partita contro $nomeAvversario');
-                },
-              ),
+            return SfidaCard(
+              sfida: sfida,
+              customTitle: "vs $nomeDaMostrare",
+              customIcon: Icons.sports_tennis,
+              labelButton: "Apri Partita",
+              customButtonColor: Theme.of(context).colorScheme.primary,
+              onPressed: () {
+                CustomSnackBar.show(context, 'Apro partita vs $nomeDaMostrare');
+              },
             );
           },
         );

@@ -1,7 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-import '../behaviors/AppLocalizations.dart';
+import '../../behaviors/AppLocalizations.dart';
 
 class noPartiteStorico extends StatelessWidget{
 

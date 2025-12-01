@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:matchup/UI/widgets/CustomSnackBar.dart';
+import '../popup/NuovaChat.dart';
 
 class CreaSfida extends StatefulWidget {
   const CreaSfida({Key? key}) : super(key: key);
@@ -17,6 +18,9 @@ class _CreaSfidaState extends State<CreaSfida> {
   // Controller
   final _strutturaController = TextEditingController();
   final _avversarioController = TextEditingController();
+
+  // Variabile per salvare l'ID dell'utente selezionato dal popup
+  String? _opponentIdSelezionato;
 
   // Variabili Stato
   DateTime _dataSfida = DateTime.now();
@@ -35,7 +39,6 @@ class _CreaSfidaState extends State<CreaSfida> {
     super.dispose();
   }
 
-  //PICKERS
   Future<void> _selezionaData(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -54,9 +57,7 @@ class _CreaSfidaState extends State<CreaSfida> {
     if (picked != null) setState(() => _oraSfida = picked);
   }
 
-  //VERIFICA UTENTE
   Future<bool> _verificaEsistenzaUtente(String usernameCercato) async {
-    // Cerchiamo nella collezione 'users' se c'è un documento con quel username
     try {
       final querySnapshot = await FirebaseFirestore.instance
           .collection('users')
@@ -64,6 +65,9 @@ class _CreaSfidaState extends State<CreaSfida> {
           .limit(1)
           .get();
 
+      if (querySnapshot.docs.isNotEmpty) {
+        _opponentIdSelezionato = querySnapshot.docs.first.id;
+      }
       return querySnapshot.docs.isNotEmpty;
     } catch (e) {
       print("Errore verifica utente: $e");
@@ -81,48 +85,39 @@ class _CreaSfidaState extends State<CreaSfida> {
       return;
     }
 
-    // 1. VERIFICA AVVERSARIO SE DIRETTA
-    if (_modalitaSfida == 1) {
-      String nomeAvversario = _avversarioController.text.trim();
-
-      // Controllo che non ti stia sfidando da solo (opzionale ma utile)
-      setState(() => _isLoading = true); // Mostra loading durante il check
-
-      bool esiste = await _verificaEsistenzaUtente(nomeAvversario);
-
-      if (!esiste) {
-        setState(() => _isLoading = false);
-        CustomSnackBar.show(context, "L'utente '$nomeAvversario' non esiste. Controlla lo username.");
-        return; // BLOCCA TUTTO
-      }
-    }
-
     setState(() => _isLoading = true);
 
     try {
-      // 2. Recupero il nome del Challenger
-      String myName = "Giocatore";
-      try {
-        DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-        if (userDoc.exists) {
-          final data = userDoc.data() as Map<String, dynamic>;
-          myName = data['username'] ?? data['userName'] ?? data['nome'] ?? "Giocatore";
+      if (_modalitaSfida == 1) {
+        String nomeAvversario = _avversarioController.text.trim();
 
-          // Controllo anti-auto-sfida
-          if (_modalitaSfida == 1 && _avversarioController.text.trim() == myName) {
-            throw Exception("Non puoi sfidare te stesso!");
+
+        if (_opponentIdSelezionato == null) {
+          bool esiste = await _verificaEsistenzaUtente(nomeAvversario);
+          if (!esiste) {
+            throw Exception("L'utente '$nomeAvversario' non esiste.");
           }
         }
-      } catch (e) {
-        if (mounted) CustomSnackBar.show(context, "$e"); // Mostra errore auto-sfida
-        return;
       }
 
-      // 3. Formatto ora
+      //Recupero dati sfidante
+      String myName = "Giocatore";
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (userDoc.exists) {
+        final data = userDoc.data() as Map<String, dynamic>;
+        myName = data['username'] ?? data['userName'] ?? data['nome'] ?? "Giocatore";
+
+        // Controllo anti auto-sfida
+        if (_modalitaSfida == 1 && (_opponentIdSelezionato == user.uid || _avversarioController.text.trim() == myName)) {
+          throw Exception("Non puoi sfidare te stesso!");
+        }
+      }
+
+      // Formattazione ora
       final localizations = MaterialLocalizations.of(context);
       String oraFormattata = localizations.formatTimeOfDay(_oraSfida, alwaysUse24HourFormat: true);
 
-      // 4. Preparo i dati
+      //dati
       Map<String, dynamic> sfidaData = {
         'challengerId': user.uid,
         'challengerName': myName,
@@ -133,16 +128,14 @@ class _CreaSfidaState extends State<CreaSfida> {
         'livello': _livelloSelezionato,
         'stato': 'aperta',
         'prenotazioneId': null,
-
-        // MODALITÀ
         'modalita': _modalitaSfida == 0 ? 'pubblica' : 'diretta',
 
-        // Se diretta, metto l'username validato
+        // DATI AVVERSARIO
         'opponentName': (_modalitaSfida == 1) ? _avversarioController.text.trim() : null,
-        'opponentId': null,
+        'opponentId': (_modalitaSfida == 1) ? _opponentIdSelezionato : null, // Salviamo l'ID!
       };
 
-      // 5. Scrittura su Firebase
+      // scrittura su Firebase
       await FirebaseFirestore.instance.collection('sfide').add(sfidaData);
 
       if (mounted) {
@@ -150,7 +143,7 @@ class _CreaSfidaState extends State<CreaSfida> {
         Navigator.of(context).pop();
       }
     } catch (e) {
-      if (mounted) CustomSnackBar.show(context, "Errore: $e");
+      if (mounted) CustomSnackBar.show(context, "Errore: ${e.toString().replaceAll("Exception: ", "")}");
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -202,28 +195,46 @@ class _CreaSfidaState extends State<CreaSfida> {
               const Divider(),
               const SizedBox(height: 10),
 
-              // CAMPO AVVERSARIO (Visibile solo se Diretta)
+              // CAMPO AVVERSARIO
               if (_modalitaSfida == 1) ...[
                 TextFormField(
                   controller: _avversarioController,
+                  readOnly: true, // Blocca la tastiera per usare il popup!!!
                   decoration: const InputDecoration(
                       labelText: 'Username Avversario',
-                      hintText: 'Inserisci username esatto',
+                      hintText: 'Tocca per scegliere...',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.person_search),
+                      suffixIcon: Icon(Icons.arrow_drop_down),
                       helperText: "Deve corrispondere a un utente registrato"
                   ),
                   validator: (value) {
                     if (_modalitaSfida == 1 && (value == null || value.isEmpty)) {
-                      return 'Inserisci l\'username';
+                      return 'Seleziona un avversario';
                     }
                     return null;
+                  },
+                  onTap: () async {
+                    final selectedUser = await showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                      ),
+                      builder: (context) => const NuovaChatSfidaPopup(mode: 0),
+                    );
+                    if (selectedUser != null && selectedUser is Map<String, dynamic>) {
+                      setState(() {
+                        _avversarioController.text = selectedUser['username'] ?? selectedUser['displayName'] ?? "Giocatore";
+                        _opponentIdSelezionato = selectedUser['uid'];
+                      });
+                    }
                   },
                 ),
                 const SizedBox(height: 16),
               ],
 
-              // CAMPO STRUTTURA
+              // Campo struttura
               TextFormField(
                 controller: _strutturaController,
                 decoration: const InputDecoration(
@@ -236,7 +247,7 @@ class _CreaSfidaState extends State<CreaSfida> {
               ),
               const SizedBox(height: 16),
 
-              // LIVELLO
+              // Livello
               DropdownButtonFormField<String>(
                 initialValue: _livelloSelezionato,
                 decoration: const InputDecoration(
@@ -249,7 +260,7 @@ class _CreaSfidaState extends State<CreaSfida> {
               ),
               const SizedBox(height: 16),
 
-              // DATA E ORA
+              // Data e ora
               Row(
                 children: [
                   Expanded(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../behaviors/AppLocalizations.dart';
+import '../../behaviors/AppLocalizations.dart';
 
 class noPrenotazioni extends StatelessWidget {
 

@@ -1,8 +1,7 @@
-import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 import 'package:flutter/material.dart';
-import 'package:matchup/UI/widgets/Prenotazione.dart';
-import 'package:matchup/UI/widgets/Statistiche.dart';
-import 'package:matchup/UI/widgets/StoricoPartite.dart';
+import 'package:matchup/UI/widgets/home/Prenotazioni.dart';
+import 'package:matchup/UI/widgets/home/Statistiche.dart';
+import 'package:matchup/UI/widgets/home/StoricoPartite.dart';
 import '../../model/objects/PartitaModel.dart';
 
 class Home extends StatefulWidget {
@@ -44,16 +43,6 @@ class _HomeState extends State<Home> {
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: EdgeInsets.fromLTRB(15, 10, 0, 0),
-                child: Text(
-                  AppLocalizations.of(context)!.translate("Benvenuto"),
-                style: TextStyle(
-            fontSize: 25,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
               const PrenotazioniWidget(),
               Statistiche(),
               StoricoPartiteWidget(partite: storico),

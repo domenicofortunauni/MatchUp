@@ -4,7 +4,7 @@ import "package:matchup/model/objects/TorneoModel.dart";
 import "../behaviors/AppLocalizations.dart";
 import "../widgets/cards/TorneoCard.dart";
 import "../../services/sito_tornei.dart";
-import "../../services/localizzazione.dart"; // Importa il nuovo service
+import "../../services/localizzazione.dart";
 
 class TorneiPage extends StatefulWidget {
   const TorneiPage({super.key});
@@ -24,13 +24,11 @@ class _TorneiPageState extends State<TorneiPage> {
   @override
   void initState() {
     super.initState();
-    _futureTournaments = Future.value([]); // Inizializza vuoto
-    _initData(); // Avvia il caricamento
+    _futureTournaments = Future.value([]); /
+    _initData();
   }
 
-  // Logica di inizializzazione super compatta
   void _initData() async {
-    // Chiediamo la città al nostro nuovo Service pulito
     final city = await LocationService.getCurrentCity(defaultCity: 'Roma');
 
     if (mounted) {
@@ -61,19 +59,18 @@ class _TorneiPageState extends State<TorneiPage> {
     return Scaffold(
       body: Column(
         children: [
-          _buildSearchBar(),      // 1. Barra di ricerca estratta
-          _buildStatusHeader(),   // 2. Intestazione estratta
-          Expanded(child: _buildList()), // 3. Lista estratta
+          _buildSearchBar(),      // Barra di ricerca estratta
+          _buildStatusHeader(),   // Intestazione estratta
+          Expanded(child: _buildList()), // Lista estratta
         ],
       ),
     );
   }
 
-  // --- WIDGET ESTRATTI PER PULIZIA ---
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.fromLTRB(16,16,16,8),
       child: Row(
         children: [
           Expanded(
@@ -155,7 +152,7 @@ class _TorneiPageState extends State<TorneiPage> {
         }
 
         return ListView.builder(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 100), //
           itemCount: snapshot.data!.length,
           itemBuilder: (context, index) {
             return TorneoCard(

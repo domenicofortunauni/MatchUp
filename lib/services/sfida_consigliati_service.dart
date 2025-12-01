@@ -5,36 +5,28 @@ class UserService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final String myUid = FirebaseAuth.instance.currentUser!.uid;
 
-  // Funzione SMART: Recupera suggerimenti misti
   Future<List<Map<String, dynamic>>> getSuggestedPlayers() async {
     try {
       final myProfileSnapshot = await _db.collection('users').doc(myUid).get();
       final myData = myProfileSnapshot.data() ?? {};
       final String myCity = myData['citta'] ?? '';
 
-      // Scaricare 10 utenti suggeriti, si può riciclare per le sfide consigliate
-      final query = await _db.collection('users').limit(10).get();
+      final query = await _db.collection('users').limit(20).get();
       List<Map<String, dynamic>> results = [];
 
       for (var doc in query.docs) {
         if (doc.id == myUid) continue;
-
         final data = doc.data();
         final String userCity = data['citta'] ?? '';
-
         // Se condividiamo la città lo porto sopra
-        bool isNear = (myCity.isNotEmpty && userCity.toLowerCase() == myCity.toLowerCase());
-
-        //Campo verde UI vicini
+        bool isNear = (myCity.isNotEmpty && userCity == myCity);
+        //Serve per gestire il campo verde UI "vicino a te" in NuovaChatPopup
         data['ui_tag'] = isNear ? "Vicino a te" : "Consigliato";
         data['priority'] = isNear ? 1 : 0; // 1 = Alta priorità
-
         results.add(data);
       }
-
-      //Prima quelli vicini, poi gli altri
+      //Sort per stessa città
       results.sort((a, b) => b['priority'].compareTo(a['priority']));
-
       return results;
 
     } catch (e) {

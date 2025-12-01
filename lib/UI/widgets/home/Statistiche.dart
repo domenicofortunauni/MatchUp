@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:matchup/UI/widgets/AggiungiPartitaStatistiche.dart';
+import 'package:matchup/UI/widgets/home/AggiungiPartitaStatistiche.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
-import '../../model/objects/PartitaModel.dart';
+import '../../../model/objects/PartitaModel.dart';
 
 class Statistiche extends StatefulWidget {
   const Statistiche({Key? key}) : super(key: key);
@@ -110,7 +110,7 @@ class _StatisticheState extends State<Statistiche> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
 
-                // 1. PARTITE GIOCATE (HEADER)
+                // 1. PARTITE GIOCATE
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -134,7 +134,7 @@ class _StatisticheState extends State<Statistiche> {
 
                 const SizedBox(height: 20),
 
-                // Sezione game
+                //
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [

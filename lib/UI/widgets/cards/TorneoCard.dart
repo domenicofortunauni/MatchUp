@@ -15,13 +15,11 @@ class TorneoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final cardColor = theme.colorScheme.surfaceContainerHigh;
     final textColor = theme.colorScheme.inverseSurface;
 
     return Card(
       elevation: 4,
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-      color: cardColor,
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.0)
       ),
@@ -77,7 +75,6 @@ class TorneoCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // INFO EXTRA (Fonte e Iscrizione)
             Wrap(
               spacing: 8.0,
               runSpacing: 4.0,
@@ -90,7 +87,6 @@ class TorneoCard extends StatelessWidget {
                   color: Colors.blue[900]!,
                   textColor: Colors.white,
                 ),
-                // Chip per l'iscrizione online
                 if (torneo.iscrizioneOnline)
                   _buildInfoChip(
                     context,

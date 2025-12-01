@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:matchup/model/objects/SfidaModel.dart';
+import 'package:matchup/UI/widgets/cards/SfidaCard.dart'; // Assicurati di importare la tua Card
 import '../CustomSnackBar.dart';
 
 class SfideInviateSection extends StatelessWidget {
@@ -10,9 +11,9 @@ class SfideInviateSection extends StatelessWidget {
   Future<void> _eliminaSfida(BuildContext context, String sfidaId) async {
     try {
       await FirebaseFirestore.instance.collection('sfide').doc(sfidaId).delete();
-      CustomSnackBar.show(context, "Sfida annullata/eliminata.");
+      if (context.mounted) CustomSnackBar.show(context, "Sfida annullata/eliminata.");
     } catch (e) {
-      CustomSnackBar.show(context, "Errore: $e");
+      if (context.mounted) CustomSnackBar.show(context, "Errore: $e");
     }
   }
 
@@ -22,13 +23,12 @@ class SfideInviateSection extends StatelessWidget {
 
     if (currentUserId == null) return const SizedBox.shrink();
 
-    // STREAM: Scarica TUTTE le mie sfide aperte (sia dirette che pubbliche)
+    // STREAM: Scarica TUTTE le mie sfide aperte
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('sfide')
           .where('challengerId', isEqualTo: currentUserId)
           .where('stato', isEqualTo: 'aperta')
-      // Non filtriamo per modalità qui, le prendiamo tutte e le dividiamo dopo
           .snapshots(),
       builder: (context, snapshot) {
 
@@ -60,12 +60,12 @@ class SfideInviateSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // --- SEZIONE 1: SFIDE DIRETTE ---
+            //SEZIONE SFIDE DIRETTE
             if (sfideDirette.isNotEmpty) ...[
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
+                padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
                 child: Text(
-                  "Inviti Diretti (In attesa)",
+                  "Inviti diretti (In attesa)",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey),
                 ),
               ),
@@ -74,19 +74,18 @@ class SfideInviateSection extends StatelessWidget {
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: sfideDirette.length,
                 itemBuilder: (context, index) {
-                  final sfida = sfideDirette[index];
-                  return _buildCardSfida(context, sfida, isDiretta: true);
+                  return _buildCardSfida(context, sfideDirette[index], isDiretta: true);
                 },
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
             ],
 
-            // --- SEZIONE 2: SFIDE PUBBLICHE ---
+            //SEZIONE  SFIDE PUBBLICHE
             if (sfidePubbliche.isNotEmpty) ...[
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
+                padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
                 child: Text(
-                  "Sfide Pubbliche (In attesa di sfidanti)",
+                  "Sfide pubbliche (In attesa di sfidanti)",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey),
                 ),
               ),
@@ -95,8 +94,7 @@ class SfideInviateSection extends StatelessWidget {
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: sfidePubbliche.length,
                 itemBuilder: (context, index) {
-                  final sfida = sfidePubbliche[index];
-                  return _buildCardSfida(context, sfida, isDiretta: false);
+                  return _buildCardSfida(context, sfidePubbliche[index], isDiretta: false);
                 },
               ),
             ],
@@ -106,46 +104,19 @@ class SfideInviateSection extends StatelessWidget {
     );
   }
 
-  // Widget helper per non ripetere il codice della Card
+  //  riciclo della SfidaCard
   Widget _buildCardSfida(BuildContext context, SfidaModel sfida, {required bool isDiretta}) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 4),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: isDiretta ? Colors.orange.shade100 : Colors.blue.shade100,
-          child: Icon(
-            isDiretta ? Icons.send : Icons.public, // Icona diversa per distinguere
-            color: isDiretta ? Colors.orange : Colors.blue,
-          ),
-        ),
+    return SfidaCard(
+      sfida: sfida,
 
-        title: Text(
-            sfida.nomeStruttura,
-            style: const TextStyle(fontWeight: FontWeight.bold)
-        ),
+      customTitle: isDiretta
+          ? "Inviata a: ${sfida.opponentName ?? '...'}"
+          : "Sfida pubblica",
 
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (isDiretta)
-              Text("Inviata a: ${sfida.opponentName ?? '...'}",
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87))
-            else
-              const Text("Visibile a tutti",
-                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+      labelButton: isDiretta ? "Annulla invito" : "Elimina sfida",
+      customButtonColor: Colors.red,
 
-            Text("${sfida.dataOra} - ${sfida.livello}", style: const TextStyle(fontSize: 12)),
-          ],
-        ),
-
-        trailing: IconButton(
-          icon: const Icon(Icons.delete_outline, color: Colors.red),
-          onPressed: () => _eliminaSfida(context, sfida.id),
-          tooltip: isDiretta ? "Annulla invito" : "Elimina sfida pubblica",
-        ),
-      ),
+      onPressed: () => _eliminaSfida(context, sfida.id), customIcon: isDiretta ? Icons.send : Icons.public,
     );
   }
 }

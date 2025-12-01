@@ -27,7 +27,6 @@ class HorizontalWeekCalendar extends StatefulWidget {
 class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
   late ScrollController _scrollController;
 
-  //Costanti per le dimensioni, utili per il calcolo dello scroll
   final double _itemWidth = 70.0;
   final double _separatorWidth = 12.0;
 
@@ -35,11 +34,9 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
   void initState() {
     super.initState();
 
-    //Calcoliamo dove deve posizionarsi lo scroll all'inizio
     double initialOffset = 0.0;
 
     if (widget.allowPastDates) {
-      //Se accettiamo il passato, la lista inizia molto prima, dobbiamo calcolare la distanza tra l'inizio della lista e la data selezionata.
       final startOfList = _getStartDate();
       final difference = widget.selectedDate.difference(startOfList).inDays;
       initialOffset = difference * (_itemWidth + _separatorWidth);
@@ -58,7 +55,6 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
-  //Funzione per rimuovere l'ora e confrontare solo le date
   DateTime _stripTime(DateTime date) {
     return DateTime(date.year, date.month, date.day);
   }
@@ -77,7 +73,6 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
   void _resetToToday() {
     final now = DateTime.now();
 
-    //Calcolo nuova posizione scroll
     double targetOffset = 0.0;
     if (widget.allowPastDates) {
       final startOfList = _getStartDate();
@@ -295,7 +290,6 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
     //Data da cui partire per generare la lista
     final startDate = _getStartDate();
 
-    //Se permettiamo il passato, aumentiamo di molto gli elementi, se non lo permettiamo mettiamo solo i futuri (esempio 60)
     final int itemCount = widget.allowPastDates ? 800 : 60;
 
     return Column(
@@ -318,13 +312,13 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
                     onPressed: _resetToToday,
                     child: Text(
                       AppLocalizations.of(context)!.translate("Vai a oggi"),
-                      style: const TextStyle(fontSize: 14),
+                      style: TextStyle(fontSize: 14,color: Theme.of(context).colorScheme.onSurface ),
                     ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.calendar_month_outlined),
                     onPressed: () => _showCustomCalendarDialog(context),
-                    color: onSurface,
+                    color: Theme.of(context).colorScheme.primary,
                     tooltip: AppLocalizations.of(context)!.translate("Scegli data"),
                   ),
                 ],

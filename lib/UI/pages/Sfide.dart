@@ -34,13 +34,12 @@ class _SfideState extends State<Sfide> {
   }
 
   Future<void> _navigaEcreaSfida() async {
-    // Navighiamo alla pagina di creazione.
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const CreaSfida()),
     );
 
-    // Al ritorno, potremmo voler mostrare le "Inviate"
+    // Al ritorno, potremmo mostrare le "inviate"
     setState(() {
       _selectedButton = 1;
     });
@@ -57,8 +56,8 @@ class _SfideState extends State<Sfide> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 120.0),
         child: Card(
+          elevation: 0,
           color: Theme.of(context).colorScheme.surface,
-          elevation: 4.0,
           margin: const EdgeInsets.all(12.0),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Padding(
@@ -77,7 +76,7 @@ class _SfideState extends State<Sfide> {
                   ),
                   child: const Center(
                     child: Text(
-                      'Le Tue Sfide',
+                      'Le tue sfide',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -154,9 +153,6 @@ class _SfideState extends State<Sfide> {
                 const SizedBox(height: 30),
                 const Divider(),
                 const SizedBox(height: 10),
-
-                //CONTENUTO DINAMICO
-                // Qui mostriamo il widget giusto in base al bottone premuto
 
                 if (_selectedButton == 0) ...[
                   const Text(

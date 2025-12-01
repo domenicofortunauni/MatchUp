@@ -5,8 +5,8 @@ import 'package:flutter_chat_core/flutter_chat_core.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 import 'package:matchup/UI/widgets/HorizontalWeekCalendar.dart';
 import 'package:matchup/UI/widgets/CustomSnackBar.dart';
-import '../../model/objects/PrenotazioneModel.dart';
-import 'cards/PrenotazioneCard.dart';
+import '../../../model/objects/PrenotazioneModel.dart';
+import '../cards/PrenotazioneCard.dart';
 import 'noPrenotazioniPresenti.dart';
 
 class PrenotazioniWidget extends StatefulWidget {
@@ -16,7 +16,7 @@ class PrenotazioniWidget extends StatefulWidget {
   State<PrenotazioniWidget> createState() => _PrenotazioniWidgetState();
 }
 
-class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
+class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticKeepAliveClientMixin{
   DateTime _selectedDate = DateTime.now();
   final String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
   late Stream<QuerySnapshot> _prenotazioniStream;
@@ -28,7 +28,6 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
       DateTime now = DateTime.now();
       DateTime start = now.subtract(const Duration(days: 15));
       DateTime end = now.add(const Duration(days: 15));
-//scarico solo 15 giorni prima e 15 giorni dopo per essere più veloce, ma sembra sempre lento..
       _prenotazioniStream = FirebaseFirestore.instance
           .collection('prenotazioni')
           .where('userId', isEqualTo: currentUserId)
@@ -131,27 +130,20 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
             Padding(
               padding: const EdgeInsets.fromLTRB(15,5,15,10),
               child:
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
                     Text(
-                      AppLocalizations.of(context)?.translate("Le Tue Prenotazioni") ?? "Le Tue Prenotazioni",
+                      AppLocalizations.of(context)!.translate("Le tue prenotazioni"),
                       style: TextStyle(
-                      fontSize: 21, // Più grande
+                      fontSize: 21,
                       fontWeight: FontWeight.bold,
                       ),
                     ),
-                  // Piccolo indicatore data o icona calendario opzionale
-                  Icon(Icons.event_available, color: primaryColor.withValues(alpha: 0.5)),
-                  ],
-                ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15.0),
               child:
               HorizontalWeekCalendar(
                 selectedDate: _selectedDate,
-                showMonthHeader: false, // Meglio metterlo fuori o minimal
+                showMonthHeader: true,
                 allowPastDates: true,
                 onDateChanged: (newDate) {
                   setState(() {
@@ -181,4 +173,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> {
       },
     );
   }
+//risolve il problema della lentezza della home!
+  @override
+  bool get wantKeepAlive => true;
 }

@@ -214,7 +214,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                         title: const Text("Vuoi lanciare una sfida?", style: TextStyle(fontWeight: FontWeight.bold)),
                         subtitle: const Text("Crea una partita pubblica o sfida un amico"),
                         value: abilitaSfida,
-                        activeThumbColor: Colors.deepPurple,
+                        activeThumbColor: Theme.of(context).colorScheme.primary,
                         contentPadding: EdgeInsets.zero,
                         onChanged: (val) {
                           setStateDialog(() => abilitaSfida = val);
@@ -247,7 +247,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                                       value: 0,
                                       contentPadding: EdgeInsets.zero,
                                       dense: true,
-                                      activeColor: Colors.deepPurple,
+                                      activeColor: Theme.of(context).colorScheme.primary,
                                     ),
                                     RadioListTile<int>(
                                       title: const Text("Diretta"),
@@ -255,7 +255,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                                       value: 1,
                                       contentPadding: EdgeInsets.zero,
                                       dense: true,
-                                      activeColor: Colors.deepPurple,
+                                      activeColor: Theme.of(context).colorScheme.primary,
                                     ),
                                   ],
                                 ),

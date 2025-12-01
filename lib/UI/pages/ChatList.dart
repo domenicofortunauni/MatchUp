@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../widgets/NuovaChat.dart';
+import '../behaviors/AppLocalizations.dart';
+import '../widgets/popup/NuovaChat.dart';
 import '../widgets/buttons/CircularFloatingIconButton.dart';
 import 'ChatPage.dart';
 import '../../services/chat_service.dart';
@@ -16,14 +17,14 @@ class ChatListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chat'),
+        title: Text(AppLocalizations.of(context)!.translate("Chat")),
         elevation: 0,
       ),
 
       body: StreamBuilder<QuerySnapshot>(
         stream: _chatService.getMyChats(),
         builder: (context, snapshot) {
-          if (snapshot.hasError) return const Center(child: Text("Errore"));
+          if (snapshot.hasError) return  Center(child: Text(AppLocalizations.of(context)!.translate("Errore")));
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -37,7 +38,7 @@ class ChatListPage extends StatelessWidget {
                 children: [
                   const Icon(Icons.chat_bubble_outline, size: 80, color: Colors.grey),
                   const SizedBox(height: 20),
-                  const Text("Nessuna conversazione attiva.", style: TextStyle(color: Colors.grey)),
+                  Text(AppLocalizations.of(context)!.translate("Nessuna conversazione attiva."), style: const TextStyle(color: Colors.grey)),
                 ],
               ),
             );
@@ -89,7 +90,7 @@ class ChatListPage extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) => const NuovaChatPopup(),
+      builder: (context) =>  NuovaChatSfidaPopup(mode: 1)
     );
   }
 }
