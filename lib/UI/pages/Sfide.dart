@@ -3,8 +3,9 @@ import 'package:matchup/UI/widgets/sfide/SfideDisponibili.dart';
 import 'package:matchup/UI/widgets/sfide/SfideInCorso.dart';
 import 'package:matchup/UI/widgets/sfide/SfideInviate.dart';
 import 'package:matchup/UI/widgets/sfide/SfideRicevute.dart';
-import 'package:matchup/UI/widgets/sfide/CreaSfida.dart';
+import '../behaviors/AppLocalizations.dart';
 import '../widgets/buttons/CircularFloatingIconButton.dart';
+import '../widgets/popup/ListaCampi.dart';
 
 class Sfide extends StatefulWidget {
   const Sfide({Key? key}) : super(key: key);
@@ -14,12 +15,8 @@ class Sfide extends StatefulWidget {
 }
 
 class _SfideState extends State<Sfide> {
-  // 0 = Disponibili (Pubbliche)
-  // 1 = Inviate (Create da me in attesa)
-  // 2 = In Corso (Accettate)
-  // 3 = Ricevute (Inviti diretti per me)
-  // -1 = Nessuno selezionato (o default)
-  int _selectedButton = 0; // Default mostriamo le disponibili
+  // 0 = Disponibili, 1 = Inviate, 2 = In Corso, 3 = Ricevute
+  int _selectedButton = 0;
 
   Color _getButtonColor(BuildContext context, int buttonIndex) {
     return (buttonIndex == _selectedButton)
@@ -33,23 +30,21 @@ class _SfideState extends State<Sfide> {
     });
   }
 
-  Future<void> _navigaEcreaSfida() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const CreaSfida()),
+  //APERTURA POPUP CAMPI
+  void _apriListaCampi(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Permette al popup di alzarsi quasi a tutto schermo
+      backgroundColor: Colors.transparent, // Per vedere i bordi arrotondati del popup
+      builder: (context) => const ListaCampiPopup(),
     );
-
-    // Al ritorno, potremmo mostrare le "inviate"
-    setState(() {
-      _selectedButton = 1;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: CircularFloatingIconButton(
-        onPressed: _navigaEcreaSfida,
+        onPressed: () => _apriListaCampi(context),
         icon: Icons.add,
       ),
 
@@ -74,10 +69,10 @@ class _SfideState extends State<Sfide> {
                     color: Theme.of(context).colorScheme.primary,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Text(
-                      'Le tue sfide',
-                      style: TextStyle(
+                      AppLocalizations.of(context)!.translate('Le tue sfide'),
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -99,7 +94,7 @@ class _SfideState extends State<Sfide> {
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        child: const Text('Disponibili', style: TextStyle(fontSize: 16)),
+                        child: Text(AppLocalizations.of(context)!.translate('Disponibili'), style: const TextStyle(fontSize: 16)),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -112,7 +107,7 @@ class _SfideState extends State<Sfide> {
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        child: const Text('Inviate', style: TextStyle(fontSize: 16)),
+                        child: Text(AppLocalizations.of(context)!.translate('Inviate'), style: const TextStyle(fontSize: 16)),
                       ),
                     ),
                   ],
@@ -131,7 +126,7 @@ class _SfideState extends State<Sfide> {
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        child: const Text('In Corso', style: TextStyle(fontSize: 16)),
+                        child: Text(AppLocalizations.of(context)!.translate('In Corso'), style: const TextStyle(fontSize: 16)),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -144,7 +139,7 @@ class _SfideState extends State<Sfide> {
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        child: const Text('Ricevute', style: TextStyle(fontSize: 16)),
+                        child: Text(AppLocalizations.of(context)!.translate('Ricevute'), style: const TextStyle(fontSize: 16)),
                       ),
                     ),
                   ],
@@ -154,32 +149,21 @@ class _SfideState extends State<Sfide> {
                 const Divider(),
                 const SizedBox(height: 10),
 
+                // Contenuto Dinamico
                 if (_selectedButton == 0) ...[
-                  const Text(
-                    "Sfide pubbliche disponibili:",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+                  Text(AppLocalizations.of(context)!.translate("Sfide pubbliche disponibili:"), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
                   const SfideDisponibiliList(),
                 ] else if (_selectedButton == 1) ...[
-                  const Text(
-                    "Sfide che hai inviato:",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+                  Text(AppLocalizations.of(context)!.translate("Sfide che hai inviato:"), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
                   const SfideInviateSection(),
                 ] else if (_selectedButton == 2) ...[
-                  const Text(
-                    "Partite accettate e in corso:",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+                  Text(AppLocalizations.of(context)!.translate("Partite accettate e in corso:"), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
                   const SfideInCorsoList(),
                 ] else if (_selectedButton == 3) ...[
-                  const Text(
-                    "Sfide ricevute da altri giocatori:",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+                  Text(AppLocalizations.of(context)!.translate("Sfide ricevute da altri giocatori:"), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
                   const SfideRicevuteSection(),
                 ],
