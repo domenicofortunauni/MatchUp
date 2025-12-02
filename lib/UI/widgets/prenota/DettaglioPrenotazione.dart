@@ -312,7 +312,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                   ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: abilitaSfida ? Colors.deepPurple : Theme.of(context).primaryColor,
+                      backgroundColor: abilitaSfida ? Theme.of(context).primaryColor : Theme.of(context).primaryColor,
                       foregroundColor: Colors.white,
                     ),
                     onPressed: () {
@@ -333,8 +333,8 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                       );
                     },
                     child: Text(abilitaSfida
-                        ? AppLocalizations.of(context)!.translate("Lancia Sfida")
-                        : AppLocalizations.of(context)!.translate("Conferma Prenotazione")),
+                        ? AppLocalizations.of(context)!.translate("Lancia sfida")
+                        : AppLocalizations.of(context)!.translate("Conferma prenotazione")),
                   ),
                 ],
               );

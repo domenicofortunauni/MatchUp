@@ -1,55 +1,50 @@
+import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
+import 'package:http/http.dart' as http;
+
 
 class LocationService {
-  /// Ottiene la provincia corrente o ritorna Roma in caso di errore
   static Future<String> getCurrentCity({String defaultCity = 'Roma'}) async {
-    try {
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
-          return defaultCity;
-        }
+
+    final Position? location = await getCurrentPosition();
+      if (location != null) {
+          final url = Uri.parse(
+              "https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.latitude}&lon=${location.longitude}"
+          );
+          final res = await http.get(url);
+          if (res.statusCode == 200) {
+            final data = jsonDecode(res.body);
+            return data["address"]["town"] ??
+                data["address"]["city"] ??
+                data["address"]["village"];
+          }
       }
-
-      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) return defaultCity;
-      final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best );
-
-      List<Placemark> placemarks = await placemarkFromCoordinates(
-          position.latitude,
-          position.longitude
-      );
-
-      if (placemarks.isNotEmpty) {
-        //andrebbe visto all'estero come traduce "Provincia di " :/..
-        return placemarks.first.subAdministrativeArea?.replaceFirst("Provincia di ", "") ??
-            placemarks.first.locality ??
-            defaultCity;
-      }
-      return defaultCity;
-    } catch (e) {
-      return defaultCity;
-    }
+    return defaultCity;
   }
+
   static Future<Position?> getCurrentPosition() async {
+      if(await checkPermission()){
+        return await Geolocator.getCurrentPosition();
+      }
+    return null;
+    }
+
+  static Future<bool> checkPermission() async {
     try {
-      //Controllo Permessi
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
-          return null;
+        if (permission == LocationPermission.denied ||
+            permission == LocationPermission.deniedForever) {
+          return false;
         }
       }
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) return null;
+      if (!serviceEnabled) return false;
 
-      // Ottieni Posizione
-      return await Geolocator.getCurrentPosition();
     } catch (e) {
-      return null;
+      return false;
     }
+    return true;
   }
 }
