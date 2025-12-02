@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:matchup/UI/widgets/home/AggiungiPartitaStatistiche.dart';
 import '../../../model/objects/PrenotazioneModel.dart';
 
 class PrenotazioneCard extends StatelessWidget {
   final Prenotazione prenotazione;
-  final Function(Prenotazione) onAnnulla; // Callback per passare l'azione al padre
+  final Function(Prenotazione) onAnnulla;
+  final Function(Prenotazione)? onPartitaConclusa; // Callback per quando la partita è registrata
 
   const PrenotazioneCard({
     Key? key,
     required this.prenotazione,
     required this.onAnnulla,
+    this.onPartitaConclusa,
   }) : super(key: key);
 
   @override
@@ -16,7 +19,7 @@ class PrenotazioneCard extends StatelessWidget {
     final Color onSurface = Theme.of(context).colorScheme.onSurface;
     final bool isAnnullato = prenotazione.stato == "Annullato";
 
-    //Check se è passato
+    // Check se è passata
     bool isPassata = false;
     try {
       List<String> parts = prenotazione.ora.split(':');
@@ -30,7 +33,7 @@ class PrenotazioneCard extends StatelessWidget {
       isPassata = endDateTime.isBefore(DateTime.now());
     } catch (_) {}
 
-    //logica colori!
+    // Logica colori
     Color statusColor = Colors.green;
     Color bgColor = Colors.green.withValues(alpha: 0.15);
 
@@ -57,7 +60,7 @@ class PrenotazioneCard extends StatelessWidget {
               // Striscia laterale
               Container(width: 6, color: statusColor),
 
-              //Contenuto
+              // Contenuto
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -141,7 +144,51 @@ class PrenotazioneCard extends StatelessWidget {
                           if (isAnnullato)
                             _StatusChip(label: "Annullata", bg: Colors.red.shade50, text: Colors.red)
                           else if (isPassata)
-                            _StatusChip(label: "Terminata", bg: Colors.grey.shade200, text: Colors.grey)
+                            InkWell(
+                              onTap: () async {
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AggiungiPartitaStatistiche(
+                                      prenotazione: prenotazione,
+                                    ),
+                                  ),
+                                );
+                                if (result != null && onPartitaConclusa != null) {
+                                  onPartitaConclusa!(prenotazione);
+                                }
+                              },
+                              borderRadius: BorderRadius.circular(20),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                                  border: Border.all(
+                                      color: Theme.of(context).primaryColor.withValues(alpha: 0.5),
+                                      width: 1
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                        Icons.emoji_events_outlined,
+                                        size: 16,
+                                        color: Theme.of(context).primaryColor
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      "Inserisci risultato",
+                                      style: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
                           else
                             InkWell(
                               onTap: () => onAnnulla(prenotazione),
@@ -175,7 +222,7 @@ class PrenotazioneCard extends StatelessWidget {
   }
 }
 
-// widget privato per le etichette
+// Widget privato per le etichette
 class _StatusChip extends StatelessWidget {
   final String label;
   final Color bg;
