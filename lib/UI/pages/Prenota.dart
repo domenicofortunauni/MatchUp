@@ -3,6 +3,7 @@ import 'package:matchup/model/objects/CampoModel.dart';
 import 'package:matchup/UI/widgets/prenota/MappaTennis.dart';
 import '../../services/campo_service.dart';
 import '../widgets/cards/CampoPrenotabileCard.dart';
+import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 
 class Prenota extends StatefulWidget {
   const Prenota({Key? key}) : super(key: key);
@@ -28,7 +29,11 @@ class _PrenotaState extends State<Prenota> {
         stream: _campoService.getCampi(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return Center(child: Text("Errore nel caricamento: ${snapshot.error}"));
+            return Center(
+              child: Text(
+                "${AppLocalizations.of(context)!.translate("Errore nel caricamento: ")}${snapshot.error}",
+              ),
+            );
           }
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -61,10 +66,10 @@ class _PrenotaState extends State<Prenota> {
                         color: primaryColor,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text(
-                          'Prenota un Campo',
-                          style: TextStyle(
+                          AppLocalizations.of(context)!.translate('Prenota un Campo'),
+                          style: const TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -74,7 +79,7 @@ class _PrenotaState extends State<Prenota> {
                     ),
                     const SizedBox(height: 16),
 
-                    //BOTTONE MAPPA
+                    // BOTTONE MAPPA
                     ElevatedButton.icon(
                       onPressed: () {
                         Navigator.push(
@@ -83,7 +88,7 @@ class _PrenotaState extends State<Prenota> {
                         );
                       },
                       icon: const Icon(Icons.map_outlined),
-                      label: const Text("Cerca Campi su Mappa"),
+                      label: Text(AppLocalizations.of(context)!.translate("Cerca Campi su Mappa")),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: primaryColor,
@@ -105,7 +110,7 @@ class _PrenotaState extends State<Prenota> {
                       },
                       style: TextStyle(color: onSurfaceColor),
                       decoration: InputDecoration(
-                        labelText: 'Cerca campo o città...',
+                        labelText: AppLocalizations.of(context)!.translate('Cerca campo o città...'),
                         labelStyle: TextStyle(color: onSurfaceColor.withValues(alpha: 0.6)),
                         prefixIcon: Icon(Icons.search, color: onSurfaceColor.withValues(alpha: 0.6)),
                         border: OutlineInputBorder(
@@ -124,8 +129,8 @@ class _PrenotaState extends State<Prenota> {
                         child: Center(
                           child: Text(
                               tuttiICampi.isEmpty
-                                  ? "Nessun campo presente nel database."
-                                  : "Nessun risultato per la ricerca.",
+                                  ? AppLocalizations.of(context)!.translate("Nessun campo presente nel database.")
+                                  : AppLocalizations.of(context)!.translate("Nessun risultato per la ricerca."),
                               style: TextStyle(color: onSurfaceColor.withValues(alpha: 0.6))
                           ),
                         ),
@@ -150,4 +155,3 @@ class _PrenotaState extends State<Prenota> {
     );
   }
 }
-

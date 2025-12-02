@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:matchup/model/objects/SfidaModel.dart';
-import 'package:matchup/UI/widgets/cards/SfidaCard.dart'; // Importa la card
+import 'package:matchup/UI/widgets/cards/SfidaCard.dart';
 import '../CustomSnackBar.dart';
+import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 
 class SfideRicevuteSection extends StatefulWidget {
   const SfideRicevuteSection({Key? key}) : super(key: key);
@@ -47,18 +48,26 @@ class _SfideRicevuteSectionState extends State<SfideRicevuteSection> {
         'stato': 'accettata',
         'opponentId': user.uid,
       });
-      if (mounted) CustomSnackBar.show(context, "Sfida accettata!");
+      if (mounted) {
+        CustomSnackBar.show(context, AppLocalizations.of(context)!.translate("Sfida accettata!"));
+      }
     } catch (e) {
-      if (mounted) CustomSnackBar.show(context, "Errore: $e");
+      if (mounted) {
+        CustomSnackBar.show(context, "${AppLocalizations.of(context)!.translate("Errore: ")}$e");
+      }
     }
   }
 
   Future<void> _onRifiuta(SfidaModel sfida) async {
     try {
       await FirebaseFirestore.instance.collection('sfide').doc(sfida.id).delete();
-      if (mounted) CustomSnackBar.show(context, "Sfida rifiutata.");
+      if (mounted) {
+        CustomSnackBar.show(context, AppLocalizations.of(context)!.translate("Sfida rifiutata."));
+      }
     } catch (e) {
-      if (mounted) CustomSnackBar.show(context, "Errore: $e");
+      if (mounted) {
+        CustomSnackBar.show(context, "${AppLocalizations.of(context)!.translate("Errore: ")}$e");
+      }
     }
   }
 
@@ -75,7 +84,7 @@ class _SfideRicevuteSectionState extends State<SfideRicevuteSection> {
           .where('opponentName', isEqualTo: _myUsername)
           .snapshots(),
       builder: (context, snapshot) {
-        if (snapshot.hasError) return const Text("Errore caricamento.");
+        if (snapshot.hasError) return Text(AppLocalizations.of(context)!.translate("Errore caricamento."));
         if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
 
         final docs = snapshot.data!.docs;
@@ -86,9 +95,12 @@ class _SfideRicevuteSectionState extends State<SfideRicevuteSection> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.mark_email_read_rounded, size: 48, color: Colors.grey.withOpacity(0.5)),
+                Icon(Icons.mark_email_read_rounded, size: 48, color: Colors.grey.withValues(alpha: 0.5)),
                 const SizedBox(height: 16),
-                const Text("Nessuna sfida ricevuta", style: TextStyle(color: Colors.grey)),
+                Text(
+                    AppLocalizations.of(context)!.translate("Nessuna sfida ricevuta"),
+                    style: const TextStyle(color: Colors.grey)
+                ),
               ],
             ),
           );
@@ -105,7 +117,8 @@ class _SfideRicevuteSectionState extends State<SfideRicevuteSection> {
             // RICICLO DELLA SFIDA CARD
             return SfidaCard(
               sfida: sfida,
-              customTitle: "Sfida da: ${sfida.challengerName}",
+              // Concatenazione con la traduzione
+              customTitle: "${AppLocalizations.of(context)!.translate("Sfida da: ")}${sfida.challengerName}",
 
               extraWidget: Row(
                 children: [
@@ -118,7 +131,7 @@ class _SfideRicevuteSectionState extends State<SfideRicevuteSection> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      child: const Text("Rifiuta"),
+                      child: Text(AppLocalizations.of(context)!.translate("Rifiuta")),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -132,11 +145,15 @@ class _SfideRicevuteSectionState extends State<SfideRicevuteSection> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      child: const Text("Accetta", style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: Text(
+                          AppLocalizations.of(context)!.translate("Accetta"),
+                          style: const TextStyle(fontWeight: FontWeight.bold)
+                      ),
                     ),
                   ),
                 ],
-              ), customIcon: Icons.mark_email_unread,
+              ),
+              customIcon: Icons.mark_email_unread,
             );
           },
         );

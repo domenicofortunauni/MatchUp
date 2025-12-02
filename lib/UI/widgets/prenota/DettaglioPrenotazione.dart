@@ -6,6 +6,7 @@ import 'package:matchup/model/objects/CampoModel.dart';
 import 'package:matchup/UI/widgets/CustomSnackBar.dart';
 import 'package:matchup/UI/widgets/HorizontalWeekCalendar.dart';
 import 'package:matchup/UI/widgets/animation/TennisBall.dart';
+import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 
 class DettaglioPrenotazione extends StatefulWidget {
   final CampoModel campo;
@@ -50,33 +51,27 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
   }
 
   String _formatDurationText(int minutes) {
-    if (minutes == 60) return "1 ora";
-    if (minutes == 90) return "1 ora e 30 min";
-    if (minutes == 120) return "2 ore";
-    return "$minutes min";
+    if (minutes == 60) return AppLocalizations.of(context)!.translate("1 ora");
+    if (minutes == 90) return AppLocalizations.of(context)!.translate("1 ora e 30 min");
+    if (minutes == 120) return AppLocalizations.of(context)!.translate("2 ore");
+    // Per i minuti generici, traduciamo solo l'etichetta "min"
+    return "$minutes ${AppLocalizations.of(context)!.translate("min")}";
   }
 
   // Controlla se un orario specifico ("18:30") è già passato rispetto ad adesso
   bool _isSlotPast(String timeSlot) {
-    // Se la data selezionata è nel futuro (domani, dopodomani...), l'orario non è passato
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final selectedDay = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
 
     if (selectedDay.isAfter(today)) return false;
-
-    // Se la data è passata (ieri), tutti gli slot sono passati
     if (selectedDay.isBefore(today)) return true;
 
-    // Se la data è OGGI, controlliamo l'ora
     final parts = timeSlot.split(':');
     final slotHour = int.parse(parts[0]);
     final slotMinute = int.parse(parts[1]);
 
-    // Creiamo la data completa dello slot
     final slotDateTime = DateTime(now.year, now.month, now.day, slotHour, slotMinute);
-
-    // Se è prima di adesso, è passato
     return slotDateTime.isBefore(now);
   }
 
@@ -176,7 +171,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
   Future<void> _confermaPrenotazione(String nomeSottoCampo, int durataMinuti) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      CustomSnackBar.show(context, "Devi essere loggato per prenotare!");
+      CustomSnackBar.show(context, AppLocalizations.of(context)!.translate("Devi essere loggato per prenotare!"));
       return;
     }
 
@@ -198,22 +193,22 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
         return StatefulBuilder(
             builder: (context, setStateDialog) {
               return AlertDialog(
-                title: const Text("Completa Prenotazione"),
+                title: Text(AppLocalizations.of(context)!.translate("Completa Prenotazione")),
                 content: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Struttura: ${widget.campo.nome}"),
-                      Text("Campo: $nomeSottoCampo"),
-                      Text("Data: $dataFormattata - Ore: $_selectedTimeSlot"),
-                      Text("Totale: €${totale.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text("${AppLocalizations.of(context)!.translate("Struttura: ")}${widget.campo.nome}"),
+                      Text("${AppLocalizations.of(context)!.translate("Campo: ")}$nomeSottoCampo"),
+                      Text("${AppLocalizations.of(context)!.translate("Data: ")}$dataFormattata - ${AppLocalizations.of(context)!.translate("Ore: ")}$_selectedTimeSlot"),
+                      Text("${AppLocalizations.of(context)!.translate("Totale: ")}€${totale.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold)),
 
                       const Divider(height: 30),
 
                       SwitchListTile(
-                        title: const Text("Vuoi lanciare una sfida?", style: TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: const Text("Crea una partita pubblica o sfida un amico"),
+                        title: Text(AppLocalizations.of(context)!.translate("Vuoi lanciare una sfida?"), style: const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text(AppLocalizations.of(context)!.translate("Crea una partita pubblica o sfida un amico")),
                         value: abilitaSfida,
                         activeThumbColor: Theme.of(context).colorScheme.primary,
                         contentPadding: EdgeInsets.zero,
@@ -243,16 +238,16 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                                 child: Column(
                                   children: [
                                     RadioListTile<int>(
-                                      title: const Text("Pubblica"),
-                                      subtitle: const Text("Aperta a tutti"),
+                                      title: Text(AppLocalizations.of(context)!.translate("Pubblica")),
+                                      subtitle: Text(AppLocalizations.of(context)!.translate("Aperta a tutti")),
                                       value: 0,
                                       contentPadding: EdgeInsets.zero,
                                       dense: true,
                                       activeColor: Theme.of(context).colorScheme.primary,
                                     ),
                                     RadioListTile<int>(
-                                      title: const Text("Diretta"),
-                                      subtitle: const Text("Scegli avversario"),
+                                      title: Text(AppLocalizations.of(context)!.translate("Diretta")),
+                                      subtitle: Text(AppLocalizations.of(context)!.translate("Scegli avversario")),
                                       value: 1,
                                       contentPadding: EdgeInsets.zero,
                                       dense: true,
@@ -293,9 +288,9 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                                       controller: controller,
                                       focusNode: focusNode,
                                       decoration: InputDecoration(
-                                        labelText: 'Cerca Username Avversario',
+                                        labelText: AppLocalizations.of(context)!.translate("Cerca Username Avversario"),
                                         border: const OutlineInputBorder(),
-                                        errorText: mostraErroreAvversario ? 'Inserisci un nome valido' : null,
+                                        errorText: mostraErroreAvversario ? AppLocalizations.of(context)!.translate("Inserisci un nome valido") : null,
                                         prefixIcon: const Icon(Icons.person_search),
                                         isDense: true,
                                       ),
@@ -313,7 +308,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(ctx),
-                    child: const Text("Annulla"),
+                    child: Text(AppLocalizations.of(context)!.translate("Annulla")),
                   ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -337,7 +332,9 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                           avversario: (abilitaSfida && modalitaScelta == 1) ? avversarioSelezionato.trim() : null
                       );
                     },
-                    child: Text(abilitaSfida ? "Lancia Sfida" : "Conferma Prenotazione"),
+                    child: Text(abilitaSfida
+                        ? AppLocalizations.of(context)!.translate("Lancia Sfida")
+                        : AppLocalizations.of(context)!.translate("Conferma Prenotazione")),
                   ),
                 ],
               );
@@ -369,7 +366,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
         bool esiste = await _checkUserExists(avversario);
         if (!esiste) {
           if (mounted) Navigator.pop(context);
-          CustomSnackBar.show(context, "Utente '$avversario' non trovato.");
+          CustomSnackBar.show(context, "${AppLocalizations.of(context)!.translate("Utente")} '$avversario' ${AppLocalizations.of(context)!.translate("non trovato.")}");
           return;
         }
       }
@@ -384,7 +381,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
           livelloGiocatore = data['livello'] ?? "Amatoriale";
 
           if (isSfida && modalita == 'diretta' && avversario == nomeReale) {
-            throw Exception("Non puoi sfidare te stesso!");
+            throw Exception(AppLocalizations.of(context)!.translate("Non puoi sfidare te stesso!"));
           }
         }
       } catch (e) {
@@ -434,7 +431,9 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
       if (mounted) {
         await Tennisball.show(
             context,
-            isSfida ? "Sfida Lanciata!" : "Prenotatazione effettuata!"
+            isSfida
+                ? AppLocalizations.of(context)!.translate("Sfida Lanciata!")
+                : AppLocalizations.of(context)!.translate("Prenotatazione effettuata!")
         );
       }
 
@@ -442,7 +441,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
 
     } catch (e) {
       if (mounted) Navigator.pop(context);
-      CustomSnackBar.show(context, "Errore: $e");
+      CustomSnackBar.show(context, "${AppLocalizations.of(context)!.translate("Errore: ")}$e");
     }
   }
 
@@ -509,7 +508,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                 child: CircularProgressIndicator(),
               ))
             else ...[
-              Text("Seleziona Orario", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: onSurfaceColor)),
+              Text(AppLocalizations.of(context)!.translate("Seleziona Orario"), style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: onSurfaceColor)),
               const SizedBox(height: 10),
 
               GridView.builder(
@@ -576,7 +575,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                 const SizedBox(height: 20),
 
                 if (campiAttuali.isEmpty)
-                  const Text("Nessun campo disponibile.")
+                  Text(AppLocalizations.of(context)!.translate("Nessun campo disponibile."))
                 else
                   ListView.builder(
                     shrinkWrap: true,
@@ -609,7 +608,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(color: Colors.red.withValues(alpha: 0.5))
                                 ),
-                                child: const Text("Già prenotato in questo orario", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                                child: Text(AppLocalizations.of(context)!.translate("Già prenotato in questo orario"), style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                               ),
                             )
                           else

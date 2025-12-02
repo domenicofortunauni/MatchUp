@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:matchup/model/objects/SfidaModel.dart';
-import 'package:matchup/UI/widgets/cards/SfidaCard.dart'; // Assicurati di importare la tua Card
+import 'package:matchup/UI/widgets/cards/SfidaCard.dart';
 import '../CustomSnackBar.dart';
+import 'package:matchup/UI/behaviors/AppLocalizations.dart';
+
 
 class SfideInviateSection extends StatelessWidget {
   const SfideInviateSection({Key? key}) : super(key: key);
@@ -11,9 +13,13 @@ class SfideInviateSection extends StatelessWidget {
   Future<void> _eliminaSfida(BuildContext context, String sfidaId) async {
     try {
       await FirebaseFirestore.instance.collection('sfide').doc(sfidaId).delete();
-      if (context.mounted) CustomSnackBar.show(context, "Sfida annullata/eliminata.");
+      if (context.mounted) {
+        CustomSnackBar.show(context, AppLocalizations.of(context)!.translate("Sfida annullata/eliminata."));
+      }
     } catch (e) {
-      if (context.mounted) CustomSnackBar.show(context, "Errore: $e");
+      if (context.mounted) {
+        CustomSnackBar.show(context, "${AppLocalizations.of(context)!.translate("Errore: ")}$e");
+      }
     }
   }
 
@@ -32,7 +38,7 @@ class SfideInviateSection extends StatelessWidget {
           .snapshots(),
       builder: (context, snapshot) {
 
-        if (snapshot.hasError) return const Text("Errore caricamento.");
+        if (snapshot.hasError) return Text(AppLocalizations.of(context)!.translate("Errore caricamento."));
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -45,12 +51,12 @@ class SfideInviateSection extends StatelessWidget {
         final sfidePubbliche = tutteLeSfide.where((s) => s.modalita == 'pubblica').toList();
 
         if (tutteLeSfide.isEmpty) {
-          return const SizedBox(
+          return SizedBox(
             height: 100,
             child: Center(
               child: Text(
-                "Nessuna sfida inviata o creata.",
-                style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
+                AppLocalizations.of(context)!.translate("Nessuna sfida inviata o creata."),
+                style: const TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
               ),
             ),
           );
@@ -62,11 +68,11 @@ class SfideInviateSection extends StatelessWidget {
 
             //SEZIONE SFIDE DIRETTE
             if (sfideDirette.isNotEmpty) ...[
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
                 child: Text(
-                  "Inviti diretti (In attesa)",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey),
+                  AppLocalizations.of(context)!.translate("Inviti diretti (In attesa)"),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey),
                 ),
               ),
               ListView.builder(
@@ -82,11 +88,11 @@ class SfideInviateSection extends StatelessWidget {
 
             //SEZIONE  SFIDE PUBBLICHE
             if (sfidePubbliche.isNotEmpty) ...[
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
                 child: Text(
-                  "Sfide pubbliche (In attesa di sfidanti)",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey),
+                  AppLocalizations.of(context)!.translate("Sfide pubbliche (In attesa di sfidanti)"),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey),
                 ),
               ),
               ListView.builder(
@@ -110,13 +116,17 @@ class SfideInviateSection extends StatelessWidget {
       sfida: sfida,
 
       customTitle: isDiretta
-          ? "Inviata a: ${sfida.opponentName ?? '...'}"
-          : "Sfida pubblica",
+          ? "${AppLocalizations.of(context)!.translate("Inviata a: ")}${sfida.opponentName ?? '...'}"
+          : AppLocalizations.of(context)!.translate("Sfida pubblica"),
 
-      labelButton: isDiretta ? "Annulla invito" : "Elimina sfida",
+      labelButton: isDiretta
+          ? AppLocalizations.of(context)!.translate("Annulla invito")
+          : AppLocalizations.of(context)!.translate("Elimina sfida"),
+
       customButtonColor: Colors.red,
 
-      onPressed: () => _eliminaSfida(context, sfida.id), customIcon: isDiretta ? Icons.send : Icons.public,
+      onPressed: () => _eliminaSfida(context, sfida.id),
+      customIcon: isDiretta ? Icons.send : Icons.public,
     );
   }
 }

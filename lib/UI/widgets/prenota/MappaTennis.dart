@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';  // GPS
 import 'package:matchup/UI/widgets/CustomSnackBar.dart';
 import 'dart:async';
 import '../../../services/localizzazione.dart';
+import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 
 class MappaTennis extends StatefulWidget {
   const MappaTennis({Key? key}) : super(key: key);
@@ -68,7 +69,7 @@ class _MappaTennisState extends State<MappaTennis> {
     } else {
       // Se position è null, significa che l'utente ha negato i permessi o il GPS è spento
       if(mounted) {
-        CustomSnackBar.show(context, "Impossibile ottenere la posizione GPS");
+        CustomSnackBar.show(context, AppLocalizations.of(context)!.translate("Impossibile ottenere la posizione GPS"));
       }
     }
 
@@ -110,8 +111,7 @@ class _MappaTennisState extends State<MappaTennis> {
           _mapController.move(newPos, 13.0);
           _cercaCampiArea(centerOverride: newPos);
         } else {
-            CustomSnackBar.show(context, "Indirizzo non trovato",
-          );
+          CustomSnackBar.show(context, AppLocalizations.of(context)!.translate("Indirizzo non trovato"));
         }
       }
     } catch (e) {
@@ -232,7 +232,8 @@ class _MappaTennisState extends State<MappaTennis> {
         });
 
         if (elements.isNotEmpty && mounted) {
-          CustomSnackBar.show(context, "Trovati ${elements.length} campi!",
+          CustomSnackBar.show(context,
+              "${AppLocalizations.of(context)!.translate("Trovati")} ${elements.length} ${AppLocalizations.of(context)!.translate("campi!")}"
           );
         }
       }
@@ -244,10 +245,10 @@ class _MappaTennisState extends State<MappaTennis> {
   }
 
   void _mostraDettagliCampo(Map<String, dynamic> tags) {
-    final nome = tags['name'] ?? 'Campo da Tennis';
-    final surface = tags['surface'] ?? 'Non specificata';
-    final access = tags['access'] ?? 'Pubblico';
-    final operator = tags['operator'] ?? 'Non specificato';
+    final nome = tags['name'] ?? AppLocalizations.of(context)!.translate('Campo da Tennis');
+    final surface = tags['surface'] ?? AppLocalizations.of(context)!.translate('Non specificata');
+    final access = tags['access'] ?? AppLocalizations.of(context)!.translate('Pubblico');
+    final operator = tags['operator'] ?? AppLocalizations.of(context)!.translate('Non specificato');
 
     showModalBottomSheet(
       context: context,
@@ -275,7 +276,9 @@ class _MappaTennisState extends State<MappaTennis> {
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          operator != 'Non specificato' ? operator : "Gestore sconosciuto",
+                          operator != 'Non specificato'
+                              ? operator
+                              : AppLocalizations.of(context)!.translate("Gestore sconosciuto"),
                           style: TextStyle(color: Colors.grey[600], fontSize: 14),
                         ),
                       ],
@@ -287,15 +290,18 @@ class _MappaTennisState extends State<MappaTennis> {
 
               ListTile(
                 leading: const Icon(Icons.grass),
-                title: const Text("Superficie"),
+                title: Text(AppLocalizations.of(context)!.translate("Superficie")),
                 subtitle: Text(surface.toUpperCase()),
                 contentPadding: EdgeInsets.zero,
                 dense: true,
               ),
               ListTile(
                 leading: const Icon(Icons.lock_open),
-                title: const Text("Accesso"),
-                subtitle: Text(access == 'private' ? "Privato / Circolo" : "Pubblico"),
+                title: Text(AppLocalizations.of(context)!.translate("Accesso")),
+                subtitle: Text(access == 'private'
+                    ? AppLocalizations.of(context)!.translate("Privato / Circolo")
+                    : AppLocalizations.of(context)!.translate("Pubblico")
+                ),
                 contentPadding: EdgeInsets.zero,
                 dense: true,
               ),
@@ -307,15 +313,14 @@ class _MappaTennisState extends State<MappaTennis> {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    CustomSnackBar.show(context,"Funzione prenota in arrivo...",
-                    );
+                    CustomSnackBar.show(context, AppLocalizations.of(context)!.translate("Funzione prenota in arrivo..."));
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).primaryColor,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text("PRENOTA QUESTO CAMPO"),
+                  child: Text(AppLocalizations.of(context)!.translate("PRENOTA QUESTO CAMPO")),
                 ),
               ),
             ],
@@ -387,15 +392,15 @@ class _MappaTennisState extends State<MappaTennis> {
               ],
             )
           else
-            const Center(
+            Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 15),
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 15),
                   Text(
-                      "Localizzazione in corso...",
-                      style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)
+                      AppLocalizations.of(context)!.translate("Localizzazione in corso..."),
+                      style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)
                   ),
                 ],
               ),
@@ -429,8 +434,8 @@ class _MappaTennisState extends State<MappaTennis> {
                             controller: _searchController,
                             onChanged: _onSearchChanged,
                             onSubmitted: (_) => _cercaIndirizzo(),
-                            decoration: const InputDecoration(
-                              hintText: "Cerca città...",
+                            decoration: InputDecoration(
+                              hintText: AppLocalizations.of(context)!.translate("Cerca città..."),
                               border: InputBorder.none,
                             ),
                           ),
@@ -524,7 +529,7 @@ class _MappaTennisState extends State<MappaTennis> {
                 FloatingActionButton.extended(
                   heroTag: "search_area_btn",
                   onPressed: () => _cercaCampiArea(),
-                  label: const Text("Cerca qui"),
+                  label: Text(AppLocalizations.of(context)!.translate("Cerca qui")),
                   icon: const Icon(Icons.sports_tennis),
                   backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,

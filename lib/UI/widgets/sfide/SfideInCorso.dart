@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:matchup/model/objects/SfidaModel.dart';
 import '../CustomSnackBar.dart';
 import '../cards/SfidaCard.dart';
+import 'package:matchup/UI/behaviors/AppLocalizations.dart';
+
 
 class SfideInCorsoList extends StatelessWidget {
   const SfideInCorsoList({Key? key}) : super(key: key);
@@ -15,42 +17,39 @@ class SfideInCorsoList extends StatelessWidget {
     if (currentUserId == null) {
       return const SizedBox.shrink();
     }
-    // STREAM: Ascolta le sfide in stato 'accettata' dove io sono creatore O avversario
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('sfide')
           .where('stato', isEqualTo: 'accettata')
           .where(Filter.or(
-          Filter('challengerId', isEqualTo: currentUserId), // Caso 1: L'ho creata io
-          Filter('opponentId', isEqualTo: currentUserId)    // Caso 2: L'ho accettata io
+          Filter('challengerId', isEqualTo: currentUserId),
+          Filter('opponentId', isEqualTo: currentUserId)
       ))
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return const Center(child: Text("Errore nel caricamento delle sfide."));
+          return Center(
+              child: Text(AppLocalizations.of(context)!.translate("Errore nel caricamento delle sfide."))
+          );
         }
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
         final docs = snapshot.data!.docs;
-
-        // Convertiamo i documenti in oggetti SfidaModel
         final sfide = docs.map((doc) => SfidaModel.fromSnapshot(doc)).toList();
-        // Gestione lista vuota
         if (sfide.isEmpty) {
-          return const Center(
+          return Center(
             child: Padding(
-              padding: EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(20.0),
               child: Text(
-                "Nessuna sfida in corso al momento.",
-                style: TextStyle(color: Colors.grey, fontSize: 16),
+                AppLocalizations.of(context)!.translate("Nessuna sfida in corso al momento."),
+                style: const TextStyle(color: Colors.grey, fontSize: 16),
               ),
             ),
           );
         }
 
-        // Lista delle sfide
         return ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -59,17 +58,20 @@ class SfideInCorsoList extends StatelessWidget {
             final sfida = sfide[index];
             bool isMyChallenge = sfida.challengerId == currentUserId;
             String nomeDaMostrare = isMyChallenge
-                ? (sfida.opponentName ?? "Avversario")
+                ? (sfida.opponentName ?? AppLocalizations.of(context)!.translate("Avversario"))
                 : sfida.challengerName;
 
             return SfidaCard(
               sfida: sfida,
               customTitle: "vs $nomeDaMostrare",
               customIcon: Icons.sports_tennis,
-              labelButton: "Apri Partita",
+              labelButton: AppLocalizations.of(context)!.translate("Apri Partita"),
               customButtonColor: Theme.of(context).colorScheme.primary,
               onPressed: () {
-                CustomSnackBar.show(context, 'Apro partita vs $nomeDaMostrare');
+                CustomSnackBar.show(
+                    context,
+                    '${AppLocalizations.of(context)!.translate("Apro partita")} vs $nomeDaMostrare'
+                );
               },
             );
           },

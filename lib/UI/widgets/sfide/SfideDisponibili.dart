@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:matchup/model/objects/SfidaModel.dart';
 import '../cards/SfidaCard.dart';
+import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 
 class SfideDisponibiliList extends StatelessWidget {
   const SfideDisponibiliList({Key? key}) : super(key: key);
@@ -12,10 +13,11 @@ class SfideDisponibiliList extends StatelessWidget {
     if (user == null) return;
 
     try {
-      String myName = "Avversario";
+      String myName = AppLocalizations.of(context)!.translate("Avversario");
+
       var userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
       if (userDoc.exists) {
-        myName = userDoc.data()?['username'] ?? "Avversario";
+        myName = userDoc.data()?['username'] ?? AppLocalizations.of(context)!.translate("Avversario");
       }
 
       await FirebaseFirestore.instance.collection('sfide').doc(sfida.id).update({
@@ -24,13 +26,23 @@ class SfideDisponibiliList extends StatelessWidget {
         'stato': 'accettata'
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Hai accettato la sfida di ${sfida.challengerName}!")),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "${AppLocalizations.of(context)!.translate("Hai accettato la sfida di ")}${sfida.challengerName}!",
+            ),
+          ),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Errore: $e")),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("${AppLocalizations.of(context)!.translate("Errore: ")}$e"),
+          ),
+        );
+      }
     }
   }
 
@@ -44,7 +56,9 @@ class SfideDisponibiliList extends StatelessWidget {
           .where('stato', isEqualTo: 'aperta')
           .snapshots(),
       builder: (context, snapshot) {
-        if (snapshot.hasError) return const Text("Errore caricamento sfide");
+        if (snapshot.hasError) {
+          return Text(AppLocalizations.of(context)!.translate("Errore caricamento sfide"));
+        }
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -63,7 +77,10 @@ class SfideDisponibiliList extends StatelessWidget {
               children: [
                 Icon(Icons.event_busy_rounded, size: 48, color: Colors.grey.withValues(alpha: 0.5)),
                 const SizedBox(height: 16),
-                const Text("Nessuna sfida disponibile", style: TextStyle(color: Colors.grey, fontSize: 16)),
+                Text(
+                  AppLocalizations.of(context)!.translate("Nessuna sfida disponibile"),
+                  style: const TextStyle(color: Colors.grey, fontSize: 16),
+                ),
               ],
             ),
           );
@@ -76,7 +93,11 @@ class SfideDisponibiliList extends StatelessWidget {
           itemCount: sfide.length,
           itemBuilder: (context, index) {
             final sfida = sfide[index];
-            return  SfidaCard(sfida: sfida, onPressed: () => _accettaSfida(context, sfida),customIcon:Icons.bolt_rounded);
+            return SfidaCard(
+              sfida: sfida,
+              onPressed: () => _accettaSfida(context, sfida),
+              customIcon: Icons.bolt_rounded,
+            );
           },
         );
       },
