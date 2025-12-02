@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_chat_core/flutter_chat_core.dart';
+import 'package:intl/intl.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 import 'package:matchup/UI/widgets/HorizontalWeekCalendar.dart';
 import 'package:matchup/UI/widgets/CustomSnackBar.dart';
@@ -16,7 +17,7 @@ class PrenotazioniWidget extends StatefulWidget {
   State<PrenotazioniWidget> createState() => _PrenotazioniWidgetState();
 }
 
-class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticKeepAliveClientMixin{
+class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticKeepAliveClientMixin {
   DateTime _selectedDate = DateTime.now();
   final String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
   late Stream<QuerySnapshot> _prenotazioniStream;
@@ -26,8 +27,9 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
     super.initState();
     if (currentUserId.isNotEmpty) {
       DateTime now = DateTime.now();
-      DateTime start = now.subtract(const Duration(days: 15));
-      DateTime end = now.add(const Duration(days: 15));
+      DateTime start = now.subtract(const Duration(days: 30));
+      DateTime end = now.add(const Duration(days: 30));
+
       _prenotazioniStream = FirebaseFirestore.instance
           .collection('prenotazioni')
           .where('userId', isEqualTo: currentUserId)
@@ -84,9 +86,27 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
     }
   }
 
+  //Nasconde le partite una volta inserito il risultato
+  Future<void> _onPartitaConclusa(Prenotazione p) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('prenotazioni')
+          .doc(p.id)
+          .update({'stato': 'Conclusa'});
+
+      if (mounted) {
+        CustomSnackBar.show(context, "Risultato salvato! Prenotazione archiviata.");
+      }
+    } catch (e) {
+      if (mounted) {
+        CustomSnackBar.show(context, "Errore durante l'aggiornamento: $e");
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final Color primaryColor = Theme.of(context).colorScheme.primary;
+    super.build(context);
 
     if (currentUserId.isEmpty) {
       return const Center(child: Text("Effettua il login per vedere le prenotazioni"));
@@ -105,6 +125,9 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
 
         for (var doc in docs) {
           Prenotazione p = Prenotazione.fromSnapshot(doc);
+
+          if (p.stato == 'Conclusa') continue;
+
           String key = _getDateKey(p.data);
 
           if (!mappaPrenotazioni.containsKey(key)) {
@@ -128,20 +151,18 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(15,5,15,10),
-              child:
-                    Text(
-                      AppLocalizations.of(context)!.translate("Le tue prenotazioni"),
-                      style: TextStyle(
-                      fontSize: 21,
-                      fontWeight: FontWeight.bold,
-                      ),
-                    ),
+              padding: const EdgeInsets.fromLTRB(15, 5, 15, 10),
+              child: Text(
+                AppLocalizations.of(context)!.translate("Le tue prenotazioni"),
+                style: const TextStyle(
+                  fontSize: 21,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15.0),
-              child:
-              HorizontalWeekCalendar(
+              child: HorizontalWeekCalendar(
                 selectedDate: _selectedDate,
                 showMonthHeader: true,
                 allowPastDates: true,
@@ -153,9 +174,11 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
                 eventCountProvider: countPrenotazioniFast,
               ),
             ),
-            // LISTA CARDS
             if (prenotazioniDelGiorno.isEmpty)
-              noPrenotazioni()
+              Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: noPrenotazioni(),
+              )
             else
               ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -165,7 +188,9 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
                 itemBuilder: (context, index) {
                   return PrenotazioneCard(
                     prenotazione: prenotazioniDelGiorno[index],
-                    onAnnulla: _annullaPrenotazione,);
+                    onAnnulla: _annullaPrenotazione,
+                    onPartitaConclusa: _onPartitaConclusa,
+                  );
                 },
               ),
           ],
@@ -173,7 +198,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
       },
     );
   }
-//risolve il problema della lentezza della home!
+
   @override
   bool get wantKeepAlive => true;
 }

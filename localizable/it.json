@@ -90,7 +90,7 @@
   "Inserisci i set persi": "Inserisci i set persi",
   "Data della partita": "Data della partita",
   "Salva partita": "Salva partita",
-  "Storico partite": "Storico partite",
+  "Storico partite (ultimi 30 giorni)": "Storico partite (ultimi 30 giorni)",
   "Game Vinti:": "Game Vinti:",
   " • Game Persi:": " • Game Persi:",
   "Set Vinti:": "Set Vinti:",
@@ -203,5 +203,17 @@
   "Nessuna sfida ricevuta": "Nessuna sfida ricevuta",
   "Sfida da: ": "Sfida da: ",
   "Rifiuta": "Rifiuta",
-  "Accetta": "Accetta"
+  "Accetta": "Accetta",
+  "Punteggio": "Punteggio",
+  "Io": "Io",
+  "Salva risultato": "Salva risultato",
+  "Set": "Set",
+  "Obbligatorio!": "Obbligatorio!",
+  "Il numero di set giocati deve essere dispari (es. 1, 3, 5)": "Il numero di set giocati deve essere dispari (es. 1, 3, 5)",
+  "Il vincitore deve avere 6 o 7 game": "Il vincitore deve avere 6 o 7 game",
+  "Per vincere a 7, l'avversario deve avere 5 o 6 game": "Per vincere a 7, l'avversario deve avere 5 o 6 game",
+  "Sul 6-5 si continua a giocare": "Sul 6-5 si continua a giocare",
+  "Utente non loggato": "Utente non loggato",
+  "Errore durante il salvataggio:": "Errore durante il salvataggio:",
+  "Salvataggio...": "Salvataggio..."
 }
