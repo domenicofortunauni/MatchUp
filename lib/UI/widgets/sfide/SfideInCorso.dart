@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:matchup/model/objects/SfidaModel.dart';
-import '../CustomSnackBar.dart';
 import '../cards/SfidaCard.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 
@@ -65,14 +64,6 @@ class SfideInCorsoList extends StatelessWidget {
               sfida: sfida,
               customTitle: "vs $nomeDaMostrare",
               customIcon: Icons.sports_tennis,
-              labelButton: AppLocalizations.of(context)!.translate("Apri Partita"),
-              customButtonColor: Theme.of(context).colorScheme.primary,
-              onPressed: () {
-                CustomSnackBar.show(
-                    context,
-                    '${AppLocalizations.of(context)!.translate("Apro partita")} vs $nomeDaMostrare'
-                );
-              },
             );
           },
         );
