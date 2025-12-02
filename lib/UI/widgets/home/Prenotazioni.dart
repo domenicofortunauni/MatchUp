@@ -45,8 +45,30 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
   }
 
   Future<void> _annullaPrenotazione(Prenotazione p) async {
-    if (p.data.isBefore(DateTime.now().subtract(const Duration(hours: 1)))) {
-      CustomSnackBar.show(context, "Non puoi annullare prenotazioni passate!");
+    DateTime dataBase = p.data;
+    DateTime dataOraReale;
+
+    try {
+      List<String> parts = p.ora.split(':');
+      int ora = int.parse(parts[0]);
+      int minuti = int.parse(parts[1]);
+
+      dataOraReale = DateTime(
+        dataBase.year,
+        dataBase.month,
+        dataBase.day,
+        ora,
+        minuti,
+      );
+    } catch (e) {
+      dataOraReale = p.data;
+    }
+
+    //Calcoliamo l'ora limite: adesso + 1 ora di preavviso
+    DateTime oraLimite = DateTime.now().add(const Duration(hours: 1));
+
+    if (dataOraReale.isBefore(oraLimite)) {
+      CustomSnackBar.show(context, "Troppo tardi! Serve almeno 1 ora di preavviso.");
       return;
     }
 
@@ -123,10 +145,21 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
         final docs = snapshot.data!.docs;
         Map<String, List<Prenotazione>> mappaPrenotazioni = {};
 
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+
         for (var doc in docs) {
           Prenotazione p = Prenotazione.fromSnapshot(doc);
 
           if (p.stato == 'Conclusa') continue;
+
+          //Filtro Partite Annullate Passate
+          final pDate = DateTime(p.data.year, p.data.month, p.data.day);
+
+          //Se è annullata ed è precedente a oggi viene nascosta
+          if (p.stato == 'Annullato' && pDate.isBefore(today)) {
+            continue;
+          }
 
           String key = _getDateKey(p.data);
 
@@ -146,6 +179,19 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
 
         String selectedKey = _getDateKey(_selectedDate);
         List<Prenotazione> prenotazioniDelGiorno = mappaPrenotazioni[selectedKey] ?? [];
+
+        //Ordinamento delle prenotazioni
+        prenotazioniDelGiorno.sort((a, b) {
+          try {
+            final partsA = a.ora.split(':');
+            final partsB = b.ora.split(':');
+            final dtA = DateTime(2020, 1, 1, int.parse(partsA[0]), int.parse(partsA[1]));
+            final dtB = DateTime(2020, 1, 1, int.parse(partsB[0]), int.parse(partsB[1]));
+            return dtA.compareTo(dtB);
+          } catch (_) {
+            return a.ora.compareTo(b.ora);
+          }
+        });
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
