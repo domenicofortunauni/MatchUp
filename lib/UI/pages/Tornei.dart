@@ -24,7 +24,7 @@ class _TorneiPageState extends State<TorneiPage> {
   @override
   void initState() {
     super.initState();
-    _futureTournaments = Future.value([]); /
+    _futureTournaments = Future.value([]);
     _initData();
   }
 

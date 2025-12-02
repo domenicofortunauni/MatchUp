@@ -3,6 +3,7 @@ import 'package:matchup/UI/pages/Layout.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 import 'package:matchup/UI/widgets/CustomSnackBar.dart';
 import 'package:matchup/UI/widgets/MenuLaterale.dart';
+import 'package:matchup/UI/widgets/animation/TennisBall.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../services/localizzazione.dart';
@@ -47,17 +48,13 @@ class _LoginState extends State<Login> {
   }
 
   void _showError(String message) {
-    CustomSnackBar.show(context, message,backgroundColor: Colors.red,textColor: Colors.white,iconColor: Colors.white);
+    CustomSnackBar.show(context, message, backgroundColor: Colors.red, textColor: Colors.white, iconColor: Colors.white);
   }
 
   // Funzione per formattare nome cognome
   String _formatName(String text) {
     if (text.isEmpty) return "";
-
-    // 1. Toglie spazi inizio/fine e riduce spazi multipli interni a uno solo
     String cleaned = text.trim().replaceAll(RegExp(r'\s+'), ' ');
-
-    // 2. Divide le parole, mette la prima maiuscola e le riunisce
     return cleaned.split(' ').map((word) {
       if (word.isEmpty) return "";
       return word[0].toUpperCase() + word.substring(1).toLowerCase();
@@ -78,8 +75,6 @@ class _LoginState extends State<Login> {
         );
       } else {
         //  REGISTRAZIONE
-
-        //Crea utente Auth
         UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
@@ -90,40 +85,50 @@ class _LoginState extends State<Login> {
         String cognomeFormattato = _formatName(_cognomeController.text);
         String username = _usernameController.text.trim();
 
-        // recupera la città per il context aware
         String cittaUtente = await LocationService.getCurrentCity();
 
-
-        await userCredential.user!.updateDisplayName(username); // O nomeCompleto, come preferisci
+        await userCredential.user!.updateDisplayName(username);
 
         // Salva nel Database
         await _firestore.collection('users').doc(uid).set({
           'nome': nomeFormattato,
           'cognome': cognomeFormattato,
           'username': username,
-          'displayName': username, // Aggiungo questo campo per coerenza con la Chat
+          'displayName': username,
           'email': _emailController.text.trim(),
           'uid': uid,
           'data_iscrizione': FieldValue.serverTimestamp(),
           'citta': cittaUtente,
-          'livello': 3.5 //predisposizione per il livello, vediamo se farlo poi...
+          'livello': "Amatoriale" // Default stringa per coerenza con le sfide
         });
       }
 
       if (mounted) {
         setState(() => _isLoading = false);
-        Navigator.pushReplacement(
+
+        //ANIMAZIONE DI SUCCESSO
+        // Mostra il dialog e aspetta che finisca (2 secondi)
+        await Tennisball.show(
           context,
-          MaterialPageRoute(builder: (context) => Layout(title: "MatchUP")),
+          _isLogin
+              ? (AppLocalizations.of(context)?.translate("Bentornato") ?? "Bentornato!")
+              : (AppLocalizations.of(context)?.translate("Benvenuto") ?? "Benvenuto!"),
         );
+
+        //NAVIGAZIONE
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => Layout(title: "MatchUP")),
+          );
+        }
       }
 
     } on FirebaseAuthException catch (e) {
       setState(() => _isLoading = false);
       String errorMessage = "Si è verificato un errore.";
       if (e.code == 'email-already-in-use') errorMessage = "Email già registrata.";
-      _showError(errorMessage);
-      if (e.code == 'invalid-credential') errorMessage = "Credenziali errate.";
+      else if (e.code == 'invalid-credential') errorMessage = "Credenziali errate.";
       _showError(errorMessage);
     } catch (e) {
       setState(() => _isLoading = false);
@@ -257,26 +262,26 @@ class _LoginState extends State<Login> {
                   ),
                   const SizedBox(height: 16),
 
-                TextFormField(
-                  controller: _usernameController,
-                  textInputAction: TextInputAction.next,
-                  textCapitalization: TextCapitalization.none,
-                  decoration: InputDecoration(
-                    labelText: AppLocalizations.of(context)!.translate("Username"),
-                    prefixIcon: const Icon(Icons.alternate_email),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    filled: true,
-                    fillColor: inputFillColor,
+                  TextFormField(
+                    controller: _usernameController,
+                    textInputAction: TextInputAction.next,
+                    textCapitalization: TextCapitalization.none,
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.translate("Username"),
+                      prefixIcon: const Icon(Icons.alternate_email),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      filled: true,
+                      fillColor: inputFillColor,
+                    ),
+                    validator: (value) {
+                      if (_isLogin) return null;
+                      if (value == null || value.isEmpty) return AppLocalizations.of(context)!.translate("Inserisci un username");
+                      if (value.length < 3) return AppLocalizations.of(context)!.translate("Minimo 3 caratteri");
+                      return null;
+                    },
                   ),
-                  validator: (value) {
-                    if (_isLogin) return null;
-                    if (value == null || value.isEmpty) return AppLocalizations.of(context)!.translate("Inserisci un username");
-                    if (value.length < 3) return AppLocalizations.of(context)!.translate("Minimo 3 caratteri");
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-              ],
+                  const SizedBox(height: 16),
+                ],
 
                 TextFormField(
                   controller: _emailController,

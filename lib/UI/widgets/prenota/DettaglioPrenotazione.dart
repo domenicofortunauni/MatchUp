@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:matchup/model/objects/CampoModel.dart';
 import 'package:matchup/UI/widgets/CustomSnackBar.dart';
 import 'package:matchup/UI/widgets/HorizontalWeekCalendar.dart';
+import 'package:matchup/UI/widgets/animation/TennisBall.dart';
 
 class DettaglioPrenotazione extends StatefulWidget {
   final CampoModel campo;
@@ -429,12 +430,15 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
 
       await _caricaPrenotazioni();
       if (mounted) Navigator.pop(context);
-      if (mounted) Navigator.pop(context);
+      //ANIMAZIONE
+      if (mounted) {
+        await Tennisball.show(
+            context,
+            isSfida ? "Sfida Lanciata!" : "Prenotatazione effettuata!"
+        );
+      }
 
-      String messaggio = isSfida
-          ? "Prenotazione effettuata e sfida lanciata!"
-          : "Prenotazione confermata!";
-      CustomSnackBar.show(context, messaggio);
+      if (mounted) Navigator.pop(context);
 
     } catch (e) {
       if (mounted) Navigator.pop(context);
