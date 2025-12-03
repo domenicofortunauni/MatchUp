@@ -29,8 +29,9 @@ class _SfideRicevuteSectionState extends State<SfideRicevuteSection> {
       try {
         DocumentSnapshot doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
         if (doc.exists) {
+          final data = doc.data() as Map<String, dynamic>;
           setState(() {
-            _myUsername = doc['username'] ?? doc['nome'];
+            _myUsername = data['username'] ?? data['nome'];
             _isLoadingUsername = false;
           });
         }
@@ -88,7 +89,36 @@ class _SfideRicevuteSectionState extends State<SfideRicevuteSection> {
         if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
 
         final docs = snapshot.data!.docs;
-        final sfide = docs.map((doc) => SfidaModel.fromSnapshot(doc)).toList();
+        final List<SfidaModel> sfide = [];
+
+        for (var doc in docs) {
+          final dataMap = doc.data() as Map<String, dynamic>;
+
+          try {
+            Timestamp? ts = dataMap['data'];
+            String? oraStr = dataMap['ora'];
+
+            if (ts != null && oraStr != null) {
+              DateTime d = ts.toDate();
+              List<String> parts = oraStr.split(':');
+
+              // Combina data e ora
+              DateTime dataScadenza = DateTime(d.year, d.month, d.day, int.parse(parts[0]), int.parse(parts[1]));
+
+              // Se la data è passata, cancella e salta
+              if (dataScadenza.isBefore(DateTime.now())) {
+                FirebaseFirestore.instance.collection('sfide').doc(doc.id).delete();
+                continue;
+              }
+            }
+          } catch (e) {
+            // In caso di errore nel formato, la teniamo per sicurezza
+          }
+
+          // Se è valida, la aggiungiamo alla lista da visualizzare
+          sfide.add(SfidaModel.fromSnapshot(doc));
+        }
+        // ------------------------------------
 
         if (sfide.isEmpty) {
           return Center(

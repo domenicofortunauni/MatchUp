@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:matchup/model/objects/SfidaModel.dart';
+import '../CustomSnackBar.dart';
 import '../cards/SfidaCard.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 
@@ -14,7 +15,6 @@ class SfideDisponibiliList extends StatelessWidget {
 
     try {
       String myName = AppLocalizations.of(context)!.translate("Avversario");
-
       var userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
       if (userDoc.exists) {
         myName = userDoc.data()?['username'] ?? AppLocalizations.of(context)!.translate("Avversario");
@@ -27,20 +27,16 @@ class SfideDisponibiliList extends StatelessWidget {
       });
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "${AppLocalizations.of(context)!.translate("Hai accettato la sfida di ")}${sfida.challengerName}!",
-            ),
-          ),
+        CustomSnackBar.show(
+            context,
+            "${AppLocalizations.of(context)!.translate('Hai accettato la sfida di ')}${sfida.challengerName}!"
         );
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("${AppLocalizations.of(context)!.translate("Errore: ")}$e"),
-          ),
+        CustomSnackBar.showError(
+            context,
+            "${AppLocalizations.of(context)!.translate('Errore: ')}$e"
         );
       }
     }
@@ -64,13 +60,40 @@ class SfideDisponibiliList extends StatelessWidget {
         }
 
         final docs = snapshot.data!.docs;
+        final List<SfidaModel> sfideValide = [];
 
-        final sfide = docs
-            .map((doc) => SfidaModel.fromSnapshot(doc))
-            .where((s) => s.challengerId != currentUserId)
-            .toList();
+        for (var doc in docs) {
+          final dataMap = doc.data() as Map<String, dynamic>;
 
-        if (sfide.isEmpty) {
+          //Escludo le mie sfide
+          if (dataMap['challengerId'] == currentUserId) continue;
+
+          //Controllo Scadenza sui dati
+          try {
+            Timestamp? ts = dataMap['data'];
+            String? oraStr = dataMap['ora'];
+
+            if (ts != null && oraStr != null) {
+              DateTime d = ts.toDate();
+              List<String> parts = oraStr.split(':');
+              DateTime dataScadenza = DateTime(d.year, d.month, d.day, int.parse(parts[0]), int.parse(parts[1]));
+
+              if (dataScadenza.isBefore(DateTime.now())) {
+                // SCADUTA: Cancello dal DB e salto il giro
+                FirebaseFirestore.instance.collection('sfide').doc(doc.id).delete();
+                continue;
+              }
+            }
+          } catch (e) {
+            // Se c'è errore nei dati, la teniamo per sicurezza
+          }
+
+          //Se è valida, creo il modello e la aggiungo
+          sfideValide.add(SfidaModel.fromSnapshot(doc));
+        }
+        // ------------------------------------
+
+        if (sfideValide.isEmpty) {
           return Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -90,13 +113,14 @@ class SfideDisponibiliList extends StatelessWidget {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-          itemCount: sfide.length,
+          itemCount: sfideValide.length,
           itemBuilder: (context, index) {
-            final sfida = sfide[index];
+            final sfida = sfideValide[index];
             return SfidaCard(
               sfida: sfida,
               onPressed: () => _accettaSfida(context, sfida),
               customIcon: Icons.bolt_rounded,
+              labelButton: AppLocalizations.of(context)!.translate("Accetta Sfida"),
             );
           },
         );

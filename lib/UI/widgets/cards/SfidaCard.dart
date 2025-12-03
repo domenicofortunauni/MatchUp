@@ -3,7 +3,7 @@ import '../../../model/objects/SfidaModel.dart';
 
 class SfidaCard extends StatelessWidget {
   final SfidaModel sfida;
-  final String labelButton;
+  final String? labelButton;
   final VoidCallback? onPressed;
   final bool showButton;
   final Color? customButtonColor;
@@ -14,13 +14,13 @@ class SfidaCard extends StatelessWidget {
   const SfidaCard({
     Key? key,
     required this.sfida,
-    this.labelButton = "Accetta Sfida",
+    this.labelButton,
     this.onPressed,
     this.showButton = true,
     this.customButtonColor,
     this.customTitle,
     this.extraWidget,
-    required this.customIcon, // <--- Aggiunto qui
+    required this.customIcon,
   }) : super(key: key);
 
   Color _getLevelColor(String livello) {
@@ -44,7 +44,7 @@ class SfidaCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -87,9 +87,9 @@ class SfidaCard extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: levelColor.withOpacity(0.1),
+                                  color: levelColor.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: levelColor.withOpacity(0.3)),
+                                  border: Border.all(color: levelColor.withValues(alpha: 0.3)),
                                 ),
                                 child: Text(
                                   sfida.livello,
@@ -126,7 +126,7 @@ class SfidaCard extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: extraWidget,
                 )
-              else if (showButton)
+              else if (showButton && labelButton != null) // Mostra solo se il testo esiste
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: SizedBox(
@@ -140,7 +140,7 @@ class SfidaCard extends StatelessWidget {
                         elevation: 0,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       ),
-                      child: Text(labelButton, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
+                      child: Text(labelButton!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
                     ),
                   ),
                 ),

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:matchup/model/objects/SfidaModel.dart';
-import 'package:matchup/UI/widgets/cards/SfidaCard.dart';
+import 'package:matchup/model/objects/SfidaModel.dart'; // Percorso del tuo modello
+import 'package:matchup/UI/widgets/cards/SfidaCard.dart'; // Percorso della tua card
 import '../CustomSnackBar.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
-
 
 class SfideInviateSection extends StatelessWidget {
   const SfideInviateSection({Key? key}) : super(key: key);
@@ -29,7 +28,6 @@ class SfideInviateSection extends StatelessWidget {
 
     if (currentUserId == null) return const SizedBox.shrink();
 
-    // STREAM: Scarica TUTTE le mie sfide aperte
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('sfide')
@@ -44,18 +42,44 @@ class SfideInviateSection extends StatelessWidget {
         }
 
         final docs = snapshot.data!.docs;
-        final tutteLeSfide = docs.map((doc) => SfidaModel.fromSnapshot(doc)).toList();
+        final List<SfidaModel> sfideValide = [];
+        for (var doc in docs) {
+          final dataMap = doc.data() as Map<String, dynamic>;
 
-        // DIVIDO LE LISTE
-        final sfideDirette = tutteLeSfide.where((s) => s.modalita == 'diretta').toList();
-        final sfidePubbliche = tutteLeSfide.where((s) => s.modalita == 'pubblica').toList();
+          try {
+            Timestamp? ts = dataMap['data'];
+            String? oraStr = dataMap['ora'];
 
-        if (tutteLeSfide.isEmpty) {
+            if (ts != null && oraStr != null) {
+              DateTime d = ts.toDate();
+              List<String> parts = oraStr.split(':');
+              DateTime dataScadenza = DateTime(d.year, d.month, d.day, int.parse(parts[0]), int.parse(parts[1]));
+
+              if (dataScadenza.isBefore(DateTime.now())) {
+                // SCADUTA: Cancella e salta
+                FirebaseFirestore.instance.collection('sfide').doc(doc.id).delete();
+                continue;
+              }
+            }
+          } catch (e) {
+            // Ignora errori di parsing
+          }
+
+          // Se valida, aggiungi
+          sfideValide.add(SfidaModel.fromSnapshot(doc));
+        }
+        // ------------------------------------
+
+        // DIVIDO LE LISTE (sulle sfide valide)
+        final sfideDirette = sfideValide.where((s) => s.modalita == 'diretta').toList();
+        final sfidePubbliche = sfideValide.where((s) => s.modalita == 'pubblica').toList();
+
+        if (sfideValide.isEmpty) {
           return SizedBox(
             height: 100,
             child: Center(
               child: Text(
-                AppLocalizations.of(context)!.translate("Nessuna sfida inviata o creata."),
+                AppLocalizations.of(context)!.translate("Nessuna sfida inviata attiva."),
                 style: const TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
               ),
             ),
@@ -65,8 +89,7 @@ class SfideInviateSection extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
-            //SEZIONE SFIDE DIRETTE
+            // SEZIONE SFIDE DIRETTE
             if (sfideDirette.isNotEmpty) ...[
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
@@ -86,7 +109,7 @@ class SfideInviateSection extends StatelessWidget {
               const SizedBox(height: 10),
             ],
 
-            //SEZIONE  SFIDE PUBBLICHE
+            // SEZIONE SFIDE PUBBLICHE
             if (sfidePubbliche.isNotEmpty) ...[
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
@@ -110,21 +133,16 @@ class SfideInviateSection extends StatelessWidget {
     );
   }
 
-  //  riciclo della SfidaCard
   Widget _buildCardSfida(BuildContext context, SfidaModel sfida, {required bool isDiretta}) {
     return SfidaCard(
       sfida: sfida,
-
       customTitle: isDiretta
           ? "${AppLocalizations.of(context)!.translate("Inviata a: ")}${sfida.opponentName ?? '...'}"
           : AppLocalizations.of(context)!.translate("Sfida pubblica"),
-
       labelButton: isDiretta
           ? AppLocalizations.of(context)!.translate("Annulla invito")
           : AppLocalizations.of(context)!.translate("Elimina sfida"),
-
       customButtonColor: Colors.red,
-
       onPressed: () => _eliminaSfida(context, sfida.id),
       customIcon: isDiretta ? Icons.send : Icons.public,
     );

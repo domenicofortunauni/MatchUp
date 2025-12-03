@@ -96,11 +96,6 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
         return s.me.text.isNotEmpty || s.opponent.text.isNotEmpty;
       }).toList();
 
-      if (setValidi.length % 2 == 0) {
-        _showError(AppLocalizations.of(context)!.translate("Il numero di set giocati deve essere dispari (es. 1, 3, 5)"));
-        setState(() => _isSaving = false);
-        return;
-      }
 
       for (int i = 0; i < setValidi.length; i++) {
         var set = setValidi[i];
@@ -113,7 +108,7 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
         int maxGames = myGames > oppGames ? myGames : oppGames;
         int minGames = myGames < oppGames ? myGames : oppGames;
 
-        //Logica di validazione del punteggio
+        // Logica di validazione del singolo set (Tennis)
         if (maxGames != 6 && maxGames != 7) {
           _showError(
               "${AppLocalizations.of(context)!.translate("Set")} ${i + 1}: ${AppLocalizations.of(context)!.translate("Il vincitore deve avere 6 o 7 game")}"
@@ -138,6 +133,15 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
           return;
         }
 
+        // Controllo Pareggio nel set (es. 6-6 non valido se non c'è tie-break gestito esplicitamente come 7-6)
+        if (myGames == oppGames) {
+          _showError(
+              "${AppLocalizations.of(context)!.translate("Set")} ${i + 1}: ${AppLocalizations.of(context)!.translate("Un set non può finire in pareggio")}"
+          );
+          setState(() => _isSaving = false);
+          return;
+        }
+
         totalGameVinti += myGames;
         totalGamePersi += oppGames;
 
@@ -148,6 +152,12 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
         } else if (oppGames > myGames) {
           totalSetPersi++;
         }
+      }
+
+      if (totalSetVinti == totalSetPersi) {
+        _showError(AppLocalizations.of(context)!.translate("Impossibile salvare: punteggio in parità. Qualcuno deve vincere!"));
+        setState(() => _isSaving = false);
+        return;
       }
 
       final bool isVittoria = totalSetVinti > totalSetPersi;
@@ -180,8 +190,9 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
             'campo': widget.prenotazione?.campo ?? "",
             'timestamp_creazione': FieldValue.serverTimestamp(),
           };
-          await FirebaseFirestore.instance.collection('partite').add(datiPartita);
 
+          // Salva in 'partite' (storico)
+          await FirebaseFirestore.instance.collection('partite').add(datiPartita);
           await FirebaseFirestore.instance.collection('statistiche').add(datiPartita);
 
           if (mounted) {
