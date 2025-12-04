@@ -8,8 +8,15 @@ import '../../../model/objects/PrenotazioneModel.dart';
 
 class AggiungiPartitaStatistiche extends StatefulWidget {
   final Prenotazione? prenotazione;
+  final bool isSfida;
+  final String? nomeAvversarioFisso;
 
-  const AggiungiPartitaStatistiche({Key? key, this.prenotazione}) : super(key: key);
+  const AggiungiPartitaStatistiche({
+    Key? key,
+    this.prenotazione,
+    this.isSfida = false,
+    this.nomeAvversarioFisso,
+  }) : super(key: key);
 
   @override
   _AggiungiPartitaStatisticheState createState() => _AggiungiPartitaStatisticheState();
@@ -33,8 +40,14 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
   void initState() {
     super.initState();
     _addSet();
+
     if (widget.prenotazione != null) {
       _dataPartita = widget.prenotazione!.data;
+    }
+
+    // Se è una sfida, preimpostiamo il nome
+    if (widget.isSfida && widget.nomeAvversarioFisso != null) {
+      _avversarioController.text = widget.nomeAvversarioFisso!;
     }
   }
 
@@ -53,6 +66,14 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
   }
 
   Future<void> _selezionaData(BuildContext context) async {
+    // --- MODIFICA: Se c'è una prenotazione (di qualsiasi tipo), la data è fissa ---
+    if (widget.prenotazione != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.translate("La data è legata alla prenotazione e non può essere modificata."))),
+      );
+      return;
+    }
+
     final DateTime? dataSelezionata = await showDatePicker(
       context: context,
       initialDate: _dataPartita,
@@ -83,7 +104,11 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
         _isSaving = true;
       });
 
-      final String avversario = _avversarioController.text;
+      // --- MODIFICA: Se vuoto, metto un default ---
+      String avversario = _avversarioController.text.trim();
+      if (avversario.isEmpty) {
+        avversario = AppLocalizations.of(context)!.translate("Avversario");
+      }
 
       int totalGameVinti = 0;
       int totalGamePersi = 0;
@@ -96,7 +121,6 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
         return s.me.text.isNotEmpty || s.opponent.text.isNotEmpty;
       }).toList();
 
-
       for (int i = 0; i < setValidi.length; i++) {
         var set = setValidi[i];
         String meText = set.me.text;
@@ -108,43 +132,32 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
         int maxGames = myGames > oppGames ? myGames : oppGames;
         int minGames = myGames < oppGames ? myGames : oppGames;
 
-        // Logica di validazione del singolo set (Tennis)
         if (maxGames != 6 && maxGames != 7) {
-          _showError(
-              "${AppLocalizations.of(context)!.translate("Set")} ${i + 1}: ${AppLocalizations.of(context)!.translate("Il vincitore deve avere 6 o 7 game")}"
-          );
+          _showError("${AppLocalizations.of(context)!.translate("Set")} ${i + 1}: ${AppLocalizations.of(context)!.translate("Il vincitore deve avere 6 o 7 game")}");
           setState(() => _isSaving = false);
           return;
         }
 
         if (maxGames == 7 && (minGames != 5 && minGames != 6)) {
-          _showError(
-              "${AppLocalizations.of(context)!.translate("Set")} ${i + 1}: ${AppLocalizations.of(context)!.translate("Per vincere a 7, l'avversario deve avere 5 o 6 game")}"
-          );
+          _showError("${AppLocalizations.of(context)!.translate("Set")} ${i + 1}: ${AppLocalizations.of(context)!.translate("Per vincere a 7, l'avversario deve avere 5 o 6 game")}");
           setState(() => _isSaving = false);
           return;
         }
 
         if (maxGames == 6 && minGames >= 5) {
-          _showError(
-              "${AppLocalizations.of(context)!.translate("Set")} ${i + 1}: ${AppLocalizations.of(context)!.translate("Sul 6-5 si continua a giocare")}"
-          );
+          _showError("${AppLocalizations.of(context)!.translate("Set")} ${i + 1}: ${AppLocalizations.of(context)!.translate("Sul 6-5 si continua a giocare")}");
           setState(() => _isSaving = false);
           return;
         }
 
-        // Controllo Pareggio nel set (es. 6-6 non valido se non c'è tie-break gestito esplicitamente come 7-6)
         if (myGames == oppGames) {
-          _showError(
-              "${AppLocalizations.of(context)!.translate("Set")} ${i + 1}: ${AppLocalizations.of(context)!.translate("Un set non può finire in pareggio")}"
-          );
+          _showError("${AppLocalizations.of(context)!.translate("Set")} ${i + 1}: ${AppLocalizations.of(context)!.translate("Un set non può finire in pareggio")}");
           setState(() => _isSaving = false);
           return;
         }
 
         totalGameVinti += myGames;
         totalGamePersi += oppGames;
-
         punteggioDettagliato.add("$myGames-$oppGames");
 
         if (myGames > oppGames) {
@@ -191,7 +204,6 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
             'timestamp_creazione': FieldValue.serverTimestamp(),
           };
 
-          // Salva in 'partite' (storico)
           await FirebaseFirestore.instance.collection('partite').add(datiPartita);
           await FirebaseFirestore.instance.collection('statistiche').add(datiPartita);
 
@@ -222,6 +234,9 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).colorScheme.primary;
+
+    // --- MODIFICA: Determina se la data è bloccata ---
+    bool isDateLocked = widget.prenotazione != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -259,15 +274,22 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
 
               TextFormField(
                 controller: _avversarioController,
+                readOnly: widget.isSfida,
+                style: widget.isSfida ? const TextStyle(color: Colors.grey) : null,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.translate("Nome avversario"),
                   prefixIcon: const Icon(Icons.person_outline),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  suffixIcon: widget.isSfida ? const Icon(Icons.lock, size: 18, color: Colors.grey) : null,
+                  filled: widget.isSfida,
+                  fillColor: widget.isSfida ? Colors.grey.shade200 : null,
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
+                  // --- MODIFICA: Obbligatorio SOLO se è una sfida ---
+                  if (widget.isSfida && (value == null || value.isEmpty)) {
                     return AppLocalizations.of(context)!.translate("Inserisci il nome dell'avversario");
                   }
+                  // Se non è sfida, è opzionale
                   return null;
                 },
               ),
@@ -370,11 +392,17 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
 
               const SizedBox(height: 24),
 
+              // --- CAMPO DATA ---
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text(AppLocalizations.of(context)!.translate("Data della partita"), style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(DateFormat('dd MMMM yyyy').format(_dataPartita), style: const TextStyle(fontSize: 16)),
-                trailing: Icon(Icons.calendar_today, color: primaryColor),
+                subtitle: Text(DateFormat('dd MMMM yyyy').format(_dataPartita),
+                    style: TextStyle(fontSize: 16, color: isDateLocked ? Colors.grey : null)),
+
+                // --- MODIFICA: Lucchetto se c'è prenotazione (sfida o meno) ---
+                trailing: isDateLocked
+                    ? const Icon(Icons.lock, color: Colors.grey)
+                    : Icon(Icons.calendar_today, color: primaryColor),
                 onTap: () => _selezionaData(context),
               ),
 

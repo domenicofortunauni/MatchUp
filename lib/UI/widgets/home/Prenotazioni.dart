@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_chat_core/flutter_chat_core.dart';
 import 'package:intl/intl.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 import 'package:matchup/UI/widgets/HorizontalWeekCalendar.dart';
@@ -9,6 +8,7 @@ import 'package:matchup/UI/widgets/CustomSnackBar.dart';
 import '../../../model/objects/PrenotazioneModel.dart';
 import '../cards/PrenotazioneCard.dart';
 import 'noPrenotazioniPresenti.dart';
+import 'dart:async'; // Necessario per StreamSubscription
 
 class PrenotazioniWidget extends StatefulWidget {
   const PrenotazioniWidget({Key? key}) : super(key: key);
@@ -20,71 +20,161 @@ class PrenotazioniWidget extends StatefulWidget {
 class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticKeepAliveClientMixin {
   DateTime _selectedDate = DateTime.now();
   final String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
-  late Stream<QuerySnapshot> _prenotazioniStream;
+
+  // Liste locali per gestire i due flussi di dati
+  List<Prenotazione> _listaPrenotazioniStandard = [];
+  List<Prenotazione> _listaSfideAccettate = [];
+  List<Prenotazione> _listaUnificata = [];
+
+  // Sottoscrizioni ai flussi
+  StreamSubscription? _subPrenotazioni;
+  StreamSubscription? _subSfide;
+
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     if (currentUserId.isNotEmpty) {
-      DateTime now = DateTime.now();
-      DateTime start = now.subtract(const Duration(days: 30));
-      DateTime end = now.add(const Duration(days: 30));
-
-      _prenotazioniStream = FirebaseFirestore.instance
-          .collection('prenotazioni')
-          .where('userId', isEqualTo: currentUserId)
-          .where('data', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
-          .where('data', isLessThanOrEqualTo: Timestamp.fromDate(end))
-          .orderBy('data', descending: false)
-          .snapshots();
+      _inizializzaStreams();
     }
+  }
+
+  @override
+  void dispose() {
+    _subPrenotazioni?.cancel();
+    _subSfide?.cancel();
+    super.dispose();
+  }
+
+  void _inizializzaStreams() {
+    DateTime now = DateTime.now();
+    DateTime start = now.subtract(const Duration(days: 30));
+    DateTime end = now.add(const Duration(days: 60)); // Guardo anche un po' più avanti
+
+    //STREAM PRENOTAZIONI (Quelle create da me)
+    _subPrenotazioni = FirebaseFirestore.instance
+        .collection('prenotazioni')
+        .where('userId', isEqualTo: currentUserId)
+        .where('data', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+        .where('data', isLessThanOrEqualTo: Timestamp.fromDate(end))
+        .orderBy('data', descending: false)
+        .snapshots()
+        .listen((snapshot) {
+
+      setState(() {
+        _listaPrenotazioniStandard = snapshot.docs
+            .map((doc) => Prenotazione.fromSnapshot(doc))
+            .toList();
+        _unisciEOrdina();
+      });
+    });
+
+    //STREAM SFIDE (Quelle create da ALTRI e accettate da ME)
+    _subSfide = FirebaseFirestore.instance
+        .collection('sfide')
+        .where('opponentId', isEqualTo: currentUserId) // Dove sono l'avversario
+        .where('stato', isEqualTo: 'accettata')        // Solo confermate
+        .where('data', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+        .where('data', isLessThanOrEqualTo: Timestamp.fromDate(end))
+        .snapshots()
+        .listen((snapshot) {
+
+      setState(() {
+        _listaSfideAccettate = snapshot.docs.map((doc) {
+          // CONVERTO LA SFIDA IN PRENOTAZIONE
+          final data = doc.data();
+          String nomeStruttura = data['nomeStruttura'] ?? "Sfida";
+          String challengerName = data['challengerName'] ?? "";
+
+          return Prenotazione(
+              id: doc.id,
+              nomeStruttura: nomeStruttura,
+              campo: "Sfida vs $challengerName", // "Sfida vs" lo lascio così o lo gestisco nella card
+              data: (data['data'] as Timestamp).toDate(),
+              ora: data['ora'] ?? "00:00",
+              durata: 90, // Durata standard sfida se non specificata (es. 90 min)
+              prezzo: 0.0, // Non sappiamo il prezzo se paga l'altro, mettiamo 0 o gestisci
+              stato: "Confermato"
+          );
+        }).toList();
+
+        _unisciEOrdina();
+      });
+    });
+  }
+
+  // Unisce le due liste e aggiorna la UI
+  void _unisciEOrdina() {
+    List<Prenotazione> temp = [..._listaPrenotazioniStandard, ..._listaSfideAccettate];
+
+    // Filtro eventuali doppioni (non dovrebbero esserci per logica, ma sicurezza) o partite concluse
+    temp = temp.where((p) => p.stato != 'Conclusa').toList();
+
+    // Filtro Annullate vecchie
+    final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    temp = temp.where((p) {
+      if (p.stato == 'Annullato') {
+        final pDate = DateTime(p.data.year, p.data.month, p.data.day);
+        return !pDate.isBefore(today); // Nascondi annullate passate
+      }
+      return true;
+    }).toList();
+
+    // Ordinamento cronologico
+    temp.sort((a, b) {
+      int cmp = a.data.compareTo(b.data);
+      if (cmp == 0) return a.ora.compareTo(b.ora);
+      return cmp;
+    });
+
+    setState(() {
+      _listaUnificata = temp;
+      _isLoading = false;
+    });
   }
 
   String _getDateKey(DateTime date) {
     return DateFormat('yyyy-MM-dd').format(date);
   }
 
+  // --- AZIONI (Annulla / Concludi) ---
+
   Future<void> _annullaPrenotazione(Prenotazione p) async {
+    //Capisco se è una sfida accettata (non mia) o una prenotazione mia
+    bool isSfidaAccettata = _listaSfideAccettate.any((s) => s.id == p.id);
+
+    //Controllo Orario Limite
     DateTime dataBase = p.data;
     DateTime dataOraReale;
-
     try {
       List<String> parts = p.ora.split(':');
-      int ora = int.parse(parts[0]);
-      int minuti = int.parse(parts[1]);
-
-      dataOraReale = DateTime(
-        dataBase.year,
-        dataBase.month,
-        dataBase.day,
-        ora,
-        minuti,
-      );
+      dataOraReale = DateTime(dataBase.year, dataBase.month, dataBase.day, int.parse(parts[0]), int.parse(parts[1]));
     } catch (e) {
       dataOraReale = p.data;
     }
 
-    //Calcoliamo l'ora limite: adesso + 1 ora di preavviso
-    DateTime oraLimite = DateTime.now().add(const Duration(hours: 1));
-
-    if (dataOraReale.isBefore(oraLimite)) {
-      CustomSnackBar.show(context, "Troppo tardi! Serve almeno 1 ora di preavviso.");
+    if (dataOraReale.isBefore(DateTime.now().add(const Duration(hours: 1)))) {
+      CustomSnackBar.show(context, AppLocalizations.of(context)!.translate("Troppo tardi! Serve almeno 1 ora di preavviso."));
       return;
     }
 
+    //Chiedo Conferma
     bool conferma = await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Annulla Prenotazione"),
-        content: Text("Vuoi davvero annullare la prenotazione presso ${p.nomeStruttura}?"),
+        title: Text(AppLocalizations.of(context)!.translate("Annulla")),
+        content: Text(isSfidaAccettata
+            ? AppLocalizations.of(context)!.translate("Vuoi ritirarti dalla sfida?")
+            : AppLocalizations.of(context)!.translate("Vuoi annullare la prenotazione?")),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text("No"),
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(AppLocalizations.of(context)!.translate("No"))
           ),
           TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text("Sì, annulla", style: TextStyle(color: Colors.red)),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(AppLocalizations.of(context)!.translate("Sì, annulla"), style: const TextStyle(color: Colors.red))
           ),
         ],
       ),
@@ -92,37 +182,49 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
 
     if (!conferma) return;
 
+    //Eseguo l'azione corretta su Firebase
     try {
-      await FirebaseFirestore.instance
-          .collection('prenotazioni')
-          .doc(p.id)
-          .update({'stato': 'Annullato'});
+      if (isSfidaAccettata) {
+        // Se è una sfida di qualcun altro che avevo accettato, mi ritiro.
+        // La sfida torna "aperta" e senza opponent.
+        await FirebaseFirestore.instance.collection('sfide').doc(p.id).update({
+          'stato': 'aperta',
+          'opponentId': null,
+          'opponentName': null
+        });
+        if (mounted) CustomSnackBar.show(context, AppLocalizations.of(context)!.translate("Ti sei ritirato dalla sfida."));
+      } else {
+        // Se è una mia prenotazione (o una sfida creata da me), la annullo.
+        await FirebaseFirestore.instance.collection('prenotazioni').doc(p.id).update({'stato': 'Annullato'});
 
-      if (mounted) {
-        CustomSnackBar.show(context, "Prenotazione annullata con successo.");
+        // Se era una mia sfida, devo anche chiudere la sfida pubblica collegata (se esiste)
+        // Cerco se c'è una sfida collegata a questa prenotazione
+        var sfidaQuery = await FirebaseFirestore.instance
+            .collection('sfide')
+            .where('prenotazioneId', isEqualTo: p.id)
+            .get();
+
+        for (var doc in sfidaQuery.docs) {
+          await doc.reference.delete(); // Cancello la sfida pubblica perché non ho più il campo
+        }
+
+        if (mounted) CustomSnackBar.show(context, AppLocalizations.of(context)!.translate("Prenotazione annullata."));
       }
     } catch (e) {
-      if (mounted) {
-        CustomSnackBar.show(context, "Errore: $e");
-      }
+      if (mounted) CustomSnackBar.show(context, "${AppLocalizations.of(context)!.translate("Errore: ")}$e");
     }
   }
 
-  //Nasconde le partite una volta inserito il risultato
   Future<void> _onPartitaConclusa(Prenotazione p) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('prenotazioni')
-          .doc(p.id)
-          .update({'stato': 'Conclusa'});
+    // Logica simile per archiviare
+    bool isSfidaAccettata = _listaSfideAccettate.any((s) => s.id == p.id);
+    String collection = isSfidaAccettata ? 'sfide' : 'prenotazioni';
 
-      if (mounted) {
-        CustomSnackBar.show(context, "Risultato salvato! Prenotazione archiviata.");
-      }
+    try {
+      await FirebaseFirestore.instance.collection(collection).doc(p.id).update({'stato': 'Conclusa'});
+      if (mounted) CustomSnackBar.show(context, AppLocalizations.of(context)!.translate("Partita archiviata!"));
     } catch (e) {
-      if (mounted) {
-        CustomSnackBar.show(context, "Errore durante l'aggiornamento: $e");
-      }
+      if (mounted) CustomSnackBar.show(context, "${AppLocalizations.of(context)!.translate("Errore: ")}$e");
     }
   }
 
@@ -131,117 +233,84 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
     super.build(context);
 
     if (currentUserId.isEmpty) {
-      return const Center(child: Text("Effettua il login per vedere le prenotazioni"));
+      return Center(child: Text(AppLocalizations.of(context)!.translate("Effettua il login per vedere le prenotazioni")));
     }
 
-    return StreamBuilder<QuerySnapshot>(
-      stream: _prenotazioniStream,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) return Center(child: Text("Errore: ${snapshot.error}"));
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
-        }
+    if (_isLoading) {
+      return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
+    }
 
-        final docs = snapshot.data!.docs;
-        Map<String, List<Prenotazione>> mappaPrenotazioni = {};
+    // --- PREPARAZIONE DATI PER IL CALENDARIO ---
+    Map<String, List<Prenotazione>> mappaPrenotazioni = {};
+    for (var p in _listaUnificata) {
+      String key = _getDateKey(p.data);
+      if (!mappaPrenotazioni.containsKey(key)) {
+        mappaPrenotazioni[key] = [];
+      }
+      mappaPrenotazioni[key]!.add(p);
+    }
 
-        final now = DateTime.now();
-        final today = DateTime(now.year, now.month, now.day);
+    // Funzione conteggio pallini
+    int countPrenotazioniFast(DateTime date) {
+      String key = _getDateKey(date);
+      if (mappaPrenotazioni.containsKey(key)) {
+        return mappaPrenotazioni[key]!.where((p) => p.stato != "Annullato").length;
+      }
+      return 0;
+    }
 
-        for (var doc in docs) {
-          Prenotazione p = Prenotazione.fromSnapshot(doc);
+    // Lista da mostrare oggi
+    String selectedKey = _getDateKey(_selectedDate);
+    List<Prenotazione> daMostrareOggi = mappaPrenotazioni[selectedKey] ?? [];
 
-          if (p.stato == 'Conclusa') continue;
-
-          //Filtro Partite Annullate Passate
-          final pDate = DateTime(p.data.year, p.data.month, p.data.day);
-
-          //Se è annullata ed è precedente a oggi viene nascosta
-          if (p.stato == 'Annullato' && pDate.isBefore(today)) {
-            continue;
-          }
-
-          String key = _getDateKey(p.data);
-
-          if (!mappaPrenotazioni.containsKey(key)) {
-            mappaPrenotazioni[key] = [];
-          }
-          mappaPrenotazioni[key]!.add(p);
-        }
-
-        int countPrenotazioniFast(DateTime date) {
-          String key = _getDateKey(date);
-          if (mappaPrenotazioni.containsKey(key)) {
-            return mappaPrenotazioni[key]!.where((p) => p.stato != "Annullato").length;
-          }
-          return 0;
-        }
-
-        String selectedKey = _getDateKey(_selectedDate);
-        List<Prenotazione> prenotazioniDelGiorno = mappaPrenotazioni[selectedKey] ?? [];
-
-        //Ordinamento delle prenotazioni
-        prenotazioniDelGiorno.sort((a, b) {
-          try {
-            final partsA = a.ora.split(':');
-            final partsB = b.ora.split(':');
-            final dtA = DateTime(2020, 1, 1, int.parse(partsA[0]), int.parse(partsA[1]));
-            final dtB = DateTime(2020, 1, 1, int.parse(partsB[0]), int.parse(partsB[1]));
-            return dtA.compareTo(dtB);
-          } catch (_) {
-            return a.ora.compareTo(b.ora);
-          }
-        });
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(15, 5, 15, 10),
-              child: Text(
-                AppLocalizations.of(context)!.translate("Le tue prenotazioni"),
-                style: const TextStyle(
-                  fontSize: 21,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(15, 5, 15, 10),
+          child: Text(
+            AppLocalizations.of(context)!.translate("Le tue prenotazioni"),
+            style: const TextStyle(
+              fontSize: 21,
+              fontWeight: FontWeight.bold,
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15.0),
-              child: HorizontalWeekCalendar(
-                selectedDate: _selectedDate,
-                showMonthHeader: true,
-                allowPastDates: true,
-                onDateChanged: (newDate) {
-                  setState(() {
-                    _selectedDate = newDate;
-                  });
-                },
-                eventCountProvider: countPrenotazioniFast,
-              ),
-            ),
-            if (prenotazioniDelGiorno.isEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 20),
-                child: noPrenotazioni(),
-              )
-            else
-              ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: prenotazioniDelGiorno.length,
-                itemBuilder: (context, index) {
-                  return PrenotazioneCard(
-                    prenotazione: prenotazioniDelGiorno[index],
-                    onAnnulla: _annullaPrenotazione,
-                    onPartitaConclusa: _onPartitaConclusa,
-                  );
-                },
-              ),
-          ],
-        );
-      },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 15.0),
+          child: HorizontalWeekCalendar(
+            selectedDate: _selectedDate,
+            showMonthHeader: true,
+            allowPastDates: true,
+            onDateChanged: (newDate) {
+              setState(() {
+                _selectedDate = newDate;
+              });
+            },
+            eventCountProvider: countPrenotazioniFast,
+          ),
+        ),
+
+        if (daMostrareOggi.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: noPrenotazioni(),
+          )
+        else
+          ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: daMostrareOggi.length,
+            itemBuilder: (context, index) {
+              return PrenotazioneCard(
+                prenotazione: daMostrareOggi[index],
+                onAnnulla: _annullaPrenotazione,
+                onPartitaConclusa: _onPartitaConclusa,
+              );
+            },
+          ),
+      ],
     );
   }
 

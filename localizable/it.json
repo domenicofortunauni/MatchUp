@@ -231,5 +231,17 @@
   "Sfide ricevute da altri giocatori:": "Sfide ricevute da altri giocatori:",
   "Vicino": "Vicino",
   "Accetta sfida" : "Accetta sfida",
-  "Nessuna sfida inviata attiva." : "Nessuna sfida inviata attiva."
+  "Nessuna sfida inviata attiva." : "Nessuna sfida inviata attiva.",
+  "Troppo tardi! Serve almeno 1 ora di preavviso.": "Troppo tardi! Serve almeno 1 ora di preavviso.",
+  "Vuoi ritirarti dalla sfida?": "Vuoi ritirarti dalla sfida?",
+  "Vuoi annullare la prenotazione?": "Vuoi annullare la prenotazione?",
+  "No": "No",
+  "Sì, annulla": "Sì, annulla",
+  "Ti sei ritirato dalla sfida.": "Ti sei ritirato dalla sfida.",
+  "Prenotazione annullata.": "Prenotazione annullata.",
+  "Partita archiviata!": "Partita archiviata!",
+  "Effettua il login per vedere le prenotazioni": "Effettua il login per vedere le prenotazioni",
+  "Sfida vs": "Sfida vs",
+  "Annullata": "Annullata",
+  "Inserisci risultato": "Inserisci risultato"
 }
