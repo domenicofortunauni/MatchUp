@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 
-
 class LocationService {
   static Future<String> getCurrentCity({String defaultCity = 'Roma'}) async {
 
@@ -11,7 +10,12 @@ class LocationService {
           final url = Uri.parse(
               "https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.latitude}&lon=${location.longitude}"
           );
-          final res = await http.get(url);
+          final res = await http.get(
+            url,
+            headers: {
+              "User-Agent": "FlutterApp/1.0 (MatchUP)"
+            },
+          );
           if (res.statusCode == 200) {
             final data = jsonDecode(res.body);
             return data["address"]["town"] ??

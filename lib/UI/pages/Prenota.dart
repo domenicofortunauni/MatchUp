@@ -68,7 +68,7 @@ class _PrenotaState extends State<Prenota> {
                       ),
                       child: Center(
                         child: Text(
-                          AppLocalizations.of(context)!.translate('Prenota un Campo'),
+                          AppLocalizations.of(context)!.translate('Prenota un campo'),
                           style: const TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
