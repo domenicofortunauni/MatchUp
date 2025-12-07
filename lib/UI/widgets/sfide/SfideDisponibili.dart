@@ -120,7 +120,7 @@ class SfideDisponibiliList extends StatelessWidget {
               sfida: sfida,
               onPressed: () => _accettaSfida(context, sfida),
               customIcon: Icons.bolt_rounded,
-              labelButton: AppLocalizations.of(context)!.translate("Accetta Sfida"),
+              labelButton: AppLocalizations.of(context)!.translate("Accetta sfida"),
             );
           },
         );

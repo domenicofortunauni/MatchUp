@@ -50,7 +50,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
   void _inizializzaStreams() {
     DateTime now = DateTime.now();
     DateTime start = now.subtract(const Duration(days: 30));
-    DateTime end = now.add(const Duration(days: 60)); // Guardo anche un po' più avanti
+    DateTime end = now.add(const Duration(days: 60));
 
     //STREAM PRENOTAZIONI (Quelle create da me)
     _subPrenotazioni = FirebaseFirestore.instance
@@ -98,7 +98,6 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
               stato: "Confermato"
           );
         }).toList();
-
         _unisciEOrdina();
       });
     });
@@ -267,7 +266,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(15, 5, 15, 10),
+          padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
           child: Text(
             AppLocalizations.of(context)!.translate("Le tue prenotazioni"),
             style: const TextStyle(
@@ -276,6 +275,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
             ),
           ),
         ),
+        //calendario scorrevole
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15.0),
           child: HorizontalWeekCalendar(
@@ -290,13 +290,10 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
             eventCountProvider: countPrenotazioniFast,
           ),
         ),
-
+        //se non ho prenotazioni nel giorno corrente mostro un windget ad hoc
         if (daMostrareOggi.isEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 20),
-            child: noPrenotazioni(),
-          )
-        else
+            noPrenotazioni()
+        else //se ho prenotazioni costruisco la vista con le card
           ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             shrinkWrap: true,

@@ -98,9 +98,8 @@ class _StatisticheState extends State<Statistiche> {
               Text(
                 AppLocalizations.of(context)!.translate("Le tue statistiche"),
                 style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: colorScheme.onSurface,
+                  fontSize: 21,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
 

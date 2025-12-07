@@ -30,7 +30,7 @@ class _StoricoPartiteWidgetState extends State<StoricoPartiteWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(15, 10, 15, 15),
+          padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
           child: Text(
             AppLocalizations.of(context)!.translate("Storico partite (ultimi 30 giorni)"),
             style: const TextStyle(

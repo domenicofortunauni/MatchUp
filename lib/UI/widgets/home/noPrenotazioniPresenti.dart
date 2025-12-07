@@ -6,7 +6,7 @@ class noPrenotazioni extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      padding: const EdgeInsets.symmetric(vertical: 15),
       child: Center(
         child: Column(
           children: [

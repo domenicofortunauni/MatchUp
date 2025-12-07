@@ -13,7 +13,7 @@ class noPartiteStorico extends StatelessWidget{
               Icon(Icons.sports_tennis_outlined, size: 50, color: Colors.grey.withValues(alpha: 0.3)),
               const SizedBox(height: 16),
               Text(
-                AppLocalizations.of(context)!.translate("Nessuna partita nello storico!"),
+                AppLocalizations.of(context)!.translate("Nessuna partita nello storico"),
                 style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
               ),
             ],

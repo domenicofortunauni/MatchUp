@@ -73,6 +73,14 @@ class _LoginState extends State<Login> {
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
+        try {
+          final uid = FirebaseAuth.instance.currentUser!.uid;
+          await FirebaseFirestore.instance.collection('users').doc(uid).update({
+            'citta': await LocationService.getCurrentCity(),
+          });
+        } catch (e) {
+          print("Errore aggiornando la città: $e");
+        }
       } else {
         //  REGISTRAZIONE
         UserCredential userCredential = await _auth.createUserWithEmailAndPassword(

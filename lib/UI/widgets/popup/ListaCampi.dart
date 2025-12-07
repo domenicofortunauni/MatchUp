@@ -52,7 +52,7 @@ class _ListaCampiPopupState extends State<ListaCampiPopup> {
 
           // Titolo
           Text(
-            AppLocalizations.of(context)!.translate("Scegli il Campo"),
+            AppLocalizations.of(context)!.translate("Scegli il campo"),
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
           ),
           const SizedBox(height: 5),
