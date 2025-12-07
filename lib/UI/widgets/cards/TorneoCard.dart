@@ -4,12 +4,10 @@ import '../../behaviors/AppLocalizations.dart';
 
 class TorneoCard extends StatelessWidget {
   final Torneo torneo;
-  final bool isDark;
 
   const TorneoCard({
     super.key,
     required this.torneo,
-    required this.isDark,
   });
 
   @override

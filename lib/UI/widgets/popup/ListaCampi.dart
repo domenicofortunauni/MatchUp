@@ -69,7 +69,7 @@ class _ListaCampiPopupState extends State<ListaCampiPopup> {
             decoration: InputDecoration(
               labelText: AppLocalizations.of(context)!.translate("Cerca campo o città..."),
               prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(22)),
               isDense: true,
               filled: true,
               fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),

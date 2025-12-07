@@ -73,10 +73,7 @@ class _NuovaChatSfidaPopupState extends State<NuovaChatSfidaPopup> {
             decoration: InputDecoration(
               labelText: AppLocalizations.of(context)!.translate('Cerca nella lista...'),
               prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              isDense: true,
-              filled: true,
-              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(22)),
             ),
           ),
 

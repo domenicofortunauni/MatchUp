@@ -64,7 +64,7 @@ class _PrenotaState extends State<Prenota> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
                         color: primaryColor,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(22),
                       ),
                       child: Center(
                         child: Text(
@@ -108,17 +108,10 @@ class _PrenotaState extends State<Prenota> {
                           _searchQuery = value;
                         });
                       },
-                      style: TextStyle(color: onSurfaceColor),
                       decoration: InputDecoration(
                         labelText: AppLocalizations.of(context)!.translate('Cerca campo o città...'),
-                        labelStyle: TextStyle(color: onSurfaceColor.withValues(alpha: 0.6)),
-                        prefixIcon: Icon(Icons.search, color: onSurfaceColor.withValues(alpha: 0.6)),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: onSurfaceColor.withValues(alpha: 0.05),
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(22)),
                       ),
                     ),
                     const SizedBox(height: 20),

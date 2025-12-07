@@ -67,9 +67,9 @@ class _TorneiPageState extends State<TorneiPage> {
     );
   }
 
-
   Widget _buildSearchBar() {
-    return Padding(
+    return
+      Padding(
       padding: const EdgeInsets.fromLTRB(16,16,16,8),
       child: Row(
         children: [
@@ -79,8 +79,8 @@ class _TorneiPageState extends State<TorneiPage> {
               enabled: !_isLoadingLocation,
               decoration: InputDecoration(
                 labelText: _isLoadingLocation ? AppLocalizations.of(context)!.translate("Localizzazione...") : AppLocalizations.of(context)!.translate("Cerca città"),
-                hintText: 'es. Roma',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                hintText: AppLocalizations.of(context)!.translate("es. Roma"),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(22)),
                 prefixIcon: const Icon(Icons.search),
                 contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
               ),
@@ -125,7 +125,8 @@ class _TorneiPageState extends State<TorneiPage> {
   }
 
   Widget _buildList() {
-    if (_isLoadingLocation) return const SizedBox(); // O un loader vuoto
+    if (_isLoadingLocation)
+      return const SizedBox();
 
     return FutureBuilder<List<Torneo>>(
       future: _futureTournaments,
@@ -133,12 +134,7 @@ class _TorneiPageState extends State<TorneiPage> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
-
-        if (snapshot.hasError) {
-          return Center(child: Text(AppLocalizations.of(context)!.translate("Errore:") + " ${snapshot.error}"));
-        }
-
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+        if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -157,7 +153,6 @@ class _TorneiPageState extends State<TorneiPage> {
           itemBuilder: (context, index) {
             return TorneoCard(
               torneo: snapshot.data![index],
-              isDark: Theme.of(context).brightness == Brightness.dark,
             );
           },
         );
