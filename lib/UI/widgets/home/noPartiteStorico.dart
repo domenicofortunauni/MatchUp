@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../behaviors/AppLocalizations.dart';
 
 class noPartiteStorico extends StatelessWidget{
-
   @override
   Widget build(BuildContext context) {
       return Padding(

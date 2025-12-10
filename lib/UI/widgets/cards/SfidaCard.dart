@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../model/objects/SfidaModel.dart';
+import '../../behaviors/AppLocalizations.dart';
 
 class SfidaCard extends StatelessWidget {
   final SfidaModel sfida;
@@ -25,10 +26,11 @@ class SfidaCard extends StatelessWidget {
 
   Color _getLevelColor(String livello) {
     String l = livello.toLowerCase();
-    if (l.contains("principiante")) return Colors.green;
-    if (l.contains("intermedio")) return Colors.orange;
-    if (l.contains("avanzato") || l.contains("esperto")) return Colors.red;
-    return Colors.blue;
+    if (l.contains("amatoriale")) return Colors.green;
+    if (l.contains("dilettante")) return Colors.blue;
+    if (l.contains("intermedio")) return Colors.white;
+    if (l.contains("avanzato")) return Colors.red;
+    return Colors.yellow; //se professionista (o null :/)
   }
 
   @override
@@ -92,7 +94,7 @@ class SfidaCard extends StatelessWidget {
                                   border: Border.all(color: levelColor.withValues(alpha: 0.3)),
                                 ),
                                 child: Text(
-                                  sfida.livello,
+                                  AppLocalizations.of(context)!.translate(sfida.livello),
                                   style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: levelColor),
                                 ),
                               ),
@@ -138,7 +140,7 @@ class SfidaCard extends StatelessWidget {
                         backgroundColor: customButtonColor ?? colorScheme.primary,
                         foregroundColor: colorScheme.onPrimary,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
                       ),
                       child: Text(labelButton!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
                     ),

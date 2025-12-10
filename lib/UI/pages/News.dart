@@ -15,8 +15,8 @@ class News extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
       ),
-      body: FutureBuilder<List<Notizia>>(
-        future: fetchNews(Localizations.localeOf(context).languageCode), // Chiama la funzione API per ottenere le notizie
+      body: FutureBuilder<List<NotiziaModel>>(
+        future: fetchNews(Localizations.localeOf(context).languageCode), // Chiama la funzione API per ottenere le notizie con la lingua giusta!!
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -34,18 +34,14 @@ class News extends StatelessWidget {
             );
           }
           else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-            final List<Notizia> notizie = snapshot.data!;
+            final List<NotiziaModel> notizie = snapshot.data!;
 
-            return RefreshIndicator(
-              // Permette all'utente di aggiornare il feed tirando verso il basso
-              onRefresh: () => Future.value(null), // Non supporta il refresh diretto qui, ma mantiene la UI
-              child: ListView.builder(
+            return ListView.builder(
                 itemCount: notizie.length,
                 itemBuilder: (context, index) {
                   return NewsCard(notizia: notizie[index]);
                 },
-              ),
-            );
+              );
           }
           else {
             return Center(child: Text(AppLocalizations.of(context)!.translate("NoNews")));

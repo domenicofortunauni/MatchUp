@@ -58,7 +58,7 @@ class MenuLaterale extends StatelessWidget {
 
                 //Sezione Tema
                 ListTile(
-                  title: Text(AppLocalizations.of(context)!.translate("Cambia Tema"),
+                  title: Text(AppLocalizations.of(context)!.translate("Cambia tema"),
                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   trailing: GestureDetector(
@@ -100,9 +100,7 @@ class MenuLaterale extends StatelessWidget {
                               ),
                               child: Center(
                                 child: Icon(
-                                  Theme.of(context).brightness == Brightness.dark
-                                      ? Icons.sports_tennis
-                                      : Icons.sports_tennis,
+                                  Icons.sports_tennis,
                                   size: 16,
                                   color: Theme.of(context).brightness == Brightness.dark
                                       ? Colors.white

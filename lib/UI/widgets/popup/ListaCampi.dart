@@ -1,22 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:matchup/model/objects/CampoModel.dart';
-import 'package:matchup/UI/widgets/prenota/DettaglioPrenotazione.dart';
+import 'package:matchup/UI/widgets/PrenotaCampo.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 import '../../../services/campo_service.dart';
+import '../../../services/localizzazione.dart';
 
 class ListaCampiPopup extends StatefulWidget {
   const ListaCampiPopup({Key? key}) : super(key: key);
-
   @override
   State<ListaCampiPopup> createState() => _ListaCampiPopupState();
 }
 
 class _ListaCampiPopupState extends State<ListaCampiPopup> {
   final CampoService _campoService = CampoService();
+  final TextEditingController _searchController = TextEditingController();
+
   String _searchQuery = "";
+  String? _myCity;
+  String? _searchCity; // Città da cercare (può essere diversa dalla mia)
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCity();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _loadCity() async {
+    final city = await LocationService.getMyCity();
+    setState(() {
+      _myCity = city;
+      _searchCity = city; // Inizialmente cerca nella città dell'utente
+    });
+  }
+
+  void _fetchCampi(String searchText) {
+    setState(() {
+      if (searchText.trim().isNotEmpty) {
+        _searchCity = searchText.trim();
+      } else {
+        _searchCity = _myCity; // Se vuoto, torna alla mia città
+      }
+    });
+  }
 
   // Gestione del click sul campo
-  void _handleCampoTap(CampoModel campo) {
+  void _handleCampoTap(CampoModel campo,bool tipoPrenotazione) {
     //Chiude il popup
     Navigator.pop(context);
 
@@ -24,16 +58,29 @@ class _ListaCampiPopupState extends State<ListaCampiPopup> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => DettaglioPrenotazione(campo: campo),
+        builder: (context) => PrenotaCampo(campo: campo, tipoPrenotazione: tipoPrenotazione,),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    // Se la città non è ancora caricata, mostra loading
+    if (_searchCity == null) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        height: MediaQuery.of(context).size.height * 0.75,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
-      height: MediaQuery.of(context).size.height * 0.75, // 75% dello schermo
+      height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -41,7 +88,6 @@ class _ListaCampiPopupState extends State<ListaCampiPopup> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Maniglia estetica
           Center(
             child: Container(
               width: 50, height: 5,
@@ -61,19 +107,13 @@ class _ListaCampiPopupState extends State<ListaCampiPopup> {
 
           // Barra di Ricerca
           TextField(
-            onChanged: (value) {
-              setState(() {
-                _searchQuery = value.toLowerCase();
-              });
-            },
+            controller: _searchController,
             decoration: InputDecoration(
-              labelText: AppLocalizations.of(context)!.translate("Cerca campo o città..."),
+              labelText: AppLocalizations.of(context)!.translate("Cerca campo o città"),
               prefixIcon: const Icon(Icons.search),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(22)),
-              isDense: true,
-              filled: true,
-              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
             ),
+            onSubmitted: (value) => _fetchCampi(value),
           ),
 
           const SizedBox(height: 10),
@@ -81,7 +121,7 @@ class _ListaCampiPopupState extends State<ListaCampiPopup> {
           // Lista Campi
           Expanded(
             child: StreamBuilder<List<CampoModel>>(
-              stream: _campoService.getCampi(),
+              stream: _campoService.getCampi(_searchCity!),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return Center(child: Text(AppLocalizations.of(context)!.translate("Errore nel caricamento")));
@@ -100,7 +140,7 @@ class _ListaCampiPopupState extends State<ListaCampiPopup> {
                 }).toList();
 
                 if (campiFiltrati.isEmpty) {
-                  return Center(child: Text(AppLocalizations.of(context)!.translate("Nessun campo trovato.")));
+                  return Center(child: Text(AppLocalizations.of(context)!.translate("Nessun campo presente a")+_searchCity!));
                 }
 
                 return ListView.separated(
@@ -133,7 +173,7 @@ class _ListaCampiPopupState extends State<ListaCampiPopup> {
                           Text(" ${campo.rating}", style: const TextStyle(fontSize: 12)),
                         ],
                       ),
-                      // Prezzo e Freccia
+                      // Prezzo
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -156,7 +196,8 @@ class _ListaCampiPopupState extends State<ListaCampiPopup> {
                           Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey[400]),
                         ],
                       ),
-                      onTap: () => _handleCampoTap(campo),
+                      onTap: () => _handleCampoTap(campo,true),
+                      //questo widget lo uso solo per sfida quindi va bene così in teoria
                     );
                   },
                 );

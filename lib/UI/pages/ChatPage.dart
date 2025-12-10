@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../services/chat_service.dart';
 import '../behaviors/AppLocalizations.dart';
-
 class ChatPage extends StatefulWidget {
   final String receiverId;
   final String receiverName;
@@ -23,10 +22,15 @@ class _ChatPageState extends State<ChatPage> {
   final ScrollController _scrollController = ScrollController();
   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
+  @override
+  void initState() {
+    super.initState();
+    _chatService.markMessagesAsRead(widget.receiverId);
+  }
+
   void sendMessage() async {
     if (_messageController.text.trim().isEmpty) return;
 
-    // Nota: Sarebbe meglio passarlo o averlo salvato in locale, qui metto un fallback
     String myName = FirebaseAuth.instance.currentUser?.displayName ?? "Io";
 
     await _chatService.sendMessage(
@@ -39,7 +43,6 @@ class _ChatPageState extends State<ChatPage> {
     _messageController.clear();
     _scrollDown();
   }
-
   void _scrollDown() {
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
@@ -69,7 +72,6 @@ class _ChatPageState extends State<ChatPage> {
       ),
       body: Column(
         children: [
-          // streambuilder per prendere la lista dei messaggi da firebase
           Expanded(
             child: StreamBuilder(
               stream: _chatService.getMessages(widget.receiverId),
@@ -138,7 +140,6 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  // Widget per la singola nuvoletta del messaggio
   Widget _buildMessageBubble(String message, bool isMe, DateTime time) {
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,

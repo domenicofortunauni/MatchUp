@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:matchup/model/objects/CampoModel.dart';
-import 'package:matchup/UI/widgets/prenota/MappaTennis.dart';
+import 'package:matchup/UI/widgets/MappaTennis.dart';
 import '../../services/campo_service.dart';
+import '../../services/localizzazione.dart';
 import '../widgets/cards/CampoPrenotabileCard.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 
@@ -14,8 +15,41 @@ class Prenota extends StatefulWidget {
 
 class _PrenotaState extends State<Prenota> {
   final CampoService _campoService = CampoService();
+  final TextEditingController _searchController = TextEditingController();
 
   String _searchQuery = "";
+  String? _myCity;
+  String? _searchCity; // Città da cercare (può essere diversa dalla mia)
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCity();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _loadCity() async {
+    final city = await LocationService.getMyCity();
+    setState(() {
+      _myCity = city;
+      _searchCity = city; // Inizialmente cerca nella città dell'utente
+    });
+  }
+
+  void _fetchCampi(String searchText) {
+    setState(() {
+      if (searchText.trim().isNotEmpty) {
+        _searchCity = searchText.trim();
+      } else {
+        _searchCity = _myCity; // Se vuoto, torna alla mia città
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,10 +57,18 @@ class _PrenotaState extends State<Prenota> {
     final Color onSurfaceColor = Theme.of(context).colorScheme.onSurface;
     final Color surfaceColor = Theme.of(context).colorScheme.surface;
 
+    // Se la città non è ancora caricata, mostra loading
+    if (_searchCity == null) {
+      return Scaffold(
+        backgroundColor: surfaceColor,
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: surfaceColor,
       body: StreamBuilder<List<CampoModel>>(
-        stream: _campoService.getCampi(),
+        stream: _campoService.getCampi(_searchCity!),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(
@@ -79,7 +121,6 @@ class _PrenotaState extends State<Prenota> {
                     ),
                     const SizedBox(height: 16),
 
-                    // BOTTONE MAPPA
                     ElevatedButton.icon(
                       onPressed: () {
                         Navigator.push(
@@ -88,13 +129,13 @@ class _PrenotaState extends State<Prenota> {
                         );
                       },
                       icon: const Icon(Icons.map_outlined),
-                      label: Text(AppLocalizations.of(context)!.translate("Cerca Campi su Mappa")),
+                      label: Text(AppLocalizations.of(context)!.translate("Cerca campi su mappa")),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: primaryColor,
                         elevation: 1,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(22),
                           side: BorderSide(color: primaryColor.withValues(alpha: 0.5)),
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -102,29 +143,46 @@ class _PrenotaState extends State<Prenota> {
                     ),
                     const SizedBox(height: 20),
 
-                    TextField(
-                      onChanged: (value) {
-                        setState(() {
-                          _searchQuery = value;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)!.translate('Cerca campo o città...'),
-                        prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(22)),
+                    // BARRA DI RICERCA
+                    Row(
+                      children: [
+                        Expanded(
+                          child:
+                            TextField(
+                            controller: _searchController,
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context)!.translate('Cerca campo o città'),
+                              prefixIcon: const Icon(Icons.search),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(22)),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            ),
+                            onSubmitted: (value) => _fetchCampi(value),
+                          ),),
+                        const SizedBox(width: 10),
+                        ElevatedButton(
+                      onPressed:() {
+                        _fetchCampi(_searchController.text);
+                        },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Colors.white,
                       ),
+                      child: Text(AppLocalizations.of(context)!.translate("Cerca")),
+                      ),
+                        ],
                     ),
-                    const SizedBox(height: 20),
-
+                    const SizedBox(height: 10),
                     if (campiFiltrati.isEmpty)
                       Padding(
                         padding: const EdgeInsets.all(20.0),
                         child: Center(
                           child: Text(
-                              tuttiICampi.isEmpty
-                                  ? AppLocalizations.of(context)!.translate("Nessun campo presente nel database.")
-                                  : AppLocalizations.of(context)!.translate("Nessun risultato per la ricerca."),
-                              style: TextStyle(color: onSurfaceColor.withValues(alpha: 0.6))
+                            tuttiICampi.isEmpty
+                                ? AppLocalizations.of(context)!.translate("Nessun campo presente a")+_searchCity!
+                                : AppLocalizations.of(context)!.translate("Nessun risultato per la ricerca."),
+                            style: TextStyle(color: onSurfaceColor.withValues(alpha: 0.6)),
                           ),
                         ),
                       )

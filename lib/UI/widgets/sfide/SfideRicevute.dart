@@ -112,7 +112,6 @@ class _SfideRicevuteSectionState extends State<SfideRicevuteSection> {
               }
             }
           } catch (e) {
-            // In caso di errore nel formato, la teniamo per sicurezza
           }
 
           // Se è valida, la aggiungiamo alla lista da visualizzare
@@ -147,7 +146,6 @@ class _SfideRicevuteSectionState extends State<SfideRicevuteSection> {
             // RICICLO DELLA SFIDA CARD
             return SfidaCard(
               sfida: sfida,
-              // Concatenazione con la traduzione
               customTitle: "${AppLocalizations.of(context)!.translate("Sfida da: ")}${sfida.challengerName}",
 
               extraWidget: Row(

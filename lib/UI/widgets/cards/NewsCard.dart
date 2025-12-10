@@ -3,8 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../model/objects/NotiziaModel.dart';
 
 class NewsCard extends StatelessWidget {
-  final Notizia notizia;
-
+  final NotiziaModel notizia;
   const NewsCard({super.key, required this.notizia});
 
 
@@ -16,7 +15,6 @@ class NewsCard extends StatelessWidget {
     }
   Future<void> _launchURL(String urlString) async {
     final Uri url = Uri.parse(urlString);
-
     //serve per aprire il browser del telefono
     try {
       if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
@@ -47,7 +45,7 @@ class NewsCard extends StatelessWidget {
                 width: double.infinity,
                 fit: BoxFit.cover,
 
-                //Loading: mentre carica
+                //mentre carica
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
                   return Container(

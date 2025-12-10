@@ -8,7 +8,7 @@ import 'package:matchup/UI/widgets/CustomSnackBar.dart';
 import '../../../model/objects/PrenotazioneModel.dart';
 import '../cards/PrenotazioneCard.dart';
 import 'noPrenotazioniPresenti.dart';
-import 'dart:async'; // Necessario per StreamSubscription
+import 'dart:async';
 
 class PrenotazioniWidget extends StatefulWidget {
   const PrenotazioniWidget({Key? key}) : super(key: key);
@@ -21,14 +21,14 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
   DateTime _selectedDate = DateTime.now();
   final String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
-  // Liste locali per gestire i due flussi di dati
-  List<Prenotazione> _listaPrenotazioniStandard = [];
-  List<Prenotazione> _listaSfideAccettate = [];
-  List<Prenotazione> _listaUnificata = [];
+  List<PrenotazioneModel> _listaPrenotazioniStandard = [];
+  List<PrenotazioneModel> _listaSfideAccettate = [];
+  List<PrenotazioneModel> _listaSfideMieCreate = [];
+  List<PrenotazioneModel> _listaUnificata = [];
 
-  // Sottoscrizioni ai flussi
   StreamSubscription? _subPrenotazioni;
   StreamSubscription? _subSfide;
+  StreamSubscription? _subSfideMieCreate;
 
   bool _isLoading = true;
 
@@ -44,6 +44,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
   void dispose() {
     _subPrenotazioni?.cancel();
     _subSfide?.cancel();
+    _subSfideMieCreate?.cancel();
     super.dispose();
   }
 
@@ -52,7 +53,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
     DateTime start = now.subtract(const Duration(days: 30));
     DateTime end = now.add(const Duration(days: 60));
 
-    //STREAM PRENOTAZIONI (Quelle create da me)
+    // STREAM PRENOTAZIONI (Quelle create da me)
     _subPrenotazioni = FirebaseFirestore.instance
         .collection('prenotazioni')
         .where('userId', isEqualTo: currentUserId)
@@ -61,40 +62,67 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
         .orderBy('data', descending: false)
         .snapshots()
         .listen((snapshot) {
-
       setState(() {
         _listaPrenotazioniStandard = snapshot.docs
-            .map((doc) => Prenotazione.fromSnapshot(doc))
+            .map((doc) => PrenotazioneModel.fromSnapshot(doc))
             .toList();
         _unisciEOrdina();
       });
     });
 
-    //STREAM SFIDE (Quelle create da ALTRI e accettate da ME)
+    // STREAM SFIDE DOVE SONO L'AVVERSARIO (Quelle create da ALTRI e accettate da ME)
     _subSfide = FirebaseFirestore.instance
         .collection('sfide')
-        .where('opponentId', isEqualTo: currentUserId) // Dove sono l'avversario
-        .where('stato', isEqualTo: 'accettata')        // Solo confermate
+        .where('opponentId', isEqualTo: currentUserId)
+        .where('stato', isEqualTo: 'accettata')
         .where('data', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
         .where('data', isLessThanOrEqualTo: Timestamp.fromDate(end))
         .snapshots()
         .listen((snapshot) {
-
       setState(() {
         _listaSfideAccettate = snapshot.docs.map((doc) {
-          // CONVERTO LA SFIDA IN PRENOTAZIONE
           final data = doc.data();
           String nomeStruttura = data['nomeStruttura'] ?? "Sfida";
           String challengerName = data['challengerName'] ?? "";
 
-          return Prenotazione(
+          return PrenotazioneModel(
               id: doc.id,
               nomeStruttura: nomeStruttura,
-              campo: "Sfida vs $challengerName", // "Sfida vs" lo lascio così o lo gestisco nella card
+              campo: "Sfida vs $challengerName",
               data: (data['data'] as Timestamp).toDate(),
               ora: data['ora'] ?? "00:00",
-              durata: 90, // Durata standard sfida se non specificata (es. 90 min)
-              prezzo: 0.0, // Non sappiamo il prezzo se paga l'altro, mettiamo 0 o gestisci
+              durata: 90,
+              prezzo: 0.0,
+              stato: "Confermato"
+          );
+        }).toList();
+        _unisciEOrdina();
+      });
+    });
+
+    // STREAM SFIDE CHE HO CREATO IO
+    _subSfideMieCreate = FirebaseFirestore.instance
+        .collection('sfide')
+        .where('challengerId', isEqualTo: currentUserId)
+        .where('stato', isEqualTo: 'accettata')
+        .where('data', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+        .where('data', isLessThanOrEqualTo: Timestamp.fromDate(end))
+        .snapshots()
+        .listen((snapshot) {
+      setState(() {
+        _listaSfideMieCreate = snapshot.docs.map((doc) {
+          final data = doc.data();
+          String nomeStruttura = data['nomeStruttura'] ?? "Sfida";
+          String opponentName = data['opponentName'] ?? "";
+
+          return PrenotazioneModel(
+              id: doc.id,
+              nomeStruttura: nomeStruttura,
+              campo: "Sfida vs $opponentName",
+              data: (data['data'] as Timestamp).toDate(),
+              ora: data['ora'] ?? "00:00",
+              durata: 90,
+              prezzo: 0.0,
               stato: "Confermato"
           );
         }).toList();
@@ -103,19 +131,21 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
     });
   }
 
-  // Unisce le due liste e aggiorna la UI
+  // Unisce le tre liste e aggiorna la UI
   void _unisciEOrdina() {
-    List<Prenotazione> temp = [..._listaPrenotazioniStandard, ..._listaSfideAccettate];
+    List<PrenotazioneModel> temp = [
+      ..._listaPrenotazioniStandard,
+      ..._listaSfideAccettate,
+      ..._listaSfideMieCreate // NUOVA
+    ];
 
-    // Filtro eventuali doppioni (non dovrebbero esserci per logica, ma sicurezza) o partite concluse
     temp = temp.where((p) => p.stato != 'Conclusa').toList();
 
-    // Filtro Annullate vecchie
     final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
     temp = temp.where((p) {
       if (p.stato == 'Annullato') {
         final pDate = DateTime(p.data.year, p.data.month, p.data.day);
-        return !pDate.isBefore(today); // Nascondi annullate passate
+        return !pDate.isBefore(today);
       }
       return true;
     }).toList();
@@ -137,13 +167,12 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
     return DateFormat('yyyy-MM-dd').format(date);
   }
 
-  // --- AZIONI (Annulla / Concludi) ---
+  // Annulla / Concludi
 
-  Future<void> _annullaPrenotazione(Prenotazione p) async {
-    //Capisco se è una sfida accettata (non mia) o una prenotazione mia
+  Future<void> _annullaPrenotazione(PrenotazioneModel p) async {
     bool isSfidaAccettata = _listaSfideAccettate.any((s) => s.id == p.id);
+    bool isSfidaMiaCreata = _listaSfideMieCreate.any((s) => s.id == p.id);
 
-    //Controllo Orario Limite
     DateTime dataBase = p.data;
     DateTime dataOraReale;
     try {
@@ -158,14 +187,20 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
       return;
     }
 
-    //Chiedo Conferma
+    String messaggioConferma;
+    if (isSfidaAccettata) {
+      messaggioConferma = AppLocalizations.of(context)!.translate("Vuoi ritirarti dalla sfida?");
+    } else if (isSfidaMiaCreata) {
+      messaggioConferma = AppLocalizations.of(context)!.translate("Vuoi annullare la sfida?");
+    } else {
+      messaggioConferma = AppLocalizations.of(context)!.translate("Vuoi annullare la prenotazione?");
+    }
+
     bool conferma = await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(AppLocalizations.of(context)!.translate("Annulla")),
-        content: Text(isSfidaAccettata
-            ? AppLocalizations.of(context)!.translate("Vuoi ritirarti dalla sfida?")
-            : AppLocalizations.of(context)!.translate("Vuoi annullare la prenotazione?")),
+        content: Text(messaggioConferma),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
@@ -181,30 +216,30 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
 
     if (!conferma) return;
 
-    //Eseguo l'azione corretta su Firebase
     try {
       if (isSfidaAccettata) {
         // Se è una sfida di qualcun altro che avevo accettato, mi ritiro.
-        // La sfida torna "aperta" e senza opponent.
         await FirebaseFirestore.instance.collection('sfide').doc(p.id).update({
           'stato': 'aperta',
           'opponentId': null,
           'opponentName': null
         });
         if (mounted) CustomSnackBar.show(context, AppLocalizations.of(context)!.translate("Ti sei ritirato dalla sfida."));
+      } else if (isSfidaMiaCreata) {
+        // Se è una sfida creata da me, la annullo completamente
+        await FirebaseFirestore.instance.collection('sfide').doc(p.id).update({'stato': 'annullata'});
+        if (mounted) CustomSnackBar.show(context, AppLocalizations.of(context)!.translate("Sfida annullata."));
       } else {
-        // Se è una mia prenotazione (o una sfida creata da me), la annullo.
+        // Se è una mia prenotazione normale, la annullo
         await FirebaseFirestore.instance.collection('prenotazioni').doc(p.id).update({'stato': 'Annullato'});
 
-        // Se era una mia sfida, devo anche chiudere la sfida pubblica collegata (se esiste)
-        // Cerco se c'è una sfida collegata a questa prenotazione
         var sfidaQuery = await FirebaseFirestore.instance
             .collection('sfide')
             .where('prenotazioneId', isEqualTo: p.id)
             .get();
 
         for (var doc in sfidaQuery.docs) {
-          await doc.reference.delete(); // Cancello la sfida pubblica perché non ho più il campo
+          await doc.reference.delete();
         }
 
         if (mounted) CustomSnackBar.show(context, AppLocalizations.of(context)!.translate("Prenotazione annullata."));
@@ -214,10 +249,17 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
     }
   }
 
-  Future<void> _onPartitaConclusa(Prenotazione p) async {
-    // Logica simile per archiviare
+  Future<void> _onPartitaConclusa(PrenotazioneModel p) async {
+    // Capisco da quale lista proviene per aggiornare la collection giusta
     bool isSfidaAccettata = _listaSfideAccettate.any((s) => s.id == p.id);
-    String collection = isSfidaAccettata ? 'sfide' : 'prenotazioni';
+    bool isSfidaMiaCreata = _listaSfideMieCreate.any((s) => s.id == p.id);
+
+    String collection;
+    if (isSfidaAccettata || isSfidaMiaCreata) {
+      collection = 'sfide';
+    } else {
+      collection = 'prenotazioni';
+    }
 
     try {
       await FirebaseFirestore.instance.collection(collection).doc(p.id).update({'stato': 'Conclusa'});
@@ -240,7 +282,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
     }
 
     // --- PREPARAZIONE DATI PER IL CALENDARIO ---
-    Map<String, List<Prenotazione>> mappaPrenotazioni = {};
+    Map<String, List<PrenotazioneModel>> mappaPrenotazioni = {};
     for (var p in _listaUnificata) {
       String key = _getDateKey(p.data);
       if (!mappaPrenotazioni.containsKey(key)) {
@@ -260,7 +302,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
 
     // Lista da mostrare oggi
     String selectedKey = _getDateKey(_selectedDate);
-    List<Prenotazione> daMostrareOggi = mappaPrenotazioni[selectedKey] ?? [];
+    List<PrenotazioneModel> daMostrareOggi = mappaPrenotazioni[selectedKey] ?? [];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -275,7 +317,6 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
             ),
           ),
         ),
-        //calendario scorrevole
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15.0),
           child: HorizontalWeekCalendar(
@@ -290,10 +331,9 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
             eventCountProvider: countPrenotazioniFast,
           ),
         ),
-        //se non ho prenotazioni nel giorno corrente mostro un windget ad hoc
         if (daMostrareOggi.isEmpty)
-            noPrenotazioni()
-        else //se ho prenotazioni costruisco la vista con le card
+          noPrenotazioni()
+        else
           ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             shrinkWrap: true,

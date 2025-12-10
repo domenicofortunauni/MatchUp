@@ -8,10 +8,9 @@ class SfidaModel {
   final String nomeStruttura;
   final String dataOra;
   final String livello;
-
   final String? opponentId;   // Null finché non accettata
   final String? opponentName;
-  final String? modalita;     // 'pubblica' o 'diretta'
+  final String? modalita;     // puo' essere pubblica o diretta
 
   SfidaModel({
     required this.id,

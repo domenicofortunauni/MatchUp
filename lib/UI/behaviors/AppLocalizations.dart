@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-
 import '../../model/support/Constants.dart';
 
 class AppLocalizations {
@@ -26,7 +25,6 @@ class AppLocalizations {
   String translate(String key) {
     return _localizedStrings[key]??"Errore";
   }
-
 
 }
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

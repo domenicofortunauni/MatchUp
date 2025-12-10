@@ -3,7 +3,6 @@ import 'package:matchup/UI/pages/Layout.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 import 'package:matchup/UI/widgets/CustomSnackBar.dart';
 import 'package:matchup/UI/widgets/MenuLaterale.dart';
-import 'package:matchup/UI/widgets/animation/TennisBall.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../services/localizzazione.dart';
@@ -17,7 +16,6 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>();
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final _nomeController = TextEditingController();
@@ -32,6 +30,51 @@ class _LoginState extends State<Login> {
   bool _isLogin = true;
   bool _isPasswordVisible = false;
   bool _isLoading = false;
+  bool _isCheckingAuth = true; // Per lo splash screen iniziale
+  String _livello = "Amatoriale";
+  static const livelliKeys = [
+    "Amatoriale",
+    "Dilettante",
+    "Intermedio",
+    "Avanzato",
+    "Professionista",
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAuthStatus();
+  }
+  Future<void> _aggiornaPosizioneUtente() async {
+    try {
+      final uid = _auth.currentUser?.uid;
+      if (uid != null) {
+        final citta = await LocationService.getCurrentCity();
+        await _firestore.collection('users').doc(uid).update({'citta': citta});
+        print("Città aggiornata: $citta");
+      }
+    } catch (e) {
+      print("Errore aggiornando la città: $e");
+    }
+  }
+
+  // Controlla se l'utente è già loggato
+  Future<void> _checkAuthStatus() async {
+    await Future.delayed(Duration(milliseconds: 500)); // Piccolo ritardo per mostrare il logo
+    User? user = _auth.currentUser;
+    if (user != null && mounted) {
+      // Utente già loggato, vai direttamente al Layout e aggiorna posizione
+      _aggiornaPosizioneUtente();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Layout(title: "MatchUP")),
+      );
+
+    } else {
+      // Non loggato, mostra il form di login
+      setState(() => _isCheckingAuth = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -51,7 +94,6 @@ class _LoginState extends State<Login> {
     CustomSnackBar.show(context, message, backgroundColor: Colors.red, textColor: Colors.white, iconColor: Colors.white);
   }
 
-  // Funzione per formattare nome cognome
   String _formatName(String text) {
     if (text.isEmpty) return "";
     String cleaned = text.trim().replaceAll(RegExp(r'\s+'), ' ');
@@ -74,15 +116,12 @@ class _LoginState extends State<Login> {
           password: _passwordController.text.trim(),
         );
         try {
-          final uid = FirebaseAuth.instance.currentUser!.uid;
-          await FirebaseFirestore.instance.collection('users').doc(uid).update({
-            'citta': await LocationService.getCurrentCity(),
-          });
+          _aggiornaPosizioneUtente();
         } catch (e) {
           print("Errore aggiornando la città: $e");
         }
       } else {
-        //  REGISTRAZIONE
+        //REGISTRAZIONE
         UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
@@ -107,23 +146,12 @@ class _LoginState extends State<Login> {
           'uid': uid,
           'data_iscrizione': FieldValue.serverTimestamp(),
           'citta': cittaUtente,
-          'livello': "Amatoriale" // Default stringa per coerenza con le sfide
+          'livello': _livello,
         });
       }
 
       if (mounted) {
         setState(() => _isLoading = false);
-
-        //ANIMAZIONE DI SUCCESSO
-        // Mostra il dialog e aspetta che finisca (2 secondi)
-        await Tennisball.show(
-          context,
-          _isLogin
-              ? (AppLocalizations.of(context)?.translate("Bentornato") ?? "Bentornato!")
-              : (AppLocalizations.of(context)?.translate("Benvenuto") ?? "Benvenuto!"),
-        );
-
-        //NAVIGAZIONE
         if (mounted) {
           Navigator.pushReplacement(
             context,
@@ -134,26 +162,26 @@ class _LoginState extends State<Login> {
 
     } on FirebaseAuthException catch (e) {
       setState(() => _isLoading = false);
-      String errorMessage = "Si è verificato un errore.";
+      String errorMessage = AppLocalizations.of(context)!.translate("Si è verificato un errore.");
       if (e.code == 'email-already-in-use') errorMessage = "Email già registrata.";
       else if (e.code == 'invalid-credential') errorMessage = "Credenziali errate.";
       _showError(errorMessage);
     } catch (e) {
       setState(() => _isLoading = false);
-      _showError("Errore: $e");
+      _showError(AppLocalizations.of(context)!.translate("Errore")+": $e");
     }
   }
 
   Future<void> _resetPassword() async {
     if (_emailController.text.isEmpty) {
-      _showError("Inserisci l'email per resettare la password");
+      _showError(AppLocalizations.of(context)!.translate("Inserisci l'email per resettare la password"));
       return;
     }
     try {
       await _auth.sendPasswordResetEmail(email: _emailController.text.trim());
-        CustomSnackBar.show(context, "Email di reset inviata! Controlla la posta (Cartella SPAM).");
+      _showError(AppLocalizations.of(context)!.translate("Email di reset inviata! Controlla la posta (Cartella SPAM)."));
     } catch (e) {
-      _showError("Errore nell'invio email: $e");
+      _showError(AppLocalizations.of(context)!.translate("Errore nell'invio dell'email")+": $e");
     }
   }
 
@@ -166,10 +194,41 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Map<String, String>> livelli = livelliKeys.map((key) {
+      return {
+        "key": key, // valore salvato su Firestore
+        "label": AppLocalizations.of(context)!.translate(key), // testo tradotto
+      };
+    }).toList();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final inputFillColor = isDark ? Colors.grey[900] : Colors.grey[100];
     final primaryColor = Theme.of(context).colorScheme.primary;
 
+    if (_isCheckingAuth) {
+      return Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/images/app_icon_splash.png',
+                height: 120,
+                errorBuilder: (c, e, s) => Icon(
+                  Icons.sports_tennis,
+                  size: 120,
+                  color: primaryColor,
+                ),
+              ),
+              const SizedBox(height: 30),
+              CircularProgressIndicator(
+                color: primaryColor,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     return Scaffold(
       drawer: MenuLaterale(headerImage: Image.asset(
         'assets/images/appBarLogo.png',
@@ -204,7 +263,7 @@ class _LoginState extends State<Login> {
                 const SizedBox(height: 16),
 
                 Text(
-                  _isLogin ? AppLocalizations.of(context)!.translate("Bentornato") : AppLocalizations.of(context)!.translate("Crea account"),
+                  _isLogin ? AppLocalizations.of(context)!.translate("Benvenuto") : AppLocalizations.of(context)!.translate("Crea account"),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 32,
@@ -233,7 +292,7 @@ class _LoginState extends State<Login> {
                           decoration: InputDecoration(
                             labelText: "Nome",
                             prefixIcon: const Icon(Icons.person),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(22)),
                             filled: true,
                             fillColor: inputFillColor,
                             contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
@@ -254,7 +313,7 @@ class _LoginState extends State<Login> {
                           decoration: InputDecoration(
                             labelText: AppLocalizations.of(context)!.translate("Cognome"),
                             prefixIcon: const Icon(Icons.person_outline),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(22)),
                             filled: true,
                             fillColor: inputFillColor,
                             contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
@@ -269,7 +328,6 @@ class _LoginState extends State<Login> {
                     ],
                   ),
                   const SizedBox(height: 16),
-
                   TextFormField(
                     controller: _usernameController,
                     textInputAction: TextInputAction.next,
@@ -277,7 +335,7 @@ class _LoginState extends State<Login> {
                     decoration: InputDecoration(
                       labelText: AppLocalizations.of(context)!.translate("Username"),
                       prefixIcon: const Icon(Icons.alternate_email),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(22)),
                       filled: true,
                       fillColor: inputFillColor,
                     ),
@@ -289,8 +347,33 @@ class _LoginState extends State<Login> {
                     },
                   ),
                   const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    initialValue: _livello,
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(Icons.sports_tennis),
+                      hintText: AppLocalizations.of(context)!.translate("Livello"),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(22)),
+                      filled: true,
+                      fillColor: inputFillColor,
+                    ),
+                    items: livelli.map((item) {
+                      return DropdownMenuItem(
+                        value: item["key"],
+                        child: Text(item["label"]!),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _livello = value!;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) return "Seleziona il livello";
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
                 ],
-
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -298,7 +381,7 @@ class _LoginState extends State<Login> {
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.translate("Email"),
                     prefixIcon: const Icon(Icons.email_outlined),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(22)),
                     filled: true,
                     fillColor: inputFillColor,
                   ),
@@ -330,7 +413,7 @@ class _LoginState extends State<Login> {
                       icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
                       onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
                     ),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(22)),
                     filled: true,
                     fillColor: inputFillColor,
                   ),
@@ -354,7 +437,7 @@ class _LoginState extends State<Login> {
                     decoration: InputDecoration(
                       labelText: AppLocalizations.of(context)!.translate("Conferma Password"),
                       prefixIcon: const Icon(Icons.lock_outline_rounded),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(22)),
                       filled: true,
                       fillColor: inputFillColor,
                     ),
@@ -386,7 +469,7 @@ class _LoginState extends State<Login> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
                       elevation: 5,
                     ),
                     child: _isLoading

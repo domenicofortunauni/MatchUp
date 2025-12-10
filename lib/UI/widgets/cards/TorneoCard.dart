@@ -3,8 +3,7 @@ import 'package:matchup/model/objects/TorneoModel.dart';
 import '../../behaviors/AppLocalizations.dart';
 
 class TorneoCard extends StatelessWidget {
-  final Torneo torneo;
-
+  final TorneoModel torneo;
   const TorneoCard({
     super.key,
     required this.torneo,

@@ -72,7 +72,7 @@ class SfideInCorsoList extends StatelessWidget {
           }
 
           if (isVisible) {
-            // Creo il modello SOLO se la sfida è ancora visibile
+            // Creo il modello se la sfida è ancora visibile
             sfideAttive.add(SfidaModel.fromSnapshot(doc));
           }
         }

@@ -4,7 +4,7 @@ import '../../../model/objects/PartitaModel.dart';
 import '../../behaviors/AppLocalizations.dart';
 
 class MatchCard extends StatelessWidget {
-  final Partita partita;
+  final PartitaModel partita;
   const MatchCard({required this.partita});
 
   @override
@@ -84,8 +84,8 @@ class MatchCard extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              DateFormat('dd MMM yyyy').format(partita.data),
-                              style: TextStyle(
+                                DateFormat.yMMMMd(Localizations.localeOf(context).toString()).format(partita.data),
+                                style: TextStyle(
                                 fontSize: 12,
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),

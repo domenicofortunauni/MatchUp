@@ -34,8 +34,8 @@ class _SfideState extends State<Sfide> {
   void _apriListaCampi(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // Permette al popup di alzarsi quasi a tutto schermo
-      backgroundColor: Colors.transparent, // Per vedere i bordi arrotondati del popup
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) => const ListaCampiPopup(),
     );
   }

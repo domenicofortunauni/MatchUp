@@ -17,7 +17,7 @@ class _TorneiPageState extends State<TorneiPage> {
   final FitpService _fitpService = FitpService();
   final TextEditingController _searchController = TextEditingController();
 
-  late Future<List<Torneo>> _futureTournaments;
+  late Future<List<TorneoModel>> _futureTournaments;
   String _currentSearchText = 'Caricamento...';
   bool _isLoadingLocation = true;
 
@@ -59,9 +59,9 @@ class _TorneiPageState extends State<TorneiPage> {
     return Scaffold(
       body: Column(
         children: [
-          _buildSearchBar(),      // Barra di ricerca estratta
-          _buildStatusHeader(),   // Intestazione estratta
-          Expanded(child: _buildList()), // Lista estratta
+          _buildSearchBar(),
+          _buildStatusHeader(),
+          Expanded(child: _buildList()),
         ],
       ),
     );
@@ -92,7 +92,9 @@ class _TorneiPageState extends State<TorneiPage> {
             onPressed: _isLoadingLocation ? null : () => _fetchTournaments(_searchController.text),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Colors.white,
             ),
             child: Text(AppLocalizations.of(context)!.translate("Cerca")),
           ),
@@ -128,7 +130,7 @@ class _TorneiPageState extends State<TorneiPage> {
     if (_isLoadingLocation)
       return const SizedBox();
 
-    return FutureBuilder<List<Torneo>>(
+    return FutureBuilder<List<TorneoModel>>(
       future: _futureTournaments,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {

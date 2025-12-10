@@ -11,7 +11,6 @@ class CustomSnackBar {
     // Chiude eventuali SnackBar precedenti
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
-    // Determina i colori finali (se nulli usa quelli del tema)
     final bgColor = backgroundColor ?? Theme.of(context).colorScheme.surface;
     final txtColor = textColor ?? Theme.of(context).colorScheme.onSurface;
     final icnColor = iconColor ?? Theme.of(context).colorScheme.onSurface;

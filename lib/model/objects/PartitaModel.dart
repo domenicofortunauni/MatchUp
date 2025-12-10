@@ -1,4 +1,4 @@
-class Partita {
+class PartitaModel {
   final String avversario;
   final int gameVinti;
   final int gamePersi;
@@ -7,7 +7,7 @@ class Partita {
   final bool isVittoria;
   final DateTime data;
 
-  Partita({
+  PartitaModel({
     required this.avversario,
     required this.gameVinti,
     required this.gamePersi,

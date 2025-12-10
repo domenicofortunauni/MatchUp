@@ -6,8 +6,8 @@ import 'package:http/http.dart' as http;      // API
 import 'package:geolocator/geolocator.dart';  // GPS
 import 'package:matchup/UI/widgets/CustomSnackBar.dart';
 import 'dart:async';
-import '../../../services/localizzazione.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
+import '../../services/localizzazione.dart';
 
 class MappaTennis extends StatefulWidget {
   const MappaTennis({Key? key}) : super(key: key);

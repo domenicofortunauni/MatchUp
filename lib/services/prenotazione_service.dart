@@ -3,11 +3,10 @@ import 'package:intl/intl.dart';
 
 class PrenotazioneService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
-
   // Scarica orari occupati
-  Future<Map<String, Set<int>>> getOrariOccupati(String campoId, DateTime date) async {
+  Future<Map<String, Set<int>>> getOrariOccupati(String campoId, DateTime date) async
+  {
     String dataString = DateFormat('yyyy-MM-dd').format(date);
-
     final snapshot = await _db.collection('prenotazioni')
         .where('campoId', isEqualTo: campoId)
         .where('dataString', isEqualTo: dataString)
@@ -17,20 +16,19 @@ class PrenotazioneService {
 
     for (var doc in snapshot.docs) {
       final data = doc.data();
-      String nomeSottoCampo = data['nomeSottoCampo'] ?? '';
+      String nomeSottoCampo = data['nomeSottoCampo'] ?? ''; //sarebbe il campo scelto
       String oraInizio = data['oraInizio'] ?? '00:00';
       int durata = data['durataMinuti'] ?? 0;
 
       if (nomeSottoCampo.isNotEmpty) {
         if (!occupati.containsKey(nomeSottoCampo)) {
           occupati[nomeSottoCampo] = {};
+          //serve a inizializzare la lista degli orari occupati del campo dove finiranno gli orari occupati come interi
         }
-
         // Conversione orario in minuti
-        final parts = oraInizio.split(':');
+        final parts = oraInizio.split(':'); //orario in formato ore:minuti, uso regex
         int startMin = int.parse(parts[0]) * 60 + int.parse(parts[1]);
-        int slots = durata ~/ 30;
-
+        int slots = durata ~/ 30; //divisione intera in dart
         for (int i = 0; i < slots; i++) {
           occupati[nomeSottoCampo]!.add(startMin + (i * 30));
         }

@@ -1,4 +1,4 @@
-class Torneo {
+class TorneoModel {
   final String guid;
   final String nomeTorneo;
   final String citta;
@@ -9,7 +9,7 @@ class Torneo {
   final String idFonte;
   final bool iscrizioneOnline;
 
-  Torneo({
+  TorneoModel({
     required this.guid,
     required this.nomeTorneo,
     required this.citta,
@@ -20,9 +20,9 @@ class Torneo {
     required this.idFonte,
     required this.iscrizioneOnline,
   });
-
-  factory Torneo.fromJson(Map<String, dynamic> json) {
-    return Torneo(
+//i tornei provengono da una api esterna, per questo usiamo fromJson qui
+  factory TorneoModel.fromJson(Map<String, dynamic> json) {
+    return TorneoModel(
       guid: json['guid'] ?? '',
       nomeTorneo: json['nome_torneo'] ?? '',
       citta: json['citta'] ?? '',

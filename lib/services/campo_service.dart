@@ -4,10 +4,17 @@ import '../model/objects/CampoModel.dart';
 class CampoService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Ottiene tutti i campi
-  Stream<List<CampoModel>> getCampi() {
-    return _firestore.collection('campi').snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) => CampoModel.fromSnapshot(doc)).toList();
-    });
+  // restituisce la lista di tutti i campi della città passata come parametro sortati per rating
+  Stream<List<CampoModel>> getCampi(String userCitta) {
+    //metto col formato col quale le salvo nel db es. Rende
+    final cittaFormatoDB = userCitta[0].toUpperCase() + userCitta.substring(1).toLowerCase();
+    return _firestore
+        .collection('campi')
+        .where('citta', isEqualTo: cittaFormatoDB)
+        .orderBy('rating', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+        .map((doc) => CampoModel.fromSnapshot(doc))
+        .toList());
   }
 }

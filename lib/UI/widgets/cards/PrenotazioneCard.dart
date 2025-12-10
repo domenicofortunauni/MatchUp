@@ -4,9 +4,9 @@ import '../../../model/objects/PrenotazioneModel.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 
 class PrenotazioneCard extends StatelessWidget {
-  final Prenotazione prenotazione;
-  final Function(Prenotazione) onAnnulla;
-  final Function(Prenotazione)? onPartitaConclusa;
+  final PrenotazioneModel prenotazione;
+  final Function(PrenotazioneModel) onAnnulla;
+  final Function(PrenotazioneModel)? onPartitaConclusa;
 
   const PrenotazioneCard({
     Key? key,
@@ -33,7 +33,7 @@ class PrenotazioneCard extends StatelessWidget {
       // Consideriamo passata la prenotazione dopo la sua durata
       DateTime endDateTime = startDateTime.add(Duration(minutes: prenotazione.durata));
       isPassata = endDateTime.isBefore(DateTime.now());
-    } catch (_) {}
+    } catch (e) {}
 
     // Logica colori
     Color statusColor = Colors.green;
@@ -61,7 +61,6 @@ class PrenotazioneCard extends StatelessWidget {
             children: [
               // Striscia laterale colorata
               Container(width: 6, color: statusColor),
-
               // Contenuto
               Expanded(
                 child: Padding(
@@ -123,7 +122,7 @@ class PrenotazioneCard extends StatelessWidget {
                                     Expanded(
                                       child: Builder(
                                           builder: (context) {
-                                            // Logica per tradurre "Sfida vs" ma mantenere il nome
+                                            //tradurre "Sfida vs" ma mantenere il nome
                                             String testoCampo = prenotazione.campo;
                                             if (testoCampo.startsWith("Sfida vs ")) {
                                               String nomeAvversario = testoCampo.substring(9);
@@ -259,7 +258,7 @@ class PrenotazioneCard extends StatelessWidget {
   }
 }
 
-// Widget privato per le etichette di stato
+// Widget per le etichette di stato
 class _StatusChip extends StatelessWidget {
   final String label;
   final Color bg;

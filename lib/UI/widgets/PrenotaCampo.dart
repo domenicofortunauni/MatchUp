@@ -2,22 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:matchup/UI/widgets/popup/NuovaChat.dart';
 import 'package:matchup/model/objects/CampoModel.dart';
 import 'package:matchup/UI/widgets/CustomSnackBar.dart';
 import 'package:matchup/UI/widgets/HorizontalWeekCalendar.dart';
-import 'package:matchup/UI/widgets/animation/TennisBall.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 
-class DettaglioPrenotazione extends StatefulWidget {
+class PrenotaCampo extends StatefulWidget {
   final CampoModel campo;
+  bool tipoPrenotazione;
 
-  const DettaglioPrenotazione({Key? key, required this.campo}) : super(key: key);
+   PrenotaCampo({Key? key, required this.campo,required this.tipoPrenotazione}) : super(key: key);
 
   @override
-  State<DettaglioPrenotazione> createState() => _DettaglioPrenotazioneState();
+  State<PrenotaCampo> createState() => _PrenotaCampoState();
 }
 
-class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
+class _PrenotaCampoState extends State<PrenotaCampo> {
   final ScrollController _scrollController = ScrollController();
 
   DateTime _selectedDate = DateTime.now();
@@ -58,7 +59,7 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
     return "$minutes ${AppLocalizations.of(context)!.translate("min")}";
   }
 
-  // Controlla se un orario specifico ("18:30") è già passato rispetto ad adesso
+  // Controlla se un orario è già passato rispetto ad adesso
   bool _isSlotPast(String timeSlot) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -182,10 +183,11 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
     String dataFormattata = DateFormat.yMd(currentLocale).format(_selectedDate);
 
     // Variabili stato dialog
-    bool abilitaSfida = false;
     int modalitaScelta = 0;
     String avversarioSelezionato = "";
+    TextEditingController controller = TextEditingController();
     bool mostraErroreAvversario = false;
+    bool abilitaSfida = widget.tipoPrenotazione;
 
     showDialog(
       context: context,
@@ -209,12 +211,13 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                       SwitchListTile(
                         title: Text(AppLocalizations.of(context)!.translate("Vuoi lanciare una sfida?"), style: const TextStyle(fontWeight: FontWeight.bold)),
                         subtitle: Text(AppLocalizations.of(context)!.translate("Crea una partita pubblica o sfida un amico")),
-                        value: abilitaSfida,
                         activeThumbColor: Theme.of(context).colorScheme.primary,
                         contentPadding: EdgeInsets.zero,
-                        onChanged: (val) {
-                          setStateDialog(() => abilitaSfida = val);
-                        },
+                        value: abilitaSfida && widget.tipoPrenotazione ? true : abilitaSfida,
+                        onChanged: abilitaSfida && widget.tipoPrenotazione
+                            ? null
+                            : (val) => setStateDialog(() => abilitaSfida = val),
+
                       ),
 
                       if (abilitaSfida) ...[
@@ -222,9 +225,9 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                              color: Colors.deepPurple.withValues(alpha: 0.05),
+                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.deepPurple.withValues(alpha: 0.2))
+                              border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2))
                           ),
                           child: Column(
                             children: [
@@ -259,44 +262,30 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
 
                               if (modalitaScelta == 1) ...[
                                 const SizedBox(height: 10),
-                                Autocomplete<String>(
-                                  optionsBuilder: (TextEditingValue textEditingValue) async {
-                                    if (textEditingValue.text.isEmpty) {
-                                      return const Iterable<String>.empty();
-                                    }
-                                    final snapshot = await FirebaseFirestore.instance
-                                        .collection('users')
-                                        .where('username', isGreaterThanOrEqualTo: textEditingValue.text)
-                                        .where('username', isLessThan: textEditingValue.text + 'z')
-                                        .limit(5)
-                                        .get();
-
-                                    return snapshot.docs
-                                        .map((doc) => doc['username'] as String)
-                                        .where((name) => name != "")
-                                        .toList();
-                                  },
-                                  onSelected: (String selection) {
-                                    avversarioSelezionato = selection;
-                                  },
-                                  fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                                    controller.addListener(() {
-                                      avversarioSelezionato = controller.text;
-                                    });
-
-                                    return TextField(
-                                      controller: controller,
-                                      focusNode: focusNode,
-                                      decoration: InputDecoration(
-                                        labelText: AppLocalizations.of(context)!.translate("Cerca Username Avversario"),
-                                        border: const OutlineInputBorder(),
-                                        errorText: mostraErroreAvversario ? AppLocalizations.of(context)!.translate("Inserisci un nome valido") : null,
-                                        prefixIcon: const Icon(Icons.person_search),
-                                        isDense: true,
-                                      ),
+                                TextField(
+                                  controller: controller,
+                                  readOnly: true,
+                                  onTap: () async {
+                                    final selectedUser = await showModalBottomSheet<Map<String, dynamic>>(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      builder: (_) => const NuovaChatSfidaPopup(mode: 0),
                                     );
-                                  },
-                                ),
+                                    if (selectedUser != null) {
+                                      setStateDialog(() {
+                                      controller.text = selectedUser['displayName'] ?? selectedUser['username'] ?? "";
+                                      avversarioSelezionato = controller.text;
+                                      mostraErroreAvversario = false;
+                                        }
+                                      );
+                                    }
+                                    },
+                                  decoration: InputDecoration(
+                                    labelText: AppLocalizations.of(context)!.translate("Cerca Username Avversario"),
+                                    border:  OutlineInputBorder(borderRadius: BorderRadius.circular(22)),
+                                    prefixIcon: const Icon(Icons.person_search),
+                                  ),
+                                )
                               ],
                             ],
                           ),
@@ -427,16 +416,6 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
 
       await _caricaPrenotazioni();
       if (mounted) Navigator.pop(context);
-      //ANIMAZIONE
-      if (mounted) {
-        await Tennisball.show(
-            context,
-            isSfida
-                ? AppLocalizations.of(context)!.translate("Sfida Lanciata!")
-                : AppLocalizations.of(context)!.translate("Prenotatazione effettuata!")
-        );
-      }
-
       if (mounted) Navigator.pop(context);
 
     } catch (e) {
@@ -475,7 +454,8 @@ class _DettaglioPrenotazioneState extends State<DettaglioPrenotazione> {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Center(
-                child: Icon(Icons.sports_tennis, size: 80, color: primaryColor),
+                child: Icon(Icons.sports_tennis)
+                //dead code ma in futuro potrebbe avere senso se si mettono immagini su fire storage
               ),
             ),
             const SizedBox(height: 20),

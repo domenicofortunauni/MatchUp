@@ -12,7 +12,7 @@ class Statistiche extends StatefulWidget {
 }
 
 class _StatisticheState extends State<Statistiche> {
-  //Otteniamo l'ID utente corrente per filtrare i dati
+  //ID utente corrente
   final String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
   @override
@@ -21,7 +21,8 @@ class _StatisticheState extends State<Statistiche> {
     final colorScheme = theme.colorScheme;
 
     if (currentUserId.isEmpty) {
-      return const Center(child: Text("Effettua il login per vedere le statistiche"));
+     //TODO: VEDERE SE VA TRADOTTO CHE è:
+      return Center(child: Text(AppLocalizations.of(context)!.translate("Effettua il login per vedere le statistiche")));
     }
 
     return StreamBuilder<QuerySnapshot>(
@@ -32,6 +33,8 @@ class _StatisticheState extends State<Statistiche> {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
+          //TODO: VEDERE SE VA TRADOTTO CHE è:
+
           return Center(child: Text("Errore: ${snapshot.error}"));
         }
         if (snapshot.connectionState == ConnectionState.waiting) {

@@ -1,21 +1,26 @@
 import "dart:convert";
 import "package:http/http.dart" as http;
+import "package:intl/intl.dart";
 import "../model/objects/TorneoModel.dart";
 import "../model/support/Constants.dart";
 
 class FitpService {
-  Future<List<Torneo>> fetchTournaments(String freetext) async {
+  Future<List<TorneoModel>> fetchTournaments(String freetext) async {
     final now = DateTime.now();
-    final dataInizio = '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
+    final dataInizio = DateFormat('dd/MM/yyyy').format(now);
+    final headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
 
     final body = jsonEncode({
       "guid": "",
       "profilazione": "",
-      "freetext": freetext, // Testo di ricerca dinamico
+      "freetext": freetext, // Testo di ricerca per la città!
       "id_regione": null,
       "id_provincia": null,
       "id_stato": null,
-      "id_disciplina": 4332, // Tennis
+      "id_disciplina": 4332, // Tennis , ottenuto da analisi di richiesta da web
       "sesso": null,
       "data_inizio": dataInizio,
       "data_fine": null,
@@ -31,10 +36,6 @@ class FitpService {
       "sortcolumn": "data_inizio",
       "sortorder": "asc"
     });
-    final headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
 
     try {
       final response = await http.post(
@@ -50,7 +51,7 @@ class FitpService {
         final List<dynamic> competizioniJson =
             jsonResponse['competizioni'] ?? [];
         return competizioniJson
-            .map((json) => Torneo.fromJson(json))
+            .map((json) => TorneoModel.fromJson(json))
             .toList();
       } else {
         throw Exception(

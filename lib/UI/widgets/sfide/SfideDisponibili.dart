@@ -68,7 +68,7 @@ class SfideDisponibiliList extends StatelessWidget {
           //Escludo le mie sfide
           if (dataMap['challengerId'] == currentUserId) continue;
 
-          //Controllo Scadenza sui dati
+          //Controllo scadenza sui dati
           try {
             Timestamp? ts = dataMap['data'];
             String? oraStr = dataMap['ora'];
@@ -79,7 +79,7 @@ class SfideDisponibiliList extends StatelessWidget {
               DateTime dataScadenza = DateTime(d.year, d.month, d.day, int.parse(parts[0]), int.parse(parts[1]));
 
               if (dataScadenza.isBefore(DateTime.now())) {
-                // SCADUTA: Cancello dal DB e salto il giro
+                // se SCADUTA Cancello dal DB e salto il giro
                 FirebaseFirestore.instance.collection('sfide').doc(doc.id).delete();
                 continue;
               }
@@ -88,7 +88,7 @@ class SfideDisponibiliList extends StatelessWidget {
             // Se c'è errore nei dati, la teniamo per sicurezza
           }
 
-          //Se è valida, creo il modello e la aggiungo
+          //Se è valida, creo il model e la aggiungo
           sfideValide.add(SfidaModel.fromSnapshot(doc));
         }
         // ------------------------------------

@@ -62,13 +62,11 @@ class SfideInviateSection extends StatelessWidget {
               }
             }
           } catch (e) {
-            // Ignora errori di parsing
           }
 
           // Se valida, aggiungi
           sfideValide.add(SfidaModel.fromSnapshot(doc));
         }
-        // ------------------------------------
 
         // DIVIDO LE LISTE (sulle sfide valide)
         final sfideDirette = sfideValide.where((s) => s.modalita == 'diretta').toList();

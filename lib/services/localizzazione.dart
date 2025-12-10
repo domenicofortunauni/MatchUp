@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LocationService {
   static Future<String> getCurrentCity({String defaultCity = 'Roma'}) async {
@@ -9,6 +11,7 @@ class LocationService {
       if (location != null) {
           final url = Uri.parse(
               "https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.latitude}&lon=${location.longitude}"
+              //usiamo questo perché geocoding non funziona da PC
           );
           final res = await http.get(
             url,
@@ -50,5 +53,21 @@ class LocationService {
       return false;
     }
     return true;
+  }
+  static Future<String> getMyCity() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+      final docSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+      if (docSnapshot.exists) {
+        final data = docSnapshot.data()!;
+        return data['citta'];
+      }
+    } catch (e) {
+      print('Errore nel recupero dati utente: $e');
+    }
+    return '';
   }
 }

@@ -49,6 +49,7 @@ class _StoricoPartiteWidgetState extends State<StoricoPartiteWidget> {
               .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
+              //TODO: VEDERE SE VA TRADOTTO CHE è:
               return Center(child: Text("Errore: ${snapshot.error}"));
             }
             if (snapshot.connectionState == ConnectionState.waiting) {
@@ -72,7 +73,7 @@ class _StoricoPartiteWidgetState extends State<StoricoPartiteWidget> {
                 Timestamp ts = data['data'];
                 DateTime dataPartita = ts.toDate();
 
-                final partita = Partita(
+                final partita = PartitaModel(
                   avversario: data['avversario'] ?? '',
                   gameVinti: (data['gameVinti'] as num?)?.toInt() ?? 0,
                   gamePersi: (data['gamePersi'] as num?)?.toInt() ?? 0,

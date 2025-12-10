@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../behaviors/AppLocalizations.dart';
-import '../../pages/Login.dart'; // Controlla il percorso per la pagina Login
+import '../../pages/Login.dart';
 
 class LogoutDialog {
   static void show(BuildContext context) {

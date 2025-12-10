@@ -1,19 +1,19 @@
-class Notizia {
+class NotiziaModel {
   final String titolo;
   final String descrizione;
   final String urlImmagine;
   final String fonte;
   final String urlArticolo;
 
-  Notizia({
+  NotiziaModel({
     required this.titolo,
     required this.descrizione,
     required this.urlImmagine,
     required this.fonte,
     required this.urlArticolo,
   });
-  factory Notizia.fromJson(Map<String, dynamic> json) {
-    return Notizia(
+  factory NotiziaModel.fromJson(Map<String, dynamic> json) {
+    return NotiziaModel(
       titolo: json['title'] ?? '',
       descrizione: json['description'] ?? '',
       urlImmagine: json['image'],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../services/chat_service.dart';
 import '../behaviors/AppLocalizations.dart';
 import '../widgets/dialogs/logoutDialog.dart';
 import 'Home.dart';
@@ -19,6 +20,7 @@ class Layout extends StatefulWidget {
 }
 
 class _LayoutState extends State<Layout> {
+  final ChatService _chatService = ChatService();
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -50,10 +52,10 @@ class _LayoutState extends State<Layout> {
             ],
           ),
           bottomNavigationBar: Padding(
-          padding:  const EdgeInsets.fromLTRB(12, 0, 12, 12),
-          child: Material(
+            padding:  const EdgeInsets.fromLTRB(15, 0, 15, 15),
+            child: Material(
               shadowColor: Colors.transparent,
-            borderRadius: BorderRadius.circular(45),
+              borderRadius: BorderRadius.circular(120),
               color: Theme.of(context).colorScheme.primary,
               child: TabBar(
                 splashBorderRadius: BorderRadius.circular(45), //fix rotondità dell'overlay della tabbar!!
@@ -70,7 +72,25 @@ class _LayoutState extends State<Layout> {
                 labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                 tabs: [
                   Tab(text: AppLocalizations.of(context)!.translate("Tornei"), icon: Icon(FontAwesomeIcons.trophy)),
-                  Tab(text: AppLocalizations.of(context)!.translate("Chat"), icon: Icon(Icons.chat_outlined)),
+
+                  //tab chat con badge per i messaggi non letti
+                  StreamBuilder<int>(
+                    stream: _chatService.getTotalUnreadCount(),
+                    builder: (context, snapshot) {
+                      final unreadCount = snapshot.data ?? 0;
+                      return Tab(
+                        text: AppLocalizations.of(context)!.translate("Chat"),
+                        icon: Badge(
+                          label: Text('$unreadCount'),
+                          isLabelVisible: unreadCount > 0,
+                          backgroundColor: Colors.red,
+                          textColor: Colors.white,
+                          child: Icon(Icons.chat_outlined),
+                        ),
+                      );
+                    },
+                  ),
+
                   Tab(text: AppLocalizations.of(context)!.translate("Home"), icon: Icon(Icons.home_rounded)),
                   Tab(text: AppLocalizations.of(context)!.translate("Sfida"), icon: Icon(Icons.sports_tennis_outlined)),
                   Tab(text: AppLocalizations.of(context)!.translate("Prenota"), icon: Icon(Icons.calendar_month_outlined)),

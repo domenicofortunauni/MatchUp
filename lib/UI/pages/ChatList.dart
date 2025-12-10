@@ -24,13 +24,12 @@ class ChatListPage extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot>(
         stream: _chatService.getMyChats(),
         builder: (context, snapshot) {
-          if (snapshot.hasError) return  Center(child: Text(AppLocalizations.of(context)!.translate("Errore")));
+          if (snapshot.hasError) return Center(child: Text(AppLocalizations.of(context)!.translate("Errore")));
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
           final docs = snapshot.data!.docs;
 
-          // Nessuna chat
           if (docs.isEmpty) {
             return Center(
               child: Column(
@@ -43,7 +42,7 @@ class ChatListPage extends StatelessWidget {
               ),
             );
           }
-          // Lista chat
+
           return ListView.builder(
             itemCount: docs.length,
             itemBuilder: (context, index) {
@@ -55,7 +54,10 @@ class ChatListPage extends StatelessWidget {
               final Map<String, dynamic> names = data['userNames'] ?? {};
               final String title = names[otherUserId] ?? "Utente";
               final String lastMessage = data['lastMessage'] ?? '';
-              final int unreadCount = data['unreadCount'] ?? 0;
+
+              // Recupera unreadCount per l'utente corrente
+              final Map<String, dynamic> unreadMap = data['unreadCount'] ?? {};
+              final int unreadCount = unreadMap[currentUserId] ?? 0;
 
               return Column(
                 children: [
@@ -68,8 +70,37 @@ class ChatListPage extends StatelessWidget {
                     leading: CircleAvatar(
                       child: Text(title.isNotEmpty ? title[0].toUpperCase() : "?"),
                     ),
-                    title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(lastMessage, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    title: Text(
+                        title,
+                        style: TextStyle(
+                            fontWeight: unreadCount > 0 ? FontWeight.bold : FontWeight.normal
+                        )
+                    ),
+                    subtitle: Text(
+                        lastMessage,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontWeight: unreadCount > 0 ? FontWeight.w600 : FontWeight.normal
+                        )
+                    ),
+                    trailing: unreadCount > 0
+                        ? Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        unreadCount > 99 ? '99+' : '$unreadCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    )
+                        : null,
                   ),
                   const Divider(height: 1),
                 ],
@@ -80,9 +111,9 @@ class ChatListPage extends StatelessWidget {
       ),
 
       floatingActionButton: CircularFloatingIconButton(
-          onPressed: () => _apriNuovaChat(context), icon: Icons.comment,
-        ),
-
+        onPressed: () => _apriNuovaChat(context),
+        icon: Icons.comment,
+      ),
     );
   }
   void _apriNuovaChat(BuildContext context) {

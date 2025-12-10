@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../model/objects/CampoModel.dart';
 import '../../behaviors/AppLocalizations.dart';
-import '../prenota/DettaglioPrenotazione.dart';
+import '../PrenotaCampo.dart';
 
 class CampoCard extends StatelessWidget{
   final CampoModel campo;
@@ -19,7 +19,7 @@ class CampoCard extends StatelessWidget{
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => DettaglioPrenotazione(campo: campo),
+              builder: (context) => PrenotaCampo(campo: campo,tipoPrenotazione: false,),
             ),
           );
         },
@@ -34,7 +34,7 @@ class CampoCard extends StatelessWidget{
                   color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(Icons.sports_tennis, size: 40, color: Theme.of(context).colorScheme.primary),
+                child: Icon(Icons.sports_tennis),
               ),
               const SizedBox(width: 16),
 
@@ -88,7 +88,7 @@ class CampoCard extends StatelessWidget{
                           ],
                         ),
                         Text(
-                          "€${campo.prezzoOrario.toStringAsFixed(0)}/h",
+                            "€${campo.prezzoOrario.toStringAsFixed(0)}/${AppLocalizations.of(context)!.translate("ore_diminuitivo")}",
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.bold,
@@ -107,6 +107,4 @@ class CampoCard extends StatelessWidget{
       ),
     );
   }
-
-
 }

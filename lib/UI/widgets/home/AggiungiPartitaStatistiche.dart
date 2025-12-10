@@ -5,9 +5,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../model/objects/PartitaModel.dart';
 import '../../../model/objects/PrenotazioneModel.dart';
+import '../CustomSnackBar.dart';
+import '../aggiungi_set_partita.dart';
 
 class AggiungiPartitaStatistiche extends StatefulWidget {
-  final Prenotazione? prenotazione;
+  final PrenotazioneModel? prenotazione;
   final bool isSfida;
   final String? nomeAvversarioFisso;
 
@@ -66,18 +68,18 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
   }
 
   Future<void> _selezionaData(BuildContext context) async {
-    // --- MODIFICA: Se c'è una prenotazione (di qualsiasi tipo), la data è fissa ---
-    if (widget.prenotazione != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.translate("La data è legata alla prenotazione e non può essere modificata."))),
-      );
-      return;
+    if (widget.prenotazione != null) {(
+        CustomSnackBar.showError(context,backgroundColor: Colors.red,
+            AppLocalizations.of(context)!.translate("La data è legata alla prenotazione e non può essere modificata"
+            )
+        ));
+    return;
     }
 
     final DateTime? dataSelezionata = await showDatePicker(
       context: context,
       initialDate: _dataPartita,
-      firstDate: DateTime(2010),
+      firstDate: DateTime(2020),
       lastDate: DateTime.now(),
     );
 
@@ -104,7 +106,7 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
         _isSaving = true;
       });
 
-      // --- MODIFICA: Se vuoto, metto un default ---
+      //  Se vuoto, metto un default
       String avversario = _avversarioController.text.trim();
       if (avversario.isEmpty) {
         avversario = AppLocalizations.of(context)!.translate("Avversario");
@@ -133,25 +135,32 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
         int minGames = myGames < oppGames ? myGames : oppGames;
 
         if (maxGames != 6 && maxGames != 7) {
-          _showError("${AppLocalizations.of(context)!.translate("Set")} ${i + 1}: ${AppLocalizations.of(context)!.translate("Il vincitore deve avere 6 o 7 game")}");
+          CustomSnackBar.showError(context,backgroundColor: Colors.red,
+              "${AppLocalizations.of(context)!.translate("Set")} ${i + 1}: ${AppLocalizations.of(context)!.translate("Il vincitore deve avere 6 o 7 game")}"
+          );
           setState(() => _isSaving = false);
           return;
         }
 
         if (maxGames == 7 && (minGames != 5 && minGames != 6)) {
-          _showError("${AppLocalizations.of(context)!.translate("Set")} ${i + 1}: ${AppLocalizations.of(context)!.translate("Per vincere a 7, l'avversario deve avere 5 o 6 game")}");
+          CustomSnackBar.showError(context,backgroundColor: Colors.red,
+              "${AppLocalizations.of(context)!.translate("Set")} ${i + 1}: ${AppLocalizations.of(context)!.translate("Per vincere a 7, l'avversario deve avere 5 o 6 game")}");
           setState(() => _isSaving = false);
           return;
         }
 
         if (maxGames == 6 && minGames >= 5) {
-          _showError("${AppLocalizations.of(context)!.translate("Set")} ${i + 1}: ${AppLocalizations.of(context)!.translate("Sul 6-5 si continua a giocare")}");
+          CustomSnackBar.showError(context,backgroundColor: Colors.red,
+              "${AppLocalizations.of(context)!.translate("Set")} ${i + 1}: ${AppLocalizations.of(context)!.translate("Sul 6-5 si continua a giocare")}"
+          );
           setState(() => _isSaving = false);
           return;
         }
 
         if (myGames == oppGames) {
-          _showError("${AppLocalizations.of(context)!.translate("Set")} ${i + 1}: ${AppLocalizations.of(context)!.translate("Un set non può finire in pareggio")}");
+          CustomSnackBar.showError(context,backgroundColor: Colors.red,
+              "${AppLocalizations.of(context)!.translate("Set")} ${i + 1}: ${AppLocalizations.of(context)!.translate("Un set non può finire in pareggio")}"
+          );
           setState(() => _isSaving = false);
           return;
         }
@@ -168,14 +177,15 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
       }
 
       if (totalSetVinti == totalSetPersi) {
-        _showError(AppLocalizations.of(context)!.translate("Impossibile salvare: punteggio in parità. Qualcuno deve vincere!"));
+        CustomSnackBar.showError(context,backgroundColor: Colors.red,
+            AppLocalizations.of(context)!.translate("Impossibile salvare: punteggio in parità. Qualcuno deve vincere!"));
         setState(() => _isSaving = false);
         return;
       }
 
       final bool isVittoria = totalSetVinti > totalSetPersi;
 
-      final nuovaPartita = Partita(
+      final nuovaPartita = PartitaModel(
         avversario: avversario,
         gameVinti: totalGameVinti,
         gamePersi: totalGamePersi,
@@ -211,10 +221,11 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
             Navigator.pop(context, nuovaPartita);
           }
         } else {
-          _showError(AppLocalizations.of(context)!.translate("Utente non loggato"));
+          CustomSnackBar.showError(context,backgroundColor: Colors.red,
+              AppLocalizations.of(context)!.translate("Utente non loggato"));
         }
       } catch (e) {
-        _showError("${AppLocalizations.of(context)!.translate("Errore durante il salvataggio:")} $e");
+        CustomSnackBar.showError(context,backgroundColor: Colors.red, "${AppLocalizations.of(context)!.translate("Errore durante il salvataggio:")} $e");
       } finally {
         if (mounted) {
           setState(() {
@@ -225,17 +236,12 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
     }
   }
 
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final dataFormattata = DateFormat.yMMMMd(Localizations.localeOf(context).toString()).format(_dataPartita);
     final primaryColor = Theme.of(context).colorScheme.primary;
 
-    // --- MODIFICA: Determina se la data è bloccata ---
+    // MODIFICA: Determina se la data è bloccata
     bool isDateLocked = widget.prenotazione != null;
 
     return Scaffold(
@@ -256,7 +262,7 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                       color: Colors.grey.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10)
+                      borderRadius: BorderRadius.circular(22)
                   ),
                   child: Row(
                     children: [
@@ -279,13 +285,13 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.translate("Nome avversario"),
                   prefixIcon: const Icon(Icons.person_outline),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(22),borderSide: BorderSide.none),
                   suffixIcon: widget.isSfida ? const Icon(Icons.lock, size: 18, color: Colors.grey) : null,
-                  filled: widget.isSfida,
-                  fillColor: widget.isSfida ? Colors.grey.shade200 : null,
+                  filled: true,
+                  fillColor: Colors.grey.withValues(alpha: 0.1),
                 ),
                 validator: (value) {
-                  // --- MODIFICA: Obbligatorio SOLO se è una sfida ---
+                  //MODIFICA: Obbligatorio SOLO se è una sfida
                   if (widget.isSfida && (value == null || value.isEmpty)) {
                     return AppLocalizations.of(context)!.translate("Inserisci il nome dell'avversario");
                   }
@@ -341,41 +347,19 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
                       Expanded(
                         child: Container(
                           margin: const EdgeInsets.symmetric(horizontal: 8),
-                          child: TextFormField(
-                              controller: controllers.me,
-                              keyboardType: TextInputType.number,
-                              textAlign: TextAlign.center,
-                              decoration: InputDecoration(
-                                contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                isDense: true,
-                              ),
-                              validator: (val) {
-                                if (idx == 0 && (val == null || val.isEmpty)) return AppLocalizations.of(context)!.translate("Obbligatorio!");
-                                return null;
+                          child: aggiungi_set_partita(
+                            me: controllers.me,
+                            opponent: controllers.opponent,
+                            validator: (val) {
+                              if (idx == 0 && (val == null || val.isEmpty)) {
+                                return AppLocalizations.of(context)!.translate("Obbligatorio!");
                               }
+                              return null;
+                            },
                           ),
                         ),
                       ),
-                      Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                          child: TextFormField(
-                              controller: controllers.opponent,
-                              keyboardType: TextInputType.number,
-                              textAlign: TextAlign.center,
-                              decoration: InputDecoration(
-                                contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                isDense: true,
-                              ),
-                              validator: (val) {
-                                if (idx == 0 && (val == null || val.isEmpty)) return AppLocalizations.of(context)!.translate("Obbligatorio!");
-                                return null;
-                              }
-                          ),
-                        ),
-                      ),
+
                       SizedBox(
                         width: 40,
                         child: idx > 0
@@ -392,14 +376,13 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
 
               const SizedBox(height: 24),
 
-              // --- CAMPO DATA ---
+              //CAMPO DATA
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text(AppLocalizations.of(context)!.translate("Data della partita"), style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(DateFormat('dd MMMM yyyy').format(_dataPartita),
-                    style: TextStyle(fontSize: 16, color: isDateLocked ? Colors.grey : null)),
+                subtitle: Text(dataFormattata, style: TextStyle(fontSize: 16, color: isDateLocked ? Colors.grey : null)),
 
-                // --- MODIFICA: Lucchetto se c'è prenotazione (sfida o meno) ---
+                // MODIFICA: Lucchetto se c'è prenotazione (sfida o meno)
                 trailing: isDateLocked
                     ? const Icon(Icons.lock, color: Colors.grey)
                     : Icon(Icons.calendar_today, color: primaryColor),
@@ -414,7 +397,7 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
                   elevation: 2,
                 ),
                 child: Text(

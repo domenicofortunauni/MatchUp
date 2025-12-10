@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class Prenotazione {
+class PrenotazioneModel {
   final String id;
   final String nomeStruttura;
   final String campo;
@@ -10,7 +10,7 @@ class Prenotazione {
   final double prezzo;
   final String stato;
 
-  Prenotazione({
+  PrenotazioneModel({
     required this.id,
     required this.nomeStruttura,
     required this.campo,
@@ -21,16 +21,14 @@ class Prenotazione {
     required this.stato,
   });
 
-  factory Prenotazione.fromSnapshot(DocumentSnapshot doc) {
+  factory PrenotazioneModel.fromSnapshot(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     DateTime dataEvento = DateTime.now();
-
-    // Gestione Timestamp di Firebase
+    //serve per mettere la data in formato firebase col timestamp
     if (data['data'] != null) {
       dataEvento = (data['data'] as Timestamp).toDate();
     }
-
-    return Prenotazione(
+    return PrenotazioneModel(
       id: doc.id,
       nomeStruttura: data['nomeStruttura'] ?? 'Struttura sconosciuta',
       campo: data['nomeSottoCampo'] ?? 'Campo',

@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CampoModel {
-  final String id; // Utile per sapere quale documento prenotare
+  final String id;
   final String nome;
   final String indirizzo;
   final String citta;
@@ -19,13 +19,11 @@ class CampoModel {
     required this.campiDisponibili,
   });
 
-  // Factory per creare un oggetto CampoModel da un documento Firebase
   factory CampoModel.fromSnapshot(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-
     return CampoModel(
       id: doc.id,
-      nome: data['nome'] ?? 'Campo sconosciuto', //no applocalizations qui!
+      nome: data['nome'] ?? 'Campo sconosciuto', //no applocalizations qui! lo gestisco dopo
       indirizzo: data['indirizzo'] ?? '',
       citta: data['citta'] ?? '',
       prezzoOrario: (data['prezzoOrario'] ?? 0).toDouble(),
