@@ -9,6 +9,7 @@ import '../../../model/objects/PrenotazioneModel.dart';
 import '../cards/PrenotazioneCard.dart';
 import 'noPrenotazioniPresenti.dart';
 import 'dart:async';
+import 'package:matchup/services/notification_service.dart';
 
 class PrenotazioniWidget extends StatefulWidget {
   const PrenotazioniWidget({Key? key}) : super(key: key);
@@ -232,6 +233,8 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
       } else {
         // Se è una mia prenotazione normale, la annullo
         await FirebaseFirestore.instance.collection('prenotazioni').doc(p.id).update({'stato': 'Annullato'});
+
+        await NotificationService().cancelNotification(p.id.hashCode.abs());
 
         var sfidaQuery = await FirebaseFirestore.instance
             .collection('sfide')

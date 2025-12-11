@@ -7,6 +7,7 @@ import 'package:matchup/model/objects/CampoModel.dart';
 import 'package:matchup/UI/widgets/CustomSnackBar.dart';
 import 'package:matchup/UI/widgets/HorizontalWeekCalendar.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
+import 'package:matchup/services/notification_service.dart';
 
 class PrenotaCampo extends StatefulWidget {
   final CampoModel campo;
@@ -395,6 +396,30 @@ class _PrenotaCampoState extends State<PrenotaCampo> {
         'tipo': isSfida ? 'sfida' : 'prenotazione',
         'stato': 'Confermato'
       });
+
+      try {
+        if (_selectedTimeSlot != null) {
+          final timeParts = _selectedTimeSlot!.split(':');
+          final dataPartita = DateTime(
+            _selectedDate.year,
+            _selectedDate.month,
+            _selectedDate.day,
+            int.parse(timeParts[0]),
+            int.parse(timeParts[1]),
+          );
+          final notificationId = prenotazioneRef.id.hashCode.abs();
+          await NotificationService().scheduleNotification(
+              notificationId,
+              AppLocalizations.of(context)!.translate("Hai una partita tra poco!"),
+              AppLocalizations.of(context)!.translate("La tua prenotazione al") +
+                  " ${widget.campo.nome} " +
+                  AppLocalizations.of(context)!.translate("inizia alle") +
+                  " $_selectedTimeSlot.",
+              dataPartita
+          );
+        }
+      } catch (e) {
+      }
 
       if (isSfida) {
         await FirebaseFirestore.instance.collection('sfide').add({

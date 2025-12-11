@@ -5,6 +5,7 @@ import 'package:matchup/model/objects/SfidaModel.dart';
 import 'package:matchup/UI/widgets/cards/SfidaCard.dart';
 import '../CustomSnackBar.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
+import 'package:matchup/services/notification_service.dart';
 
 class SfideRicevuteSection extends StatefulWidget {
   const SfideRicevuteSection({Key? key}) : super(key: key);
@@ -45,10 +46,48 @@ class _SfideRicevuteSectionState extends State<SfideRicevuteSection> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
+      DocumentSnapshot doc = await FirebaseFirestore.instance
+          .collection('sfide')
+          .doc(sfida.id)
+          .get();
+
+      if (!doc.exists) return;
+
+      final dataMap = doc.data() as Map<String, dynamic>;
+
       await FirebaseFirestore.instance.collection('sfide').doc(sfida.id).update({
         'stato': 'accettata',
         'opponentId': user.uid,
       });
+
+      try {
+        if (dataMap.containsKey('data') && dataMap.containsKey('ora')) {
+          DateTime giornoPartita = (dataMap['data'] as Timestamp).toDate();
+          String oraString = dataMap['ora'];
+
+          final parts = oraString.split(':');
+          final dataCompleta = DateTime(
+            giornoPartita.year,
+            giornoPartita.month,
+            giornoPartita.day,
+            int.parse(parts[0]),
+            int.parse(parts[1]),
+          );
+
+          await NotificationService().scheduleNotification(
+              sfida.id.hashCode.abs(),
+              AppLocalizations.of(context)!.translate("Sfida Accettata!"),
+              AppLocalizations.of(context)!.translate("La partita contro") +
+                  " ${sfida.challengerName} " +
+                  AppLocalizations.of(context)!.translate("è alle") +
+                  " $oraString",
+              dataCompleta
+          );
+        }
+      } catch (e) {
+        print("Impossibile impostare la notifica: $e");
+      }
+
       if (mounted) {
         CustomSnackBar.show(context, AppLocalizations.of(context)!.translate("Sfida accettata!"));
       }

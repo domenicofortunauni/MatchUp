@@ -5,9 +5,12 @@ import 'package:matchup/model/support/Constants.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:matchup/services/notification_service.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  tz.initializeTimeZones();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -43,6 +46,13 @@ class MyAppState extends State<MyApp> {
       _locale = locale;
     });
   }
+
+  @override
+  void initState() {
+    super.initState();
+    NotificationService().init();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
