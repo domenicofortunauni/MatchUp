@@ -9,7 +9,7 @@ class SfidaModel {
   final String dataOra;
   final String livello;
   final String? opponentId;   // Null finché non accettata
-  final String? opponentName;
+  final String? opponentName; // Null finché non accettata
   final String? modalita;     // puo' essere pubblica o diretta
 
   SfidaModel({

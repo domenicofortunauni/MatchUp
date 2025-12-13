@@ -3,6 +3,7 @@ import 'package:matchup/model/objects/CampoModel.dart';
 import 'package:matchup/UI/widgets/MappaTennis.dart';
 import '../../services/campo_service.dart';
 import '../../services/localizzazione.dart';
+import '../../services/meteo_service.dart';
 import '../widgets/cards/CampoPrenotabileCard.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 
@@ -17,6 +18,7 @@ class _PrenotaState extends State<Prenota> {
   final CampoService _campoService = CampoService();
   final TextEditingController _searchController = TextEditingController();
 
+  bool? pioveOggi; // null se non ancora verificato, true se piove
   String _searchQuery = "";
   String? _myCity;
   String? _searchCity; // Città da cercare (può essere diversa dalla mia)
@@ -35,12 +37,17 @@ class _PrenotaState extends State<Prenota> {
 
   void _loadCity() async {
     final city = await LocationService.getMyCity();
+    bool meteo = false;
+    if (city.isNotEmpty) {
+      meteo = await MeteoService.isRainExpected(city, DateTime.now());
+    }
+
     setState(() {
       _myCity = city;
-      _searchCity = city; // Inizialmente cerca nella città dell'utente
+      _searchCity = city;
+      pioveOggi = meteo;
     });
   }
-
   void _fetchCampi(String searchText) {
     setState(() {
       if (searchText.trim().isNotEmpty) {
@@ -193,7 +200,7 @@ class _PrenotaState extends State<Prenota> {
                         itemCount: campiFiltrati.length,
                         itemBuilder: (context, index) {
                           final campo = campiFiltrati[index];
-                          return CampoCard(campo: campo);
+                          return CampoCard(campo: campo,isRainExpected: pioveOggi==true,);
                         },
                       ),
                   ],

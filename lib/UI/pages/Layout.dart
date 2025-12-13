@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
-import '../../services/chat_service.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../behaviors/AppLocalizations.dart';
-import '../widgets/dialogs/logoutDialog.dart';
 import 'Home.dart';
 import 'Sfide.dart';
-import 'ChatList.dart';
+import 'Chat/ChatList.dart';
 import 'Tornei.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'Prenota.dart';
+import '../../services/chat_service.dart';
 import 'package:matchup/UI/widgets/MenuLaterale.dart';
+import '../widgets/dialogs/logoutDialog.dart';
 
 class Layout extends StatefulWidget {
-  final String title;
 
-  Layout({required this.title, super.key});
+  const Layout({super.key});
 
   @override
   _LayoutState createState() => _LayoutState();
@@ -27,30 +26,25 @@ class _LayoutState extends State<Layout> {
         length: 5,
         initialIndex: 2,
         child: Scaffold(
-          extendBody: true,
-          drawer: MenuLaterale(
-            headerImage: Image.asset('assets/images/appBarLogo.png',
-            height: 60,
-            fit: BoxFit.contain,
-          ),
-          ),
           appBar: AppBar(
-              title: Image.asset(
-                'assets/images/appBarLogo.png',
-                height: 40,
-              ),
-              centerTitle: true,
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              iconTheme: const IconThemeData(color: Colors.white),
+            title: Image.asset(
+              'assets/images/appBarLogo.png',
+              height: 40,
+            ),
+            centerTitle: true, //centra l'immagine
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            iconTheme: const IconThemeData(color: Colors.white),
             //parte destra app bar
             actions: [
               IconButton(
                 icon: Icon(Icons.logout_rounded),
                 tooltip: AppLocalizations.of(context)!.translate("Logout"),
                 onPressed: () => LogoutDialog.show(context),
-                  ),
+              ),
             ],
           ),
+          extendBody: true,
+          drawer: MenuLaterale(),
           bottomNavigationBar: Padding(
             padding:  const EdgeInsets.fromLTRB(15, 0, 15, 15),
             child: Material(
@@ -58,7 +52,7 @@ class _LayoutState extends State<Layout> {
               borderRadius: BorderRadius.circular(120),
               color: Theme.of(context).colorScheme.primary,
               child: TabBar(
-                splashBorderRadius: BorderRadius.circular(45), //fix rotondità dell'overlay della tabbar!!
+                splashBorderRadius: BorderRadius.circular(45), //fix rotondità dell'overlay della tabbar!
                 dividerColor: Colors.transparent, //serve a rimuovere una strana linea grigia che usciva
                 labelColor: Colors.white, // colore del testo e dell'icona quando selezionato
                 unselectedLabelColor: Colors.white70, // tutto il testo non selezionato

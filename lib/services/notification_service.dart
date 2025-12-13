@@ -1,11 +1,11 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz;
-import 'dart:io';
 
 class NotificationService {
   static final NotificationService _notificationService = NotificationService._internal();
-
   factory NotificationService() => _notificationService;
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
@@ -13,9 +13,6 @@ class NotificationService {
   NotificationService._internal();
 
   Future<void> init() async {
-    tz.initializeTimeZones();
-    tz.setLocalLocation(tz.getLocation('Europe/Rome'));
-
     const AndroidInitializationSettings androidSettings =
     AndroidInitializationSettings('@mipmap/ic_launcher');
 
@@ -35,7 +32,8 @@ class NotificationService {
       onDidReceiveNotificationResponse: (NotificationResponse response) {
       },
     );
-
+    //per evitare errore su web per testing
+    if (kIsWeb) return;
     //Gestione permessi Android
     if (Platform.isAndroid) {
       final androidImplementation = flutterLocalNotificationsPlugin
@@ -69,7 +67,6 @@ class NotificationService {
     if (scheduledTime.isBefore(DateTime.now())) {
       return;
     }
-
     final tz.TZDateTime tzScheduledTime = tz.TZDateTime.from(scheduledTime, tz.local);
 
     const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(

@@ -4,8 +4,7 @@ import 'package:intl/intl.dart';
 class PrenotazioneService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   // Scarica orari occupati
-  Future<Map<String, Set<int>>> getOrariOccupati(String campoId, DateTime date) async
-  {
+  Future<Map<String, Set<int>>> getOrariOccupati(String campoId, DateTime date) async {
     String dataString = DateFormat('yyyy-MM-dd').format(date);
     final snapshot = await _db.collection('prenotazioni')
         .where('campoId', isEqualTo: campoId)

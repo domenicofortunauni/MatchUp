@@ -10,7 +10,6 @@ class ChatService {
     ids.sort();
     return "${ids[0]}_${ids[1]}";
   }
-
   Stream<QuerySnapshot> getMyChats() {
     final currentUid = _auth.currentUser!.uid;
     return _firestore
@@ -69,18 +68,18 @@ class ChatService {
   Future<void> markMessagesAsRead(String receiverId) async {
     final currentUserId = _auth.currentUser!.uid;
     final String chatId = _getChatId(currentUserId, receiverId);
-    final chatDocRef = _firestore.collection('chats').doc(chatId);
+    final chatDoc = _firestore.collection('chats').doc(chatId);
 
     try {
       // Resetta il contatore per l'utente
-      await chatDocRef.set({
+      await chatDoc.set({
         'unreadCount': {
           currentUserId: 0
         }
       }, SetOptions(merge: true));
 
       // Marca come letti i messaggi non letti
-      final messagesRef = chatDocRef.collection('messages');
+      final messagesRef = chatDoc.collection('messages');
       final unreadMessages = await messagesRef
           .where('receiverId', isEqualTo: currentUserId)
           .where('isRead', isEqualTo: false)

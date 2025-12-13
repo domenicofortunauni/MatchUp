@@ -1,7 +1,8 @@
 import 'dart:ui';
 
 class Constants{
-
+  static final String APIKEY_METEO = '5535814125ef257bfbf9eb262e4c66ba ';
+  static final String API_METEO_URL = 'https://api.openweathermap.org/data/2.5/forecast';
   static final String AppName = "MatchUP";
   static const String API_TORNEI_URL = 'https://appflutter-5frv.vercel.app/api/proxy';
   static const String APIKEY_GNEWS = '470ca9d053c288330bf2c04403b58850';
@@ -13,5 +14,11 @@ class Constants{
     Locale('es'),
     Locale('de'),
   ];
-
+  static const livelliKeys = [
+    "Amatoriale",
+    "Dilettante",
+    "Intermedio",
+    "Avanzato",
+    "Professionista",
+  ];
 }

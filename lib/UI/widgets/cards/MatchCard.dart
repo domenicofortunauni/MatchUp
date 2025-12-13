@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chat_core/flutter_chat_core.dart';
 import '../../../model/objects/PartitaModel.dart';
 import '../../behaviors/AppLocalizations.dart';
+import 'package:intl/intl.dart';
+
 
 class MatchCard extends StatelessWidget {
   final PartitaModel partita;

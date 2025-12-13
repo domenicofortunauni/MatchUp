@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../services/sfida_consigliati_service.dart';
 import '../../behaviors/AppLocalizations.dart';
-import '../../pages/ChatPage.dart';
+import '../../pages/Chat/ChatPage.dart';
 
 class NuovaChatSfidaPopup extends StatefulWidget {
   final int mode;

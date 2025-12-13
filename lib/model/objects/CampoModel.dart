@@ -8,6 +8,7 @@ class CampoModel {
   final double prezzoOrario;
   final double rating;
   final List<String> campiDisponibili;
+  final bool campoAlCoperto;
 
   CampoModel({
     required this.id,
@@ -17,6 +18,8 @@ class CampoModel {
     required this.prezzoOrario,
     required this.rating,
     required this.campiDisponibili,
+    required this.campoAlCoperto,
+
   });
 
   factory CampoModel.fromSnapshot(DocumentSnapshot doc) {
@@ -29,6 +32,7 @@ class CampoModel {
       prezzoOrario: (data['prezzoOrario'] ?? 0).toDouble(),
       rating: (data['rating'] ?? 0).toDouble(),
       campiDisponibili: List<String>.from(data['campiDisponibili'] ?? ['Campo Standard']),
+      campoAlCoperto: data['campoAlCoperto'] ?? false, // default false se non presente
     );
   }
 }

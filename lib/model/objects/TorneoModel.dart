@@ -20,7 +20,7 @@ class TorneoModel {
     required this.idFonte,
     required this.iscrizioneOnline,
   });
-//i tornei provengono da una api esterna, per questo usiamo fromJson qui
+//i tornei provengono da una api esterna, per questo usiamo un json qui
   factory TorneoModel.fromJson(Map<String, dynamic> json) {
     return TorneoModel(
       guid: json['guid'] ?? '',

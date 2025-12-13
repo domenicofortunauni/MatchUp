@@ -5,11 +5,11 @@ import 'package:matchup/UI/widgets/CustomSnackBar.dart';
 import 'package:matchup/UI/widgets/MenuLaterale.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../model/support/Constants.dart';
 import '../../services/localizzazione.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
-
   @override
   State<Login> createState() => _LoginState();
 }
@@ -32,13 +32,6 @@ class _LoginState extends State<Login> {
   bool _isLoading = false;
   bool _isCheckingAuth = true; // Per lo splash screen iniziale
   String _livello = "Amatoriale";
-  static const livelliKeys = [
-    "Amatoriale",
-    "Dilettante",
-    "Intermedio",
-    "Avanzato",
-    "Professionista",
-  ];
 
   @override
   void initState() {
@@ -67,7 +60,7 @@ class _LoginState extends State<Login> {
       _aggiornaPosizioneUtente();
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Layout(title: "MatchUP")),
+        MaterialPageRoute(builder: (context) => Layout()),
       );
 
     } else {
@@ -155,7 +148,7 @@ class _LoginState extends State<Login> {
         if (mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => Layout(title: "MatchUP")),
+            MaterialPageRoute(builder: (context) => Layout()),
           );
         }
       }
@@ -163,8 +156,10 @@ class _LoginState extends State<Login> {
     } on FirebaseAuthException catch (e) {
       setState(() => _isLoading = false);
       String errorMessage = AppLocalizations.of(context)!.translate("Si è verificato un errore.");
-      if (e.code == 'email-already-in-use') errorMessage = "Email già registrata.";
-      else if (e.code == 'invalid-credential') errorMessage = "Credenziali errate.";
+      if (e.code == 'email-already-in-use') errorMessage = AppLocalizations.of(context)!.translate("Email già registrata.");
+      else if (e.code == 'invalid-credential') errorMessage = AppLocalizations.of(context)!.translate("Credenziali errate.");
+      else if (e.code == 'user-not-found') errorMessage = AppLocalizations.of(context)!.translate("Utente non trovato.");
+      else if (e.code == 'wrong-password') errorMessage = AppLocalizations.of(context)!.translate("Password errata.");;
       _showError(errorMessage);
     } catch (e) {
       setState(() => _isLoading = false);
@@ -194,7 +189,7 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, String>> livelli = livelliKeys.map((key) {
+    final List<Map<String, String>> livelli = Constants.livelliKeys.map((key) {
       return {
         "key": key, // valore salvato su Firestore
         "label": AppLocalizations.of(context)!.translate(key), // testo tradotto
@@ -230,12 +225,7 @@ class _LoginState extends State<Login> {
       );
     }
     return Scaffold(
-      drawer: MenuLaterale(headerImage: Image.asset(
-        'assets/images/appBarLogo.png',
-        height: 60,
-        fit: BoxFit.contain,
-      ),
-      ),
+      drawer: MenuLaterale(),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -253,7 +243,6 @@ class _LoginState extends State<Login> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 40),
-
                 Image.asset(
                   'assets/images/app_icon_splash.png',
                   height: 100,
@@ -290,7 +279,7 @@ class _LoginState extends State<Login> {
                           textInputAction: TextInputAction.next,
                           textCapitalization: TextCapitalization.words,
                           decoration: InputDecoration(
-                            labelText: "Nome",
+                            labelText: AppLocalizations.of(context)!.translate("Nome"),
                             prefixIcon: const Icon(Icons.person),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(22)),
                             filled: true,

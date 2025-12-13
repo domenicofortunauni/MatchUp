@@ -56,8 +56,17 @@ class UserService {
         data['livello'] = userLivello;
         results.add(data);
       }
-      results.sort((a, b) => a['sort_group'].compareTo(b['sort_group']));
-      //piccolo problema, non sorta gli altri non vicini però.. vediamo di sistemare
+      results.sort((a, b) {
+        // Prima per sort_group
+        int cmp = (a['sort_group'].compareTo(b['sort_group']));
+        if (cmp != 0) return cmp;
+        // Tra i vicini livello minore o uguale , ordine decrescente per livello
+        // Tra i non vicini stesso livello o minore, ordine decrescente per livello
+        if (a['sort_group'] == 0 || a['sort_group'] == 1||a['sort_group'] == 3|| a['sort_group'] == 4)
+          return b['level_score'].compareTo(a['level_score']);
+        // Tra i vicini con livello maggiore o non vicini, ordine crescente per livello
+         return a['level_score'].compareTo(b['level_score']);
+      });
       return results;
 
     } catch (e) {

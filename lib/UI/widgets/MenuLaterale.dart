@@ -6,9 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MenuLaterale extends StatelessWidget {
-  final Widget? headerImage;
-
-  const MenuLaterale({super.key, required this.headerImage});
+  static final Widget headerImage = Image.asset('assets/images/appBarLogo.png',height: 60, fit: BoxFit.contain);
+  const MenuLaterale({super.key});
 
   //Funzione per generare le iniziali
   String _getInitials(String nome, String cognome) {

@@ -23,7 +23,7 @@ class AppLocalizations {
   }
 
   String translate(String key) {
-    return _localizedStrings[key]??"Errore";
+    return _localizedStrings[key]??"Translation error";
   }
 
 }
