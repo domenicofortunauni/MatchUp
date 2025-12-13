@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchup/UI/pages/Layout.dart';
+import 'package:matchup/UI/widgets/popup/Animazione.dart'; // Importa il widget popup
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 import 'package:matchup/UI/widgets/CustomSnackBar.dart';
 import 'package:matchup/UI/widgets/MenuLaterale.dart';
@@ -30,7 +31,7 @@ class _LoginState extends State<Login> {
   bool _isLogin = true;
   bool _isPasswordVisible = false;
   bool _isLoading = false;
-  bool _isCheckingAuth = true; // Per lo splash screen iniziale
+  bool _isCheckingAuth = true;
   String _livello = "Amatoriale";
 
   @override
@@ -38,13 +39,13 @@ class _LoginState extends State<Login> {
     super.initState();
     _checkAuthStatus();
   }
+
   Future<void> _aggiornaPosizioneUtente() async {
     try {
       final uid = _auth.currentUser?.uid;
       if (uid != null) {
         final citta = await LocationService.getCurrentCity();
         await _firestore.collection('users').doc(uid).update({'citta': citta});
-        print("Città aggiornata: $citta");
       }
     } catch (e) {
       print("Errore aggiornando la città: $e");
@@ -53,18 +54,15 @@ class _LoginState extends State<Login> {
 
   // Controlla se l'utente è già loggato
   Future<void> _checkAuthStatus() async {
-    await Future.delayed(Duration(milliseconds: 500)); // Piccolo ritardo per mostrare il logo
+    await Future.delayed(Duration(milliseconds: 500));
     User? user = _auth.currentUser;
     if (user != null && mounted) {
-      // Utente già loggato, vai direttamente al Layout e aggiorna posizione
       _aggiornaPosizioneUtente();
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => Layout()),
       );
-
     } else {
-      // Non loggato, mostra il form di login
       setState(() => _isCheckingAuth = false);
     }
   }
@@ -79,7 +77,6 @@ class _LoginState extends State<Login> {
     _confirmPasswordController.dispose();
     _passwordFocusNode.dispose();
     _confirmPasswordFocusNode.dispose();
-
     super.dispose();
   }
 
@@ -114,7 +111,7 @@ class _LoginState extends State<Login> {
           print("Errore aggiornando la città: $e");
         }
       } else {
-        //REGISTRAZIONE
+        // REGISTRAZIONE
         UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
@@ -129,7 +126,6 @@ class _LoginState extends State<Login> {
 
         await userCredential.user!.updateDisplayName(username);
 
-        // Salva nel Database
         await _firestore.collection('users').doc(uid).set({
           'nome': nomeFormattato,
           'cognome': cognomeFormattato,
@@ -145,6 +141,17 @@ class _LoginState extends State<Login> {
 
       if (mounted) {
         setState(() => _isLoading = false);
+
+        // ANIMAZIONE
+
+        // 1. Mostriamo il Dialog con l'animazione e aspettiamo che finisca (await)
+        await showDialog(
+          context: context,
+          barrierDismissible: false, // L'utente non può chiuderlo cliccando fuori
+          builder: (context) => const Animazione(),
+        );
+
+        // 2. Quando il dialog si chiude, andiamo alla Home
         if (mounted) {
           Navigator.pushReplacement(
             context,
@@ -191,8 +198,8 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context) {
     final List<Map<String, String>> livelli = Constants.livelliKeys.map((key) {
       return {
-        "key": key, // valore salvato su Firestore
-        "label": AppLocalizations.of(context)!.translate(key), // testo tradotto
+        "key": key,
+        "label": AppLocalizations.of(context)!.translate(key),
       };
     }).toList();
     final isDark = Theme.of(context).brightness == Brightness.dark;

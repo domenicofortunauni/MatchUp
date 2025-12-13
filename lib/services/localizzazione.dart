@@ -21,8 +21,8 @@ class LocationService {
           );
           if (res.statusCode == 200) {
             final data = jsonDecode(res.body);
-            return data["address"]["town"] ??
-                data["address"]["city"] ??
+            return data["address"]["city"] ??
+                data["address"]["town"] ??
                 data["address"]["village"];
           }
       }
