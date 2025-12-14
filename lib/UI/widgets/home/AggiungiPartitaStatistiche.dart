@@ -149,7 +149,7 @@ class _AggiungiPartitaStatisticheState extends State<AggiungiPartitaStatistiche>
           return;
         }
 
-        if (maxGames == 6 && minGames >= 5) {
+        if (maxGames == 6 && minGames == 5) {
           CustomSnackBar.showError(context,backgroundColor: Colors.red,
               "${AppLocalizations.of(context)!.translate("Set")} ${i + 1}: ${AppLocalizations.of(context)!.translate("Sul 6-5 si continua a giocare")}"
           );

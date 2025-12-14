@@ -65,6 +65,10 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
         .listen((snapshot) {
       setState(() {
         _listaPrenotazioniStandard = snapshot.docs
+            .where((doc) {
+          final data = doc.data();
+          return data['tipo'] != 'sfida';
+        })
             .map((doc) => PrenotazioneModel.fromSnapshot(doc))
             .toList();
         _unisciEOrdina();
@@ -92,7 +96,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
               campo: "Sfida vs $challengerName",
               data: (data['data'] as Timestamp).toDate(),
               ora: data['ora'] ?? "00:00",
-              durata: 90,
+              durata: data['durataMinuti'] ?? 90,
               prezzo: 0.0,
               stato: "Confermato"
           );
@@ -122,7 +126,7 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
               campo: "Sfida vs $opponentName",
               data: (data['data'] as Timestamp).toDate(),
               ora: data['ora'] ?? "00:00",
-              durata: 90,
+              durata: data['durataMinuti'] ?? 90,
               prezzo: 0.0,
               stato: "Confermato"
           );
@@ -229,6 +233,18 @@ class _PrenotazioniWidgetState extends State<PrenotazioniWidget> with AutomaticK
       } else if (isSfidaMiaCreata) {
         // Se è una sfida creata da me, la annullo completamente
         await FirebaseFirestore.instance.collection('sfide').doc(p.id).update({'stato': 'annullata'});
+
+        var queryPren = await FirebaseFirestore.instance
+            .collection('prenotazioni')
+            .where('userId', isEqualTo: currentUserId)
+            .where('oraInizio', isEqualTo: p.ora)
+            .where('dataString', isEqualTo: DateFormat('yyyy-MM-dd').format(p.data))
+            .get();
+
+        for (var doc in queryPren.docs) {
+          await doc.reference.update({'stato': 'Annullato'});
+          }
+
         if (mounted) CustomSnackBar.show(context, AppLocalizations.of(context)!.translate("Sfida annullata."));
       } else {
         // Se è una mia prenotazione normale, la annullo

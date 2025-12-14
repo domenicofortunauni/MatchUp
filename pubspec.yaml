@@ -77,7 +77,6 @@ flutter:
     - assets/images/
     - assets/images/immagini_news/
     - localizable/
-    - assets/animations/
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

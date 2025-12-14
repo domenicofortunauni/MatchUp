@@ -96,6 +96,7 @@ class _PrenotaCampoState extends State<PrenotaCampo> {
 
       for (var doc in snapshot.docs) {
         final data = doc.data();
+        if (data['stato'] == 'Annullato') continue;
         String nomeSottoCampo = data['nomeSottoCampo'] ?? '';
         String oraInizio = data['oraInizio'] ?? '00:00';
         int durata = data['durataMinuti'] ?? 0;
@@ -433,6 +434,7 @@ class _PrenotaCampoState extends State<PrenotaCampo> {
           'indirizzo': widget.campo.indirizzo,
           'data': Timestamp.fromDate(_selectedDate),
           'ora': _selectedTimeSlot,
+          'durataMinuti': durataMinuti,
           'livello': livelloGiocatore,
           'stato': 'aperta',
           'modalita': modalita ?? 'pubblica',
