@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:matchup/UI/widgets/home/AggiungiPartitaStatistiche.dart';
 import '../../../model/objects/PrenotazioneModel.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
+import '../buttons/PrenotazioneActionButton.dart';
 
 class PrenotazioneCard extends StatelessWidget {
   final PrenotazioneModel prenotazione;
@@ -19,7 +20,6 @@ class PrenotazioneCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color onSurface = Theme.of(context).colorScheme.onSurface;
     final bool isAnnullato = prenotazione.stato == "Annullato";
-
     // Check se la prenotazione è passata
     bool isPassata = false;
     try {
@@ -36,13 +36,16 @@ class PrenotazioneCard extends StatelessWidget {
     } catch (e) {}
 
     // Logica colori
+    //Prenotazione in corso o futura -> verde
     Color statusColor = Colors.green;
     Color bgColor = Colors.green.withValues(alpha: 0.15);
-
+    //Prenotazione annullata -> rosso
     if (isAnnullato) {
       statusColor = Colors.red;
       bgColor = Colors.red.withValues(alpha: 0.15);
-    } else if (isPassata) {
+    }
+    //Prenotazione passata -> grigio
+    else if (isPassata) {
       statusColor = Colors.grey;
       bgColor = Colors.grey.withValues(alpha: 0.15);
     }
@@ -53,7 +56,7 @@ class PrenotazioneCard extends StatelessWidget {
         color: bgColor,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: ClipRRect(
+      child: ClipRRect( //serve a tagliare la striscia laterale colorata!
         borderRadius: BorderRadius.circular(20),
         child: IntrinsicHeight(
           child: Row(
@@ -61,7 +64,7 @@ class PrenotazioneCard extends StatelessWidget {
             children: [
               // Striscia laterale colorata
               Container(width: 6, color: statusColor),
-              // Contenuto
+              // prenotazione
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -70,9 +73,8 @@ class PrenotazioneCard extends StatelessWidget {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // COLONNA ORARIO
+                          // Colonna orario - tempo prenotazione
                           Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 prenotazione.ora,
@@ -94,9 +96,11 @@ class PrenotazioneCard extends StatelessWidget {
                               ),
                             ],
                           ),
+                          //spazio nella row
                           const SizedBox(width: 16),
                           // Divisore verticale
                           Container(height: 40, width: 1, color: Colors.grey.shade300),
+                          //spazio nella row
                           const SizedBox(width: 16),
 
                           // COLONNA INFO CAMPO
@@ -110,6 +114,7 @@ class PrenotazioneCard extends StatelessWidget {
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     color: onSurface.withValues(alpha: isAnnullato ? 0.5 : 1),
+                                    height: 1.2,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -118,23 +123,20 @@ class PrenotazioneCard extends StatelessWidget {
                                 Row(
                                   children: [
                                     Icon(Icons.sports_tennis, size: 14, color: statusColor),
-                                    const SizedBox(width: 4),
+                                    const SizedBox(width: 6),
                                     Expanded(
                                       child: Builder(
                                           builder: (context) {
-                                            //tradurre "Sfida vs" ma mantenere il nome
                                             String testoCampo = prenotazione.campo;
                                             if (testoCampo.startsWith("Sfida vs ")) {
                                               String nomeAvversario = testoCampo.substring(9);
-                                              // Traduce "Sfida vs" e riattacca il nome
                                               testoCampo = "${AppLocalizations.of(context)!.translate("Sfida vs")} $nomeAvversario";
                                             }
-
                                             return Text(
                                               testoCampo,
                                               style: TextStyle(
                                                   fontSize: 13,
-                                                  color: Colors.grey.shade700,
+                                                  color: Colors.grey.shade600,
                                                   fontWeight: FontWeight.w500),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
@@ -150,102 +152,55 @@ class PrenotazioneCard extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 16),
-
-                      // BOTTONI (Visualizzati in base allo stato)
+                      // Bottoni per annullare o inserire risultato
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           if (isAnnullato)
-                            _StatusChip(
-                                label: AppLocalizations.of(context)!.translate("Annullata"),
-                                bg: Colors.red.shade50,
-                                text: Colors.red
+                            PrenotazioneActionButton(
+                              label: AppLocalizations.of(context)!.translate("Annullata"),
+                              bgColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                              textColor: Theme.of(context).colorScheme.onSurfaceVariant,
                             )
                           else if (isPassata)
-                            InkWell(
+                            PrenotazioneActionButton(
+                              label: AppLocalizations.of(context)!.translate("Inserisci risultato"),
+                              icon: Icons.emoji_events_outlined,
+                              bgColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                              borderColor: Theme.of(context).primaryColor.withValues(alpha: 0.5),
+                              textColor: Theme.of(context).primaryColor,
                               onTap: () async {
-                                // RICONOSCIMENTO SFIDA
                                 bool isSfida = false;
                                 String? avversarioFisso;
-
-                                // Se il nome del campo inizia con "Sfida vs ", estraiamo il nome
                                 if (prenotazione.campo.startsWith("Sfida vs ")) {
                                   isSfida = true;
-                                  // "Sfida vs " sono 9 caratteri, prendiamo tutto quello che viene dopo
                                   avversarioFisso = prenotazione.campo.substring(9);
                                 }
-
                                 final result = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => AggiungiPartitaStatistiche(
                                       prenotazione: prenotazione,
-                                      // Passiamo i parametri per bloccare i campi
                                       isSfida: isSfida,
                                       nomeAvversarioFisso: avversarioFisso,
                                     ),
                                   ),
                                 );
-
                                 if (result != null && onPartitaConclusa != null) {
                                   onPartitaConclusa!(prenotazione);
                                 }
                               },
-                              borderRadius: BorderRadius.circular(20),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                                  border: Border.all(
-                                      color: Theme.of(context).primaryColor.withValues(alpha: 0.5),
-                                      width: 1
-                                  ),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                        Icons.emoji_events_outlined,
-                                        size: 16,
-                                        color: Theme.of(context).primaryColor
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      AppLocalizations.of(context)!.translate("Inserisci risultato"),
-                                      style: TextStyle(
-                                          color: Theme.of(context).primaryColor,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
                             )
                           else
-                            InkWell(
+                            PrenotazioneActionButton(
+                              label: AppLocalizations.of(context)!.translate("Annulla"),
+                              icon: Icons.close,
+                              bgColor: Colors.red.withValues(alpha: 0.1),
+                              textColor: Colors.red,
                               onTap: () => onAnnulla(prenotazione),
-                              borderRadius: BorderRadius.circular(20),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: Colors.red.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.close, size: 14, color: Colors.red),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                        AppLocalizations.of(context)!.translate("Annulla"),
-                                        style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 12)
-                                    ),
-                                  ],
-                                ),
-                              ),
                             ),
                         ],
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -254,23 +209,6 @@ class PrenotazioneCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-// Widget per le etichette di stato
-class _StatusChip extends StatelessWidget {
-  final String label;
-  final Color bg;
-  final Color text;
-  const _StatusChip({required this.label, required this.bg, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
-      child: Text(label, style: TextStyle(color: text, fontWeight: FontWeight.bold, fontSize: 12)),
     );
   }
 }

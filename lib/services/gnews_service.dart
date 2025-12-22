@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../model/objects/NotiziaModel.dart';
 import '../model/support/Constants.dart';
 
@@ -10,6 +11,24 @@ List<NotiziaModel> _parseNews(String responseBody) {
   return articlesJson
       .map((json) => NotiziaModel.fromJson(json))
       .toList();
+}
+
+String getImmagineDefaultRandom(NotiziaModel notizia) {
+  const int numeroImmagini = 10;
+  int uniqueId = notizia.titolo.hashCode.abs();
+  int imageNumber = (uniqueId % numeroImmagini) + 1;
+  return 'assets/images/immagini_news/defaultNews$imageNumber.jpg';
+}
+Future<void> launchURL(String urlString) async {
+  final Uri url = Uri.parse(urlString);
+  //serve per aprire il browser del telefono
+  try {
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      debugPrint('Non riesco ad aprire il link: $urlString');
+    }
+  } catch (e) {
+    debugPrint('Errore nell\'apertura del link: $e');
+  }
 }
 // Funzione per il recupero delle notizie
 Future<List<NotiziaModel>> fetchNews(String languageCode) async {

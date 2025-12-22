@@ -50,7 +50,6 @@ class CustomSnackBar {
         Color? backgroundColor,
       }) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message, style: const TextStyle(color: Colors.white)),

@@ -46,16 +46,18 @@ class _LayoutState extends State<Layout> {
           extendBody: true,
           drawer: MenuLaterale(),
           bottomNavigationBar: Padding(
-            padding:  const EdgeInsets.fromLTRB(15, 0, 15, 15),
+            padding:  const EdgeInsets.fromLTRB(20, 0, 20, 25),
             child: Material(
               shadowColor: Colors.transparent,
-              borderRadius: BorderRadius.circular(120),
+              borderRadius: BorderRadius.circular(145),
               color: Theme.of(context).colorScheme.primary,
               child: TabBar(
                 splashBorderRadius: BorderRadius.circular(45), //fix rotondità dell'overlay della tabbar!
                 dividerColor: Colors.transparent, //serve a rimuovere una strana linea grigia che usciva
                 labelColor: Colors.white, // colore del testo e dell'icona quando selezionato
                 unselectedLabelColor: Colors.white70, // tutto il testo non selezionato
+                indicatorPadding: const EdgeInsets.symmetric(vertical: 8),
+                labelPadding: const EdgeInsets.symmetric(horizontal: 1),
                 indicator: UnderlineTabIndicator(
                   borderSide: BorderSide(
                     width: 7.0,
@@ -63,10 +65,9 @@ class _LayoutState extends State<Layout> {
                   ),
                   borderRadius: BorderRadius.circular(12), // arrotondato
                 ),
-                labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                labelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
                 tabs: [
                   Tab(text: AppLocalizations.of(context)!.translate("Tornei"), icon: Icon(FontAwesomeIcons.trophy)),
-
                   //tab chat con badge per i messaggi non letti
                   StreamBuilder<int>(
                     stream: _chatService.getTotalUnreadCount(),

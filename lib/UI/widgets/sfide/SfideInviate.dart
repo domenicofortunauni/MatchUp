@@ -5,16 +5,17 @@ import 'package:matchup/model/objects/SfidaModel.dart'; // Percorso del tuo mode
 import 'package:matchup/UI/widgets/cards/SfidaCard.dart'; // Percorso della tua card
 import '../CustomSnackBar.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
+import '../EmptyWidget.dart';
 
-class SfideInviateSection extends StatelessWidget {
-  const SfideInviateSection({Key? key}) : super(key: key);
+class SfideInviateList extends StatelessWidget {
+  const SfideInviateList({Key? key}) : super(key: key);
 
+  // metodo per eliminare la sfida
   Future<void> _eliminaSfida(BuildContext context, String sfidaId) async {
     try {
       await FirebaseFirestore.instance.collection('sfide').doc(sfidaId).delete();
-      if (context.mounted) {
-        CustomSnackBar.show(context, AppLocalizations.of(context)!.translate("Sfida annullata/eliminata."));
-      }
+      if (context.mounted)
+        CustomSnackBar.show(context, AppLocalizations.of(context)!.translate("Sfida annullata."));
     } catch (e) {
       if (context.mounted) {
         CustomSnackBar.show(context, "${AppLocalizations.of(context)!.translate("Errore: ")}$e");
@@ -24,7 +25,7 @@ class SfideInviateSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
     if (currentUserId == null) return const SizedBox.shrink();
 
@@ -37,60 +38,55 @@ class SfideInviateSection extends StatelessWidget {
       builder: (context, snapshot) {
 
         if (snapshot.hasError) return Text(AppLocalizations.of(context)!.translate("Errore caricamento."));
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.connectionState == ConnectionState.waiting)
           return const Center(child: CircularProgressIndicator());
-        }
 
         final docs = snapshot.data!.docs;
-        final List<SfidaModel> sfideValide = [];
-        for (var doc in docs) {
-          final dataMap = doc.data() as Map<String, dynamic>;
+        final List<SfidaModel> sfideDirette = [];
+        final List<SfidaModel> sfidePubbliche = [];
+        for (var sfidaApertaDaMe in docs) {
+          final dataMap = sfidaApertaDaMe.data() as Map<String, dynamic>;
 
           try {
             Timestamp? ts = dataMap['data'];
             String? oraStr = dataMap['ora'];
-
             if (ts != null && oraStr != null) {
               DateTime d = ts.toDate();
               List<String> parts = oraStr.split(':');
               DateTime dataScadenza = DateTime(d.year, d.month, d.day, int.parse(parts[0]), int.parse(parts[1]));
 
               if (dataScadenza.isBefore(DateTime.now())) {
-                // SCADUTA: Cancella e salta
-                FirebaseFirestore.instance.collection('sfide').doc(doc.id).delete();
+                // Sfida scaduta, elimina
+                FirebaseFirestore.instance.collection('sfide').doc(sfidaApertaDaMe.id).delete();
                 continue;
               }
             }
-          } catch (e) {
+          } catch (e) {}
+          // Se valida costruisco l'oggetto sfida
+          final sfida = SfidaModel.fromSnapshot(sfidaApertaDaMe);
+          // Aggiungo alla lista delle sfide valide separandole per modalità
+          if (sfida.modalita == 'diretta') {
+            sfideDirette.add(sfida);
+          } else if (sfida.modalita == 'pubblica') {
+            sfidePubbliche.add(sfida);
           }
-
-          // Se valida, aggiungi
-          sfideValide.add(SfidaModel.fromSnapshot(doc));
         }
-
-        // DIVIDO LE LISTE (sulle sfide valide)
-        final sfideDirette = sfideValide.where((s) => s.modalita == 'diretta').toList();
-        final sfidePubbliche = sfideValide.where((s) => s.modalita == 'pubblica').toList();
-
-        if (sfideValide.isEmpty) {
-          return SizedBox(
-            height: 100,
-            child: Center(
-              child: Text(
-                AppLocalizations.of(context)!.translate("Nessuna sfida inviata attiva."),
-                style: const TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
+        if (sfideDirette.isEmpty && sfidePubbliche.isEmpty) {
+          return Center(
+            child: EmptyWidget(
+                text: AppLocalizations.of(context)!.translate("Nessuna sfida inviata attiva."),
+                subText: AppLocalizations.of(context)!.translate("Le sfide che invii appariranno qui"),
+                icon: Icons.sports_tennis_outlined,
               ),
-            ),
           );
         }
-
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // SEZIONE SFIDE DIRETTE
+            // Sezione sfide dirette
             if (sfideDirette.isNotEmpty) ...[
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
+                padding: const EdgeInsets.fromLTRB(8,0,8,10),
                 child: Text(
                   AppLocalizations.of(context)!.translate("Inviti diretti (In attesa)"),
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey),
@@ -98,19 +94,18 @@ class SfideInviateSection extends StatelessWidget {
               ),
               ListView.builder(
                 shrinkWrap: true,
+                padding: EdgeInsets.only(bottom: 50),
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: sfideDirette.length,
                 itemBuilder: (context, index) {
                   return _buildCardSfida(context, sfideDirette[index], isDiretta: true);
                 },
               ),
-              const SizedBox(height: 10),
             ],
-
-            // SEZIONE SFIDE PUBBLICHE
+            // Sezione sfide pubbliche
             if (sfidePubbliche.isNotEmpty) ...[
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
+                padding: const EdgeInsets.fromLTRB(8,0,8,10),
                 child: Text(
                   AppLocalizations.of(context)!.translate("Sfide pubbliche (In attesa di sfidanti)"),
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey),
@@ -119,6 +114,7 @@ class SfideInviateSection extends StatelessWidget {
               ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
+                padding: EdgeInsets.zero,
                 itemCount: sfidePubbliche.length,
                 itemBuilder: (context, index) {
                   return _buildCardSfida(context, sfidePubbliche[index], isDiretta: false);
@@ -130,7 +126,6 @@ class SfideInviateSection extends StatelessWidget {
       },
     );
   }
-
   Widget _buildCardSfida(BuildContext context, SfidaModel sfida, {required bool isDiretta}) {
     return SfidaCard(
       sfida: sfida,

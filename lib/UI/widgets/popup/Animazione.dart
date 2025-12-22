@@ -25,6 +25,7 @@ class _AnimazioneState extends State<Animazione> with TickerProviderStateMixin {
     _animation = Tween<Alignment>(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
+
     ).animate(
       CurvedAnimation(
         parent: _controller,
@@ -42,7 +43,6 @@ class _AnimazioneState extends State<Animazione> with TickerProviderStateMixin {
         });
       }
     });
-
     _controller.forward();
   }
 
@@ -55,13 +55,13 @@ class _AnimazioneState extends State<Animazione> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       surfaceTintColor: Colors.transparent,
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
       child: Container(
         height: 300,
-        padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
         child: Column(
           children: [
             Text(
@@ -103,15 +103,13 @@ class _AnimazioneState extends State<Animazione> with TickerProviderStateMixin {
                         child: child,
                       );
                     },
-                    child: Container(
-                      child: const Icon(
-                        Icons.sports_baseball,
-                        size: 48,
-                        color: Color(0xFFCCFF00),
-                        shadows: [
-                          Shadow(color: Colors.black12, blurRadius: 2, offset: Offset(1, 1))
-                        ],
-                      ),
+                    child: const Icon(
+                      Icons.sports_baseball,
+                      size: 50,
+                      color: Colors.green,
+                      shadows: [
+                        Shadow(color: Colors.black12, blurRadius: 2, offset: Offset(1, 1))
+                      ],
                     ),
                   ),
                 ],

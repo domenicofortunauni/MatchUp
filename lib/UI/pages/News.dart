@@ -16,19 +16,20 @@ class News extends StatelessWidget {
         foregroundColor: Colors.white,
       ),
       body: FutureBuilder<List<NotiziaModel>>(
-        future: fetchNews(Localizations.localeOf(context).languageCode), // Chiama la funzione API per ottenere le notizie con la lingua giusta!!
+        future: fetchNews(Localizations.localeOf(context).languageCode),
+        // Chiama la funzione API per ottenere le notizie con la lingua giusta!!
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          else if (snapshot.hasError || snapshot.data!.isEmpty) {
+          else if (snapshot.hasError) {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Text(
-                  'Impossibile caricare le notizie: ${snapshot.error}',
+                  AppLocalizations.of(context)!.translate("Impossibile caricare le notizie: ") + "${snapshot.error}",
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.red, fontSize: 16),
+                  style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 16),
                 ),
               ),
             );
@@ -36,15 +37,18 @@ class News extends StatelessWidget {
           else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
             final List<NotiziaModel> notizie = snapshot.data!;
 
-            return ListView.builder(
+            return Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child:ListView.builder(
                 itemCount: notizie.length,
                 itemBuilder: (context, index) {
                   return NewsCard(notizia: notizie[index]);
                 },
-              );
+              ),);
           }
           else {
-            return Center(child: Text(AppLocalizations.of(context)!.translate("NoNews")));
+            return Center(
+                child: Text(AppLocalizations.of(context)!.translate("NoNews")));
           }
         },
       ),

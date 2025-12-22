@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import "package:matchup/model/objects/TorneoModel.dart";
 import "../behaviors/AppLocalizations.dart";
+import "../widgets/EmptyWidget.dart";
 import "../widgets/cards/TorneoCard.dart";
 import "../../services/sito_tornei.dart";
 import "../../services/localizzazione.dart";
+import "../widgets/search_bar.dart";
 
 class TorneiPage extends StatefulWidget {
   const TorneiPage({super.key});
@@ -17,37 +19,63 @@ class _TorneiPageState extends State<TorneiPage> {
   final FitpService _fitpService = FitpService();
   final TextEditingController _searchController = TextEditingController();
 
-  late Future<List<TorneoModel>> _futureTournaments;
-  String _currentSearchText = 'Caricamento...';
+  List<TorneoModel> _tournaments = [];
+  bool _isLoading = false;
   bool _isLoadingLocation = true;
+  String _currentSearchText = "";
+  String? _error;
 
   @override
   void initState() {
     super.initState();
-    _futureTournaments = Future.value([]);
     _initData();
   }
+  // Carica città iniziale e tornei
+  Future<void> _initData() async {
+    try {
+      final city = await LocationService.getMyCity();
+      if (!mounted) return;
 
-  void _initData() async {
-    final city = await LocationService.getCurrentCity(defaultCity: 'Roma');
+      _searchController.text = city;
+      _currentSearchText = city;
+      _isLoadingLocation = false;
 
-    if (mounted) {
+      await _fetchTournaments(city);
+    } catch (e) {
+      if (!mounted) return;
       setState(() {
-        _currentSearchText = city;
-        _searchController.text = city;
         _isLoadingLocation = false;
-        _fetchTournaments(city);
+        _error = e.toString();
       });
     }
   }
 
-  void _fetchTournaments(String freetext) {
+  // Fetch tornei
+  Future<void> _fetchTournaments(String freetext) async {
     setState(() {
+      _isLoading = true;
+      _error = null;
       _currentSearchText = freetext;
-      _futureTournaments = _fitpService.fetchTournaments(freetext);
     });
+    try {
+      final result = await _fitpService.fetchTournaments(freetext);
+      if (!mounted) return;
+      setState(() {
+        _tournaments = result;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString();
+        _tournaments = [];
+      });
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
-
   @override
   void dispose() {
     _searchController.dispose();
@@ -68,49 +96,32 @@ class _TorneiPageState extends State<TorneiPage> {
   }
 
   Widget _buildSearchBar() {
-    return
-      Padding(
-      padding: const EdgeInsets.fromLTRB(16,16,16,8),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              enabled: !_isLoadingLocation,
-              decoration: InputDecoration(
-                labelText: _isLoadingLocation ? AppLocalizations.of(context)!.translate("Localizzazione...") : AppLocalizations.of(context)!.translate("Cerca città"),
-                hintText: AppLocalizations.of(context)!.translate("es. Roma"),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(22)),
-                prefixIcon: const Icon(Icons.search),
-                contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-              ),
-              onSubmitted: _fetchTournaments,
-            ),
-          ),
-          const SizedBox(width: 10),
-          ElevatedButton(
-            onPressed: _isLoadingLocation ? null : () => _fetchTournaments(_searchController.text),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Colors.white,
-            ),
-            child: Text(AppLocalizations.of(context)!.translate("Cerca")),
-          ),
-        ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: MySearchBar(
+        controller: _searchController,
+        onSearch: _fetchTournaments,
+        enabled: !_isLoadingLocation,
+        primaryColor: Theme.of(context).colorScheme.primary,
+        //i testi vengono tradotti nel widget
+        labelKey: _isLoadingLocation ? "Localizzazione..." : "Cerca città",
+        hintKey: "es. Roma",
       ),
     );
   }
 
   Widget _buildStatusHeader() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (_isLoadingLocation) ...[
-            const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+          if (_isLoadingLocation || _isLoading) ...[
+            const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
             const SizedBox(width: 8),
           ],
           Text(
@@ -130,33 +141,25 @@ class _TorneiPageState extends State<TorneiPage> {
     if (_isLoadingLocation)
       return const SizedBox();
 
-    return FutureBuilder<List<TorneoModel>>(
-      future: _futureTournaments,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.sports_tennis_outlined, size: 80, color: Theme.of(context).primaryColor.withValues(alpha: 0.5)),
-                const SizedBox(height: 16),
-                Text(AppLocalizations.of(context)!.translate("Nessun torneo trovato.")),
-              ],
-            ),
-          );
-        }
+    if (_isLoading)
+      return const Center(child: CircularProgressIndicator());
 
-        return ListView.builder(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 100), //
-          itemCount: snapshot.data!.length,
-          itemBuilder: (context, index) {
-            return TorneoCard(
-              torneo: snapshot.data![index],
-            );
-          },
+    if (_error != null || _tournaments.isEmpty) {
+      return Center(
+        child: EmptyWidget(
+          text: AppLocalizations.of(context)!.translate("Nessun torneo trovato."),
+          subText: AppLocalizations.of(context)!.translate("Prova a cercare in un'altra città."),
+          icon: Icons.sports_tennis_outlined,
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+      itemCount: _tournaments.length,
+      itemBuilder: (context, index) {
+        return TorneoCard(
+          torneo: _tournaments[index],
         );
       },
     );

@@ -6,7 +6,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class LocationService {
   static Future<String> getCurrentCity({String defaultCity = 'Roma'}) async {
-
     final Position? location = await getCurrentPosition();
       if (location != null) {
           final url = Uri.parse(
@@ -21,8 +20,8 @@ class LocationService {
           );
           if (res.statusCode == 200) {
             final data = jsonDecode(res.body);
-            return data["address"]["city"] ??
-                data["address"]["town"] ??
+            return data["address"]["town"] ??
+                data["address"]["city"] ??
                 data["address"]["village"];
           }
       }

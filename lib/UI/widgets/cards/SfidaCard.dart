@@ -30,7 +30,7 @@ class SfidaCard extends StatelessWidget {
     if (l.contains("dilettante")) return Colors.blue;
     if (l.contains("intermedio")) return Colors.white;
     if (l.contains("avanzato")) return Colors.red;
-    return Colors.yellow; //se professionista (o null :/)
+    return Colors.amber; //se professionista (o null :/)
   }
 
   @override
@@ -38,6 +38,7 @@ class SfidaCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final levelColor = _getLevelColor(sfida.livello);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -46,16 +47,14 @@ class SfidaCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+            color: isDark ? Colors.grey.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.15),
+            blurRadius: 12,
           ),
         ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: Material(
-          color: Colors.transparent,
           child: Column(
             children: [
               Padding(
@@ -100,7 +99,7 @@ class SfidaCard extends StatelessWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4),
                           Row(
                             children: [
                               Icon(Icons.stadium_rounded, size: 16, color: colorScheme.secondary),
@@ -122,7 +121,6 @@ class SfidaCard extends StatelessWidget {
                   ],
                 ),
               ),
-
               if (extraWidget != null)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),

@@ -15,8 +15,7 @@ class aggiungi_set_partita extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final numbers = List.generate(8, (i) => i.toString());
-
-    InputDecoration deco = InputDecoration(
+    InputDecoration dec = InputDecoration(
       contentPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
       isDense: true,
@@ -34,7 +33,7 @@ class aggiungi_set_partita extends StatelessWidget {
         onChanged: (value) {
           controller.text = value ?? "";
         },
-        decoration: deco,
+        decoration: dec,
         validator: validator,
       );
     }
@@ -49,7 +48,6 @@ class aggiungi_set_partita extends StatelessWidget {
             ),
           ),
         ),
-
 
         Expanded(
           child: Align(

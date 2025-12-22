@@ -20,7 +20,6 @@ class UserService {
 
       final String miaCitta = (myData['citta'] ?? '').toString();
       final String mioLivello = (myData['livello'] ?? "").toString();
-
       final int mioPunteggio = _getLevelScore(mioLivello);
 
       final utenti = await _db.collection('users').limit(100).get();
@@ -37,17 +36,21 @@ class UserService {
         //Logica vicinanza
         bool isNear = (miaCitta.isNotEmpty && userCitta.toLowerCase() == miaCitta.toLowerCase());
         //Logica rank -- Rosso se più alto, blu se stesso rank o minore
-        String levelStatus = (userPunteggio > mioPunteggio) ? 'high' : 'ok';
+        String levelStatus = (userPunteggio > mioPunteggio+1 || userPunteggio<mioPunteggio-1) ? 'high' : 'ok';
 
-        //logica per ordinarli
-        //prima i vicini stesso rank, poi ordinati in base al rank
+        //logica per ordinarli come suggerita dal prof al ricevimento
         int sortGroup;
-        if (isNear && userPunteggio == mioPunteggio) sortGroup = 0;
-        else if (isNear && userPunteggio < mioPunteggio) sortGroup = 1;
-        else if (isNear && userPunteggio > mioPunteggio) sortGroup = 2;
-        else if (!isNear && userPunteggio == mioPunteggio) sortGroup = 3;
-        else if (!isNear && userPunteggio < mioPunteggio) sortGroup = 4;
-        else sortGroup = 5; // non vicino & livello maggiore
+        bool sfidaUpLevel = userPunteggio == mioPunteggio+1; // sfida per temerari
+        bool sfidaDownLevel = userPunteggio == mioPunteggio-1; //sfida conservativa
+
+        if (isNear && sfidaUpLevel) sortGroup = 0;
+        else if (isNear && userPunteggio == mioPunteggio) sortGroup = 1;
+        else if (isNear && sfidaDownLevel) sortGroup = 2;
+        else if (isNear) sortGroup = 3;
+        else if (!isNear && sfidaUpLevel) sortGroup = 4;
+        else if (!isNear && userPunteggio == mioPunteggio) sortGroup = 5;
+        else if (!isNear && sfidaDownLevel) sortGroup = 6;
+        else sortGroup = 7; // non vicino & livello maggiore/inferiore di 2
         //aggiungo sti dati alla mappa di results
         data['priority'] = isNear ? 1 : 0;
         data['sort_group'] = sortGroup;
@@ -60,12 +63,8 @@ class UserService {
         // Prima per sort_group
         int cmp = (a['sort_group'].compareTo(b['sort_group']));
         if (cmp != 0) return cmp;
-        // Tra i vicini livello minore o uguale , ordine decrescente per livello
-        // Tra i non vicini stesso livello o minore, ordine decrescente per livello
-        if (a['sort_group'] == 0 || a['sort_group'] == 1||a['sort_group'] == 3|| a['sort_group'] == 4)
-          return b['level_score'].compareTo(a['level_score']);
-        // Tra i vicini con livello maggiore o non vicini, ordine crescente per livello
-         return a['level_score'].compareTo(b['level_score']);
+        // Poi a parità per avversario più facile
+        return (a['level_score'].compareTo(b['level_score']));
       });
       return results;
 

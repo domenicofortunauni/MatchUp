@@ -5,21 +5,23 @@ import '../PrenotaCampo.dart';
 
 class CampoCard extends StatelessWidget {
   final CampoModel campo;
-  final bool isRainExpected; // Passiamo il risultato del meteo qui
+  final bool isRainExpected; // risultato previsione meteo giornata odierna
   const CampoCard({super.key, required this.campo, required this.isRainExpected});
   @override
   Widget build(BuildContext context) {
     return Card(
       elevation: 2,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.symmetric(vertical: 5),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
+        borderRadius: BorderRadius.circular(22),
+        onTap: ()
+        {
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => PrenotaCampo(campo: campo, tipoPrenotazione: false),
+              //false perché si tratta di una prenotazione normale, non di una sfida
             ),
           );
         },
@@ -32,9 +34,8 @@ class CampoCard extends StatelessWidget {
                 height: 80,
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(Icons.sports_tennis),
+                  borderRadius: BorderRadius.circular(22)),
+                child: const Icon(Icons.sports_tennis, size: 40),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -49,24 +50,13 @@ class CampoCard extends StatelessWidget {
                                 ? AppLocalizations.of(context)!.translate("Campo sconosciuto")
                                 : campo.nome,
                             style: TextStyle(
+                              overflow: TextOverflow.ellipsis,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                         ),
-                        if (isRainExpected && campo.campoAlCoperto)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              AppLocalizations.of(context)!.translate("Disponibile campo al chiuso"),
-                              style: const TextStyle(color: Colors.white, fontSize: 12),
-                            ),
-                          ),
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -113,6 +103,33 @@ class CampoCard extends StatelessWidget {
                         ),
                       ],
                     ),
+                    if (isRainExpected && campo.campoAlCoperto)...[
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.check, size: 12, color: Colors.white),
+                              const SizedBox(width: 4),
+                              Text(
+                                AppLocalizations.of(context)!.translate("Campo al coperto"),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ]
                   ],
                 ),
               ),

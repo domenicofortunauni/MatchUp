@@ -9,17 +9,13 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      body: ListView(
+        children: const[
             const PrenotazioniWidget(),
             const Statistiche(),
             const StoricoPartiteWidget(),
-            const SizedBox(height: 100.0),
           ],
         ),
-      ),
-    );
+      );
   }
 }

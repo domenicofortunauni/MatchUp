@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../services/chat_service.dart';
 import '../../behaviors/AppLocalizations.dart';
 import '../../widgets/chat/chatInput.dart';
-import '../../widgets/chat/emptyChat.dart';
+import '../../widgets/EmptyWidget.dart';
 import '../../widgets/chat/message.dart';
 
 class ChatPage extends StatefulWidget {
@@ -78,8 +78,12 @@ class _ChatPageState extends State<ChatPage> {
               stream: _chatService.getMessages(widget.receiverId),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  return EmptyChat(message:
-                  AppLocalizations.of(context)!.translate("Errore")+": ${snapshot.error}");
+                  return Center(
+                       child: EmptyWidget(
+                          text: AppLocalizations.of(context)!.translate("Nessun messaggio"),
+                          icon: Icons.chat_bubble_outline,
+                        ),
+                  );
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());

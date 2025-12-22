@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 class CircularFloatingIconButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onPressed;
-
   const CircularFloatingIconButton({required this.icon, required this.onPressed}) : super();
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -19,8 +17,5 @@ class CircularFloatingIconButton extends StatelessWidget {
         ),
       )
     );
-
   }
-
-
 }

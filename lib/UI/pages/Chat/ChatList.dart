@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../behaviors/AppLocalizations.dart';
-import '../../widgets/chat/chatPageItem.dart';
-import '../../widgets/chat/emptyChat.dart';
-import '../../widgets/popup/NuovaChat.dart';
+import '../../widgets/chat/chaListItem.dart';
+import '../../widgets/EmptyWidget.dart';
+import '../../widgets/popup/NuovaChatSfida.dart';
 import '../../widgets/buttons/CircularFloatingIconButton.dart';
 import 'ChatPage.dart';
 import '../../../services/chat_service.dart';
@@ -34,8 +34,12 @@ class ChatListPage extends StatelessWidget {
           final docs = snapshot.data!.docs;
 
           if (docs.isEmpty) {
-            return EmptyChat(
-              message: AppLocalizations.of(context)!.translate("Nessuna conversazione attiva."),
+            return Center(
+              child:
+                  EmptyWidget(
+                    text: AppLocalizations.of(context)!.translate("Nessuna conversazione attiva."),
+                    icon: Icons.chat_bubble_outline,
+                  ),
             );
           }
 

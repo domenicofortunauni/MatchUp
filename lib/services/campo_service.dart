@@ -6,6 +6,9 @@ class CampoService {
 
   // restituisce la lista di tutti i campi della città passata come parametro sortati per rating
   Stream<List<CampoModel>> getCampi(String userCitta) {
+    if (userCitta.trim().isEmpty) {
+      return Stream.value([]);
+    }
     //metto col formato col quale le salvo nel db es. Rende
     final cittaFormatoDB = userCitta[0].toUpperCase() + userCitta.substring(1).toLowerCase();
     return _firestore

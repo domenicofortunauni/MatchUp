@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../behaviors/AppLocalizations.dart';
 import '../../pages/Login.dart';
+import '../MenuLaterale.dart';
 
 class LogoutDialog {
   static void show(BuildContext context) {
@@ -15,20 +16,19 @@ class LogoutDialog {
             // Tasto Annulla
             TextButton(
               onPressed: () {
-                Navigator.of(dialogContext).pop(); // Chiude il popup
+                Navigator.of(dialogContext).pop();// Chiude il popup
               },
               child: Text(AppLocalizations.of(context)!.translate("Annulla")),
             ),
-            // Tasto Conferma Logout
+            // Tasto Esci Logout
             TextButton(
               onPressed: () async {
                 await FirebaseAuth.instance.signOut();
-
                 // Chiude il dialog
                 if (dialogContext.mounted) Navigator.of(dialogContext).pop();
-
-                // Va al Login rimuovendo lo storico
+                // Va al Login
                 if (context.mounted) {
+                  MenuLaterale.userStream = null;
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(builder: (context) => const Login()),
                         (route) => false,

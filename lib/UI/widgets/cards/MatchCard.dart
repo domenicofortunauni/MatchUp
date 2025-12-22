@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../model/objects/PartitaModel.dart';
+import '../../../model/support/Constants.dart';
 import '../../behaviors/AppLocalizations.dart';
 import 'package:intl/intl.dart';
-
 
 class MatchCard extends StatelessWidget {
   final PartitaModel partita;
@@ -12,30 +12,29 @@ class MatchCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
-    final MaterialColor statusColor = partita.isVittoria ? Colors.green : Colors.red;
-    final Color cardBg = isDarkMode ? const Color(0xFF2C2C2C) : Colors.white;
+    final MaterialColor vittoriaSconfitta = partita.isVittoria ? Colors.green : Colors.red;
+    final Color cardBg = isDarkMode ? Constants.matchCardColorDark : Constants.matchCardColorLight;
 
     // Iniziali avversario
-    String initials = partita.avversario.isNotEmpty ? partita.avversario[0].toUpperCase() : "?";
+    String iniziali = partita.avversario.isNotEmpty ? partita.avversario[0].toUpperCase() : "?";
+
     if (partita.avversario.contains(" ")) {
       try {
-        initials = partita.avversario.split(" ").map((e) => e[0]).take(2).join().toUpperCase();
-      } catch (_) {}
+        iniziali = partita.avversario.split(" ").map((e) => e[0]).take(2).join().toUpperCase();
+      } catch (e) {
+      }
     }
-
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: cardBg,
         borderRadius: BorderRadius.circular(20),
-        // Ombra in tema chiaro
-        boxShadow: isDarkMode ? [] : [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.5),
+        // Ombra con il tema chiaro
+        boxShadow: [BoxShadow(
+            color: isDarkMode? Colors.transparent:Colors.black.withValues(alpha: 0.5),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          ),
-        ],
+          ),],
           border: isDarkMode ? Border.all(color: Colors.white.withValues(alpha: 0.1)) : null,
       ),
       child: ClipRRect(
@@ -44,22 +43,17 @@ class MatchCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Striscia verde/rossa laterale
-              Container(width: 6, color: statusColor),
-              // Contenuto
+              Container(width: 6, color: vittoriaSconfitta), // Striscia verde/rossa laterale
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Row(
                     children: [
-                      // Avatar
-                      //TODO: Collegare avatar utenti a firebase?
                       CircleAvatar(
-                        radius: 24,
-                        backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                        child: Text(
-                          initials,
+                        radius: 28,
+                        child: Text( iniziali,
                           style: TextStyle(
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
@@ -67,11 +61,11 @@ class MatchCard extends StatelessWidget {
                       ),
 
                       const SizedBox(width: 16),
-
                       // Nome e Data
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
                               partita.avversario,
@@ -94,29 +88,30 @@ class MatchCard extends StatelessWidget {
                           ],
                         ),
                       ),
-
                       // Punteggio
                       Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           // Badge Vittoria/Sconfitta
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: statusColor.withValues(alpha: 0.1),
+                              color: vittoriaSconfitta.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              partita.isVittoria ? AppLocalizations.of(context)!.translate("Vittoria") :  AppLocalizations.of(context)!.translate("Sconfitta"), // O usa translate("Vittoria")
+                              partita.isVittoria ?
+                              AppLocalizations.of(context)!.translate("Vittoria") :
+                              AppLocalizations.of(context)!.translate("Sconfitta"),
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
-                                color: statusColor,
+                                color: vittoriaSconfitta,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 6),
-
+                          const SizedBox(height: 4),
                           // Set
                           Text(
                             "${partita.setVinti} - ${partita.setPersi}",
@@ -126,7 +121,6 @@ class MatchCard extends StatelessWidget {
                               color: theme.colorScheme.onSurface,
                             ),
                           ),
-
                           // Games
                           Text(
                             "${AppLocalizations.of(context)!.translate("games")}: ${partita.gameVinti}-${partita.gamePersi}",

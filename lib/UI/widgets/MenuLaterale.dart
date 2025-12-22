@@ -9,125 +9,84 @@ class MenuLaterale extends StatelessWidget {
   static final Widget headerImage = Image.asset('assets/images/appBarLogo.png',height: 60, fit: BoxFit.contain);
   const MenuLaterale({super.key});
 
+  static Stream<DocumentSnapshot>? userStream;
+  Stream<DocumentSnapshot> _getUserStream(String uid) {
+    userStream ??= FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .snapshots();
+    return userStream!;
+  }
+
   //Funzione per generare le iniziali
   String _getInitials(String nome, String cognome) {
-    String n = nome.isNotEmpty ? nome[0].toUpperCase() : "";
-    String c = cognome.isNotEmpty ? cognome[0].toUpperCase() : "";
-    return "$n$c";
+    String getFirst(String s) =>
+        s.trim().isNotEmpty ? s.trim()[0].toUpperCase() : '';
+    return "${getFirst(nome)}${getFirst(cognome)}";
   }
 
   @override
   Widget build(BuildContext context) {
     final appState = MyApp.of(context);
-    final currentLang = appState?.currentLocale.languageCode ?? 'it';
+    final currentLang = Localizations.localeOf(context).languageCode;
     final User? currentUser = FirebaseAuth.instance.currentUser; // Utente corrente
 
     return Drawer(
-      child: Column(
+      child: ListView(
+        padding: EdgeInsets.zero,
         children: [
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: <Widget>[
-                DrawerHeader(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  child: currentUser == null
-                      ? _buildLogoHeader() // Se non loggato, mostra logo
-                      : _buildUserHeader(currentUser, context), // Se loggato, mostra dati
-                ),
-
-                //Sezione Lingua
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: Text(
-                    AppLocalizations.of(context)!.translate("Lingua"),
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                ),
-
-                _buildLanguageTile(context, 'Italiano', '🇮🇹', 'it', appState, currentLang),
-                _buildLanguageTile(context, 'English',  '🇬🇧', 'en', appState, currentLang),
-                _buildLanguageTile(context, 'Français', '🇫🇷', 'fr', appState, currentLang),
-                _buildLanguageTile(context, 'Español',  '🇪🇸', 'es', appState, currentLang),
-                _buildLanguageTile(context, 'Deutsch', '🇩🇪', 'de', appState, currentLang),
-
-                const Divider(),
-
-                //Sezione Tema
-                ListTile(
-                  title: Text(AppLocalizations.of(context)!.translate("Cambia tema"),
-                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  trailing: GestureDetector(
-                    onTap: () {
-                      final appState = MyApp.of(context);
-                      appState?.toggleTheme();
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      width: 70,
-                      height: 35,
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(25),
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.blue[800]
-                            : Colors.green[400],
-                      ),
-                      child: Stack(
-                        children: [
-                          AnimatedPositioned(
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                            left: Theme.of(context).brightness == Brightness.dark ? 35 : 0,
-                            right: Theme.of(context).brightness == Brightness.dark ? 0 : 35,
-                            child: Container(
-                              width: 27,
-                              height: 27,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.yellow[700], // pallina da tennis
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.3),
-                                    offset: const Offset(2, 2),
-                                    blurRadius: 3,
-                                  ),
-                                ],
-                              ),
-                              child: Center(
-                                child: Icon(
-                                  Icons.sports_tennis,
-                                  size: 16,
-                                  color: Theme.of(context).brightness == Brightness.dark
-                                      ? Colors.white
-                                      : Colors.green[900],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                const Divider(),
-
-                ListTile(
-                  leading: const Icon(Icons.newspaper),
-                  title: Text(AppLocalizations.of(context)!.translate("News")),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => const News()),
-                    );
-                  },
-                ),
-              ],
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
             ),
+            child: currentUser == null ? _buildLogoHeader() // Se non loggato, mostra logo
+                : _buildUserHeader(currentUser, context), // Se loggato, mostra dati
+           ),
+
+          //Sezione Lingua
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text(
+              AppLocalizations.of(context)!.translate("Lingua"),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+          ),
+
+          _buildLanguageTile(context, 'Italiano', '🇮🇹', 'it', appState, currentLang),
+          _buildLanguageTile(context, 'English',  '🇬🇧', 'en', appState, currentLang),
+          _buildLanguageTile(context, 'Français', '🇫🇷', 'fr', appState, currentLang),
+          _buildLanguageTile(context, 'Español',  '🇪🇸', 'es', appState, currentLang),
+          _buildLanguageTile(context, 'Deutsch', '🇩🇪', 'de', appState, currentLang),
+
+          const Divider(),
+
+          //Sezione Tema
+          ListTile(
+            leading: Theme.of(context).brightness == Brightness.light? const Icon(Icons.dark_mode) : const Icon(Icons.light_mode),
+            title: Text(AppLocalizations.of(context)!.translate("Cambia tema")),
+            trailing: Switch(
+              inactiveThumbColor: Theme.of(context).colorScheme.primary,
+              inactiveTrackColor: Theme.of(context).colorScheme.primary.withValues(alpha:0.7),
+              trackOutlineColor: WidgetStatePropertyAll(Colors.transparent),
+              value: Theme.of(context).brightness == Brightness.dark,
+              onChanged: (_) {MyApp.of(context).toggleTheme();},
+              thumbIcon: WidgetStateProperty.resolveWith<Icon?>((states) {
+                return const Icon(Icons.sports_tennis, size: 16,);
+                },),
+            ),
+          ),
+
+          const Divider(),
+
+          ListTile(
+            leading: const Icon(Icons.newspaper),
+            title: Text(AppLocalizations.of(context)!.translate("News")),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const News()),
+              );
+            },
           ),
         ],
       ),
@@ -140,7 +99,7 @@ class MenuLaterale extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Expanded(child: headerImage ?? const SizedBox()),
+        Expanded(child: headerImage),
         const SizedBox(height: 10),
       ],
     );
@@ -148,18 +107,18 @@ class MenuLaterale extends StatelessWidget {
 
   //Dati utente
   Widget _buildUserHeader(User user, BuildContext context) {
-    return FutureBuilder<DocumentSnapshot>(
-      future: FirebaseFirestore.instance.collection('users').doc(user.uid).get(),
+    return StreamBuilder<DocumentSnapshot>(
+      stream: _getUserStream(user.uid),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator(color: Colors.white));
         }
         if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
-          return const Column(
+          return Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.person_off, size: 50, color: Colors.white),
-              Text("Errore caricamento profilo", style: TextStyle(color: Colors.white)),
+              const Icon(Icons.person_off, size: 50, color: Colors.white),
+              Text(AppLocalizations.of(context)!.translate("Errore caricamento profilo"), style: const TextStyle(color: Colors.white)),
             ],
           );
         }
@@ -169,73 +128,74 @@ class MenuLaterale extends StatelessWidget {
         String username = userData['username'] ?? '';
         String email = userData['email'] ?? user.email ?? '';
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(0,0,0,15),
-              child: Image.asset(
-                  'assets/images/appBarLogo.png',
-                  height: 40,
-                ),
-              ),
-            Row(
-              children: [
-                //Avatar con iniziali
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.white,
-                  foregroundColor: Theme.of(context).colorScheme.primary,
-                  child: Text(
-                    _getInitials(nome, cognome),
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                  ),
-                ),
-                const SizedBox(width: 15),
-                //Informazioni
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "$nome $cognome",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if(username.isNotEmpty)
-                        Text(
-                          "@$username",
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
-                      Row(
-                        children: [const Icon(Icons.email, size: 14, color: Colors.white70),
-                          const SizedBox(width: 1),
-                          Text(
-                            email,
-                            style: const TextStyle(color: Colors.white70, fontSize: 12),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ]
-                      ),
-                    ],
-                  ),
-                ),
-
-        ]
-            )
-          ],
-        );
-      },
+        return _buildUserUI(nome, cognome, username, email, context,);
+        },
     );
   }
-
+  Widget _buildUserUI(String nome, String cognome, String username, String email, BuildContext context,) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(0,0,0,15),
+          child: Image.asset(
+              'assets/images/appBarLogo.png',
+              height: 40,
+            ),
+          ),
+        Row(
+          children: [
+            //Avatar con iniziali
+            CircleAvatar(
+              radius: 30,
+              backgroundColor: Colors.white,
+              foregroundColor: Theme.of(context).colorScheme.primary,
+              child: Text(
+                _getInitials(nome, cognome),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              ),
+            ),
+            const SizedBox(width: 15),
+            //Informazioni
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "$nome $cognome",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if(username.isNotEmpty)
+                    Text(
+                      "@$username",
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                  Row(
+                    children: [const Icon(Icons.email, size: 14, color: Colors.white70),
+                      const SizedBox(width: 1),
+                      Text(
+                        email,
+                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ]
+                  ),
+                ],
+              ),
+            ),
+          ]
+        )
+      ],
+    );
+  }
   Widget _buildLanguageTile(
       BuildContext context,
       String name,
@@ -245,10 +205,7 @@ class MenuLaterale extends StatelessWidget {
       String currentLang,
       ) {
     return ListTile(
-      leading: Text(
-        flag,
-        style: const TextStyle(fontSize: 24),
-      ),
+      leading: Text(flag, style: const TextStyle(fontSize: 24),),
       title: Text(name),
       onTap: () {
         if (appState != null) {

@@ -31,15 +31,14 @@ class TorneoCard extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Row(
               children: [
                 Icon(Icons.calendar_today, size: 16, color: theme.primaryColor),
                 const SizedBox(width: 8),
                 Text(
-                  AppLocalizations.of(context)!.translate("Dal") +
-                      " ${torneo.dataInizio}" +
-                      AppLocalizations.of(context)!.translate(" al ") +
+                  AppLocalizations.of(context)!.translate("Dal") + " ${torneo.dataInizio}"
+                      + AppLocalizations.of(context)!.translate(" al ") +
                       "${torneo.dataFine}",
                   style: theme.textTheme.titleSmall?.copyWith(color: textColor),
                 ),
@@ -70,14 +69,14 @@ class TorneoCard extends StatelessWidget {
                 color: textColor,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
 
             Wrap(
               spacing: 8.0,
               runSpacing: 4.0,
               children: [
                 // fonte (FITP/TPRA)
-                _buildInfoChip(
+                _bottoneInfo(
                   context,
                   label: torneo.idFonte,
                   icon: Icons.sports_tennis,
@@ -85,7 +84,7 @@ class TorneoCard extends StatelessWidget {
                   textColor: Colors.white,
                 ),
                 if (torneo.iscrizioneOnline)
-                  _buildInfoChip(
+                  _bottoneInfo(
                     context,
                     label: AppLocalizations.of(context)!.translate("Iscrizione Online"),
                     icon: Icons.check_circle_outline,
@@ -93,7 +92,7 @@ class TorneoCard extends StatelessWidget {
                     textColor: Colors.white,
                   )
                 else
-                  _buildInfoChip(
+                  _bottoneInfo(
                     context,
                     label: AppLocalizations.of(context)!.translate("Iscrizione in loco"),
                     icon: Icons.cancel_outlined,
@@ -107,8 +106,7 @@ class TorneoCard extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildInfoChip(
+  Widget _bottoneInfo(
       BuildContext context, {
         required String label,
         required IconData icon,
@@ -120,6 +118,7 @@ class TorneoCard extends StatelessWidget {
       label: Text(label,
           style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
       backgroundColor: color,
+      side: BorderSide.none,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8.0),
       ),
