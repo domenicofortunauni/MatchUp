@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../behaviors/AppLocalizations.dart';
-import '../../widgets/chat/chaListItem.dart';
+import '../../widgets/chat/chatListItem.dart';
 import '../../widgets/EmptyWidget.dart';
 import '../../widgets/popup/NuovaChatSfida.dart';
 import '../../widgets/buttons/CircularFloatingIconButton.dart';

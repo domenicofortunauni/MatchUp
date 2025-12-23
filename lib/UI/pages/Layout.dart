@@ -46,7 +46,7 @@ class _LayoutState extends State<Layout> {
           extendBody: true,
           drawer: MenuLaterale(),
           bottomNavigationBar: Padding(
-            padding:  const EdgeInsets.fromLTRB(20, 0, 20, 25),
+            padding:  const EdgeInsets.fromLTRB(20, 0, 20, 15),
             child: Material(
               shadowColor: Colors.transparent,
               borderRadius: BorderRadius.circular(145),

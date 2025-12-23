@@ -1,9 +1,9 @@
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:matchup/UI/behaviors/AppLocalizations.dart';
+import 'package:matchup/UI/pages/Login/login_page.dart';
 import 'package:matchup/model/support/Constants.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'UI/pages/Login/login_page.dart';
 import 'firebase_options.dart';
 import 'package:matchup/services/notification_service.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -39,6 +39,7 @@ class MyAppState extends State<MyApp> {
       _locale = locale;
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

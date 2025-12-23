@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:matchup/UI/pages/Login/login_page.dart';
 import '../../behaviors/AppLocalizations.dart';
-import '../../pages/Login.dart';
 import '../MenuLaterale.dart';
 
 class LogoutDialog {
@@ -30,7 +30,7 @@ class LogoutDialog {
                 if (context.mounted) {
                   MenuLaterale.userStream = null;
                   Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const Login()),
+                    MaterialPageRoute(builder: (context) => const LoginPage()),
                         (route) => false,
                   );
                 }

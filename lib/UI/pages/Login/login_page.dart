@@ -7,6 +7,7 @@ import '../../widgets/CustomSnackBar.dart';
 import '../../behaviors/AppLocalizations.dart';
 import 'login_controller.dart';
 import 'login_form.dart';
+import 'package:matchup/UI/widgets/popup/Animazione.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -133,6 +134,26 @@ class _LoginPageState extends State<LoginPage> {
           username: username.text,
           livello: livello,
         );
+      }
+
+      if (mounted) {
+        setState(() => isLoading = false);
+
+        //ANIMAZIONE
+        //Mostriamo il Dialog con l'animazione e aspettiamo che finisca (await)
+        await showDialog(
+          context: context,
+          barrierDismissible: false, //L'utente non può chiuderlo cliccando fuori
+          builder: (context) => const Animazione(),
+        );
+
+        //Quando il dialog si chiude, andiamo alla Home
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => Layout()),
+          );
+        }
       }
 
       if (!mounted) return;

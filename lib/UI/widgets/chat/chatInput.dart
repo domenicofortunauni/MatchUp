@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:matchup/UI/behaviors/AppLocalizations.dart';
 
 class ChatInputBar extends StatelessWidget {
   final TextEditingController controller;
@@ -21,7 +22,7 @@ class ChatInputBar extends StatelessWidget {
             child: TextField(
               controller: controller,
               decoration: InputDecoration(
-                hintText: "Scrivi un messaggio...",
+                hintText: AppLocalizations.of(context)!.translate("Scrivi un messaggio..."),
                 filled: true,
                 fillColor: Theme.of(context).colorScheme.surfaceContainerHigh,
                 border: OutlineInputBorder(
@@ -34,7 +35,7 @@ class ChatInputBar extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           CircleAvatar(
-            backgroundColor: Theme.of(context).primaryColor,
+            backgroundColor: Theme.of(context).colorScheme.primary,
             radius: 24,
             child: IconButton(
               icon: Icon(Icons.send, color: Theme.of(context).colorScheme.surface, size: 20),

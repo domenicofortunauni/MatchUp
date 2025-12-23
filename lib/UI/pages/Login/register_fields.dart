@@ -32,6 +32,7 @@ class RegisterFields extends StatelessWidget {
             Expanded(
               child: TextFormField(
                 controller: nome,
+                textInputAction: TextInputAction.next,
                 decoration: loginInputDecoration(
                   context: context,
                   label: AppLocalizations.of(context)!.translate("Nome"),
@@ -50,6 +51,7 @@ class RegisterFields extends StatelessWidget {
             Expanded(
               child: TextFormField(
                 controller: cognome,
+                textInputAction: TextInputAction.next,
                 decoration: loginInputDecoration(
                   context: context,
                   label:
@@ -72,6 +74,7 @@ class RegisterFields extends StatelessWidget {
 
         TextFormField(
           controller: username,
+          textInputAction: TextInputAction.next,
           decoration: loginInputDecoration(
             context: context,
             label:
