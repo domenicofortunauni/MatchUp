@@ -23,8 +23,15 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: ios/Pods
+          key: pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: pods-
+
       - name: Build iOS (unsigned)
-        run: flutter build ios --release --no-codesign --build-number=${{ github.run_number }}
+        run: flutter build ios --release --no-codesign --build-number=${{ github.run_number }} --verbose
 
       - name: Package IPA
         run: |
